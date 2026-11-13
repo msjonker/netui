@@ -5,13 +5,17 @@
 #   ln -s /path/to/netui/openwrt <sdk>/package/netui
 #   make -C <sdk> package/netui/compile V=s
 #
+# Or let scripts/build-package.sh do it in the official SDK container.
+#
 # Nothing is compiled: the package ships the prebuilt static files from dist/
 # and the rpcd ACL. Override NETUI_DIST to package a dist/ from elsewhere.
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=netui
-PKG_VERSION:=0.1.0
+# CI passes the release tag without its "v" (scripts/build-package.sh).
+NETUI_VERSION ?= 0.1.0
+PKG_VERSION:=$(NETUI_VERSION)
 PKG_RELEASE:=1
 PKG_LICENSE:=MIT
 
@@ -24,9 +28,12 @@ define Package/netui
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Web management UI for OpenWrt routers and access points
-  # luci-base provides the luci-rpc object (leases, host hints); LuCI stays
-  # installed as the fallback UI anyway.
-  DEPENDS:=+rpcd +rpcd-mod-iwinfo +uhttpd +uhttpd-mod-ubus +luci-base
+  # luci-base provides the luci-rpc and luci objects (leases, host hints,
+  # timezones, conntrack); LuCI stays installed as the fallback UI anyway.
+  # rpcd-mod-file runs the three service scripts the ACL allows.
+  # SQM, UPnP, DDNS, WireGuard and wifischedule stay optional: netui hides
+  # what is not installed.
+  DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +uhttpd +uhttpd-mod-ubus +luci-base
   PKGARCH:=all
 endef
 

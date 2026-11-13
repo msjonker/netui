@@ -2,6 +2,28 @@
 
 A friendly web UI for OpenWrt routers, access points and mesh WiFi.
 
+## Install on a router
+
+Download the package for your OpenWrt release from
+[Releases](https://github.com/msjonker/netui/releases), copy it to the router, then:
+
+```sh
+apk add --allow-untrusted netui-<version>-r1.apk   # OpenWrt 25.x and snapshots
+opkg install netui_<version>-r1_all.ipk            # OpenWrt 24.10
+netui-passwd                                       # create the netui login (once)
+```
+
+Open `http://<router>/netui/`. LuCI keeps working alongside it. Smart Queues,
+UPnP, Dynamic DNS, WireGuard and WiFi schedules show up when their OpenWrt
+packages are installed.
+
+## Release
+
+Push a tag: `git tag v0.2.0 && git push origin v0.2.0`. The Release workflow
+tests and builds the UI, packages it with the official OpenWrt SDK images
+(`.apk` from 25.12, `.ipk` from 24.10) and publishes both. Locally:
+`npm run build && npm run package x86-64-openwrt-25.12 0.2.0` (needs Docker).
+
 ## Develop
 
 ```sh

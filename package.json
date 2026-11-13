@@ -7,11 +7,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "check:budget": "node scripts/check-budget.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "record-fixtures": "scripts/record-fixtures.sh",
+    "package": "scripts/build-package.sh",
     "deploy": "vite build && ssh root@$ROUTER_HOST 'mkdir -p /www/netui && rm -rf /www/netui/assets' && scp -O -r dist/* root@$ROUTER_HOST:/www/netui/",
     "record-fixtures:dev": "NETUI_CONTAINER=netui-openwrt scripts/record-fixtures.sh",
     "router:up": "mkdir -p dist && docker compose -f dev/openwrt/compose.yaml up -d --build && (dev/openwrt/wifi.sh || echo \"(no simulated WiFi)\")",
@@ -38,5 +40,6 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.3"
-  }
+  },
+  "license": "MIT"
 }
