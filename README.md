@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.png" alt="netui" width="480">
+</p>
+
 # netui
 
 A friendly web UI for OpenWrt routers, access points and mesh WiFi.
