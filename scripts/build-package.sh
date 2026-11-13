@@ -25,13 +25,17 @@ mkdir -p "$out"
 # The SDK runs as its own user (uid 1000); let it write here whatever our uid is.
 chmod a+rwx "$out"
 
+# The images default to mirror-03, which is slow from GitHub's runners (~10 min
+# vs seconds). setup.sh still checks the GPG-signed sha256sums whatever the host.
 docker run --rm \
   -v "$root:/src:ro" \
   -v "$out:/out" \
   -e NETUI_VERSION="$version" \
+  -e UPSTREAM_URL="${UPSTREAM_URL:-https://downloads.openwrt.org}" \
   "ghcr.io/openwrt/sdk:$sdk" \
   bash -euo pipefail -c '
-    ./setup.sh >/dev/null
+    ./setup.sh 2>&1 | grep -E "^(https?:|sdk-|gpg: (Good|BAD))|OK$|FAILED" || true
+    [ -f rules.mk ] || { echo "SDK setup failed" >&2; exit 1; }
     ln -s /src/openwrt package/netui
     make defconfig >/dev/null
     make package/netui/compile NETUI_DIST=/src/dist NETUI_VERSION="$NETUI_VERSION" V=s >/tmp/build.log 2>&1 \
