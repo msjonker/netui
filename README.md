@@ -6,6 +6,16 @@
 
 A friendly web UI for OpenWrt routers, access points and mesh WiFi.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) **Dashboard**: gateway health, WAN throughput, ports, WiFi, top clients and recent events | ![Topology](docs/screenshots/topology.png) **Topology**: internet, gateway, ports, radios and the clients on each |
+| ![Client details](docs/screenshots/client-connections.png) **Client devices**: live activity, usage and open connections per client | ![Insights](docs/screenshots/insights.png) **Insights**: channel utilisation, nearby networks per channel and a channel suggestion |
+| ![WiFi settings](docs/screenshots/wifi.png) **WiFi**: SSIDs, radios with live utilisation and noise, schedules | ![Firewall policies](docs/screenshots/firewall-policies.png) **Firewall & Security**: zone policies, traffic rules, port forwarding, content filtering |
+
+Captured on a Dynalink DL-WRX36 test router running OpenWrt SNAPSHOT (no WAN connected).
+
 ## Install on a router
 
 Download the package for your OpenWrt release from
