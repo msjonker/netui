@@ -1,0 +1,22 @@
+import { render } from 'preact';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createQueryClient } from './api/queries';
+import { takeHandoff } from './api/apply';
+import { saveSession } from './api/ubus';
+import { App } from './app/App';
+import './index.css';
+
+// Arriving at a new router address mid-apply: adopt the session handed over
+// in the URL fragment (stripped from the address bar by takeHandoff) so this
+// origin can confirm the change.
+const handoff = takeHandoff() ?? undefined;
+if (handoff) saveSession({ ...handoff.session, expiresAt: Date.now() + handoff.session.timeoutMs });
+
+const queryClient = createQueryClient();
+
+render(
+  <QueryClientProvider client={queryClient}>
+    <App handoff={handoff} />
+  </QueryClientProvider>,
+  document.getElementById('app')!,
+);

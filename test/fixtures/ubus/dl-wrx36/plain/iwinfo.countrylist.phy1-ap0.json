@@ -1,0 +1,1486 @@
+{
+  "results": [
+    {
+      "active": false,
+      "code": "00",
+      "country": "World",
+      "iso3166": "00"
+    },
+    {
+      "active": false,
+      "code": "AD",
+      "country": "Andorra",
+      "iso3166": "AD"
+    },
+    {
+      "active": false,
+      "code": "AE",
+      "country": "United Arab Emirates",
+      "iso3166": "AE"
+    },
+    {
+      "active": false,
+      "code": "AF",
+      "country": "Afghanistan",
+      "iso3166": "AF"
+    },
+    {
+      "active": false,
+      "code": "AG",
+      "country": "Antigua and Barbuda",
+      "iso3166": "AG"
+    },
+    {
+      "active": false,
+      "code": "AI",
+      "country": "Anguilla",
+      "iso3166": "AI"
+    },
+    {
+      "active": false,
+      "code": "AL",
+      "country": "Albania",
+      "iso3166": "AL"
+    },
+    {
+      "active": false,
+      "code": "AM",
+      "country": "Armenia",
+      "iso3166": "AM"
+    },
+    {
+      "active": false,
+      "code": "AN",
+      "country": "Netherlands Antilles",
+      "iso3166": "AN"
+    },
+    {
+      "active": false,
+      "code": "AO",
+      "country": "Angola",
+      "iso3166": "AO"
+    },
+    {
+      "active": false,
+      "code": "AQ",
+      "country": "Antarctica",
+      "iso3166": "AQ"
+    },
+    {
+      "active": false,
+      "code": "AR",
+      "country": "Argentina",
+      "iso3166": "AR"
+    },
+    {
+      "active": false,
+      "code": "AS",
+      "country": "American Samoa",
+      "iso3166": "AS"
+    },
+    {
+      "active": false,
+      "code": "AT",
+      "country": "Austria",
+      "iso3166": "AT"
+    },
+    {
+      "active": false,
+      "code": "AU",
+      "country": "Australia",
+      "iso3166": "AU"
+    },
+    {
+      "active": false,
+      "code": "AW",
+      "country": "Aruba",
+      "iso3166": "AW"
+    },
+    {
+      "active": false,
+      "code": "AX",
+      "country": "Aland Islands",
+      "iso3166": "AX"
+    },
+    {
+      "active": false,
+      "code": "AZ",
+      "country": "Azerbaijan",
+      "iso3166": "AZ"
+    },
+    {
+      "active": false,
+      "code": "BA",
+      "country": "Bosnia and Herzegovina",
+      "iso3166": "BA"
+    },
+    {
+      "active": false,
+      "code": "BB",
+      "country": "Barbados",
+      "iso3166": "BB"
+    },
+    {
+      "active": false,
+      "code": "BD",
+      "country": "Bangladesh",
+      "iso3166": "BD"
+    },
+    {
+      "active": false,
+      "code": "BE",
+      "country": "Belgium",
+      "iso3166": "BE"
+    },
+    {
+      "active": false,
+      "code": "BF",
+      "country": "Burkina Faso",
+      "iso3166": "BF"
+    },
+    {
+      "active": false,
+      "code": "BG",
+      "country": "Bulgaria",
+      "iso3166": "BG"
+    },
+    {
+      "active": false,
+      "code": "BH",
+      "country": "Bahrain",
+      "iso3166": "BH"
+    },
+    {
+      "active": false,
+      "code": "BI",
+      "country": "Burundi",
+      "iso3166": "BI"
+    },
+    {
+      "active": false,
+      "code": "BJ",
+      "country": "Benin",
+      "iso3166": "BJ"
+    },
+    {
+      "active": false,
+      "code": "BL",
+      "country": "Saint Barthelemy",
+      "iso3166": "BL"
+    },
+    {
+      "active": false,
+      "code": "BM",
+      "country": "Bermuda",
+      "iso3166": "BM"
+    },
+    {
+      "active": false,
+      "code": "BN",
+      "country": "Brunei Darussalam",
+      "iso3166": "BN"
+    },
+    {
+      "active": false,
+      "code": "BO",
+      "country": "Bolivia",
+      "iso3166": "BO"
+    },
+    {
+      "active": false,
+      "code": "BR",
+      "country": "Brazil",
+      "iso3166": "BR"
+    },
+    {
+      "active": false,
+      "code": "BS",
+      "country": "Bahamas",
+      "iso3166": "BS"
+    },
+    {
+      "active": false,
+      "code": "BT",
+      "country": "Bhutan",
+      "iso3166": "BT"
+    },
+    {
+      "active": false,
+      "code": "BV",
+      "country": "Bouvet Island",
+      "iso3166": "BV"
+    },
+    {
+      "active": false,
+      "code": "BW",
+      "country": "Botswana",
+      "iso3166": "BW"
+    },
+    {
+      "active": false,
+      "code": "BY",
+      "country": "Belarus",
+      "iso3166": "BY"
+    },
+    {
+      "active": false,
+      "code": "BZ",
+      "country": "Belize",
+      "iso3166": "BZ"
+    },
+    {
+      "active": false,
+      "code": "CA",
+      "country": "Canada",
+      "iso3166": "CA"
+    },
+    {
+      "active": false,
+      "code": "CC",
+      "country": "Cocos (Keeling) Islands",
+      "iso3166": "CC"
+    },
+    {
+      "active": false,
+      "code": "CD",
+      "country": "Congo",
+      "iso3166": "CD"
+    },
+    {
+      "active": false,
+      "code": "CF",
+      "country": "Central African Republic",
+      "iso3166": "CF"
+    },
+    {
+      "active": false,
+      "code": "CG",
+      "country": "Congo",
+      "iso3166": "CG"
+    },
+    {
+      "active": false,
+      "code": "CH",
+      "country": "Switzerland",
+      "iso3166": "CH"
+    },
+    {
+      "active": false,
+      "code": "CI",
+      "country": "Cote d'Ivoire",
+      "iso3166": "CI"
+    },
+    {
+      "active": false,
+      "code": "CK",
+      "country": "Cook Islands",
+      "iso3166": "CK"
+    },
+    {
+      "active": false,
+      "code": "CL",
+      "country": "Chile",
+      "iso3166": "CL"
+    },
+    {
+      "active": false,
+      "code": "CM",
+      "country": "Cameroon",
+      "iso3166": "CM"
+    },
+    {
+      "active": false,
+      "code": "CN",
+      "country": "China",
+      "iso3166": "CN"
+    },
+    {
+      "active": false,
+      "code": "CO",
+      "country": "Colombia",
+      "iso3166": "CO"
+    },
+    {
+      "active": false,
+      "code": "CR",
+      "country": "Costa Rica",
+      "iso3166": "CR"
+    },
+    {
+      "active": false,
+      "code": "CU",
+      "country": "Cuba",
+      "iso3166": "CU"
+    },
+    {
+      "active": false,
+      "code": "CV",
+      "country": "Cape Verde",
+      "iso3166": "CV"
+    },
+    {
+      "active": false,
+      "code": "CX",
+      "country": "Christmas Island",
+      "iso3166": "CX"
+    },
+    {
+      "active": false,
+      "code": "CY",
+      "country": "Cyprus",
+      "iso3166": "CY"
+    },
+    {
+      "active": false,
+      "code": "CZ",
+      "country": "Czech Republic",
+      "iso3166": "CZ"
+    },
+    {
+      "active": false,
+      "code": "DE",
+      "country": "Germany",
+      "iso3166": "DE"
+    },
+    {
+      "active": false,
+      "code": "DJ",
+      "country": "Djibouti",
+      "iso3166": "DJ"
+    },
+    {
+      "active": false,
+      "code": "DK",
+      "country": "Denmark",
+      "iso3166": "DK"
+    },
+    {
+      "active": false,
+      "code": "DM",
+      "country": "Dominica",
+      "iso3166": "DM"
+    },
+    {
+      "active": false,
+      "code": "DO",
+      "country": "Dominican Republic",
+      "iso3166": "DO"
+    },
+    {
+      "active": false,
+      "code": "DZ",
+      "country": "Algeria",
+      "iso3166": "DZ"
+    },
+    {
+      "active": false,
+      "code": "EC",
+      "country": "Ecuador",
+      "iso3166": "EC"
+    },
+    {
+      "active": false,
+      "code": "EE",
+      "country": "Estonia",
+      "iso3166": "EE"
+    },
+    {
+      "active": false,
+      "code": "EG",
+      "country": "Egypt",
+      "iso3166": "EG"
+    },
+    {
+      "active": false,
+      "code": "EH",
+      "country": "Western Sahara",
+      "iso3166": "EH"
+    },
+    {
+      "active": false,
+      "code": "ER",
+      "country": "Eritrea",
+      "iso3166": "ER"
+    },
+    {
+      "active": false,
+      "code": "ES",
+      "country": "Spain",
+      "iso3166": "ES"
+    },
+    {
+      "active": false,
+      "code": "ET",
+      "country": "Ethiopia",
+      "iso3166": "ET"
+    },
+    {
+      "active": false,
+      "code": "FI",
+      "country": "Finland",
+      "iso3166": "FI"
+    },
+    {
+      "active": false,
+      "code": "FJ",
+      "country": "Fiji",
+      "iso3166": "FJ"
+    },
+    {
+      "active": false,
+      "code": "FK",
+      "country": "Falkland Islands",
+      "iso3166": "FK"
+    },
+    {
+      "active": false,
+      "code": "FM",
+      "country": "Micronesia",
+      "iso3166": "FM"
+    },
+    {
+      "active": false,
+      "code": "FO",
+      "country": "Faroe Islands",
+      "iso3166": "FO"
+    },
+    {
+      "active": false,
+      "code": "FR",
+      "country": "France",
+      "iso3166": "FR"
+    },
+    {
+      "active": false,
+      "code": "GA",
+      "country": "Gabon",
+      "iso3166": "GA"
+    },
+    {
+      "active": false,
+      "code": "GB",
+      "country": "United Kingdom",
+      "iso3166": "GB"
+    },
+    {
+      "active": false,
+      "code": "GD",
+      "country": "Grenada",
+      "iso3166": "GD"
+    },
+    {
+      "active": false,
+      "code": "GE",
+      "country": "Georgia",
+      "iso3166": "GE"
+    },
+    {
+      "active": false,
+      "code": "GF",
+      "country": "French Guiana",
+      "iso3166": "GF"
+    },
+    {
+      "active": false,
+      "code": "GG",
+      "country": "Guernsey",
+      "iso3166": "GG"
+    },
+    {
+      "active": false,
+      "code": "GH",
+      "country": "Ghana",
+      "iso3166": "GH"
+    },
+    {
+      "active": false,
+      "code": "GI",
+      "country": "Gibraltar",
+      "iso3166": "GI"
+    },
+    {
+      "active": false,
+      "code": "GL",
+      "country": "Greenland",
+      "iso3166": "GL"
+    },
+    {
+      "active": false,
+      "code": "GM",
+      "country": "Gambia",
+      "iso3166": "GM"
+    },
+    {
+      "active": false,
+      "code": "GN",
+      "country": "Guinea",
+      "iso3166": "GN"
+    },
+    {
+      "active": false,
+      "code": "GP",
+      "country": "Guadeloupe",
+      "iso3166": "GP"
+    },
+    {
+      "active": false,
+      "code": "GQ",
+      "country": "Equatorial Guinea",
+      "iso3166": "GQ"
+    },
+    {
+      "active": false,
+      "code": "GR",
+      "country": "Greece",
+      "iso3166": "GR"
+    },
+    {
+      "active": false,
+      "code": "GS",
+      "country": "South Georgia",
+      "iso3166": "GS"
+    },
+    {
+      "active": false,
+      "code": "GT",
+      "country": "Guatemala",
+      "iso3166": "GT"
+    },
+    {
+      "active": false,
+      "code": "GU",
+      "country": "Guam",
+      "iso3166": "GU"
+    },
+    {
+      "active": false,
+      "code": "GW",
+      "country": "Guinea-Bissau",
+      "iso3166": "GW"
+    },
+    {
+      "active": false,
+      "code": "GY",
+      "country": "Guyana",
+      "iso3166": "GY"
+    },
+    {
+      "active": false,
+      "code": "HK",
+      "country": "Hong Kong",
+      "iso3166": "HK"
+    },
+    {
+      "active": false,
+      "code": "HM",
+      "country": "Heard and McDonald Islands",
+      "iso3166": "HM"
+    },
+    {
+      "active": false,
+      "code": "HN",
+      "country": "Honduras",
+      "iso3166": "HN"
+    },
+    {
+      "active": false,
+      "code": "HR",
+      "country": "Croatia",
+      "iso3166": "HR"
+    },
+    {
+      "active": false,
+      "code": "HT",
+      "country": "Haiti",
+      "iso3166": "HT"
+    },
+    {
+      "active": false,
+      "code": "HU",
+      "country": "Hungary",
+      "iso3166": "HU"
+    },
+    {
+      "active": false,
+      "code": "ID",
+      "country": "Indonesia",
+      "iso3166": "ID"
+    },
+    {
+      "active": false,
+      "code": "IE",
+      "country": "Ireland",
+      "iso3166": "IE"
+    },
+    {
+      "active": false,
+      "code": "IL",
+      "country": "Israel",
+      "iso3166": "IL"
+    },
+    {
+      "active": false,
+      "code": "IM",
+      "country": "Isle of Man",
+      "iso3166": "IM"
+    },
+    {
+      "active": false,
+      "code": "IN",
+      "country": "India",
+      "iso3166": "IN"
+    },
+    {
+      "active": false,
+      "code": "IO",
+      "country": "Chagos Islands",
+      "iso3166": "IO"
+    },
+    {
+      "active": false,
+      "code": "IQ",
+      "country": "Iraq",
+      "iso3166": "IQ"
+    },
+    {
+      "active": false,
+      "code": "IR",
+      "country": "Iran",
+      "iso3166": "IR"
+    },
+    {
+      "active": false,
+      "code": "IS",
+      "country": "Iceland",
+      "iso3166": "IS"
+    },
+    {
+      "active": false,
+      "code": "IT",
+      "country": "Italy",
+      "iso3166": "IT"
+    },
+    {
+      "active": false,
+      "code": "JE",
+      "country": "Jersey",
+      "iso3166": "JE"
+    },
+    {
+      "active": false,
+      "code": "JM",
+      "country": "Jamaica",
+      "iso3166": "JM"
+    },
+    {
+      "active": false,
+      "code": "JO",
+      "country": "Jordan",
+      "iso3166": "JO"
+    },
+    {
+      "active": false,
+      "code": "JP",
+      "country": "Japan",
+      "iso3166": "JP"
+    },
+    {
+      "active": false,
+      "code": "KE",
+      "country": "Kenya",
+      "iso3166": "KE"
+    },
+    {
+      "active": false,
+      "code": "KG",
+      "country": "Kyrgyzstan",
+      "iso3166": "KG"
+    },
+    {
+      "active": false,
+      "code": "KH",
+      "country": "Cambodia",
+      "iso3166": "KH"
+    },
+    {
+      "active": false,
+      "code": "KI",
+      "country": "Kiribati",
+      "iso3166": "KI"
+    },
+    {
+      "active": false,
+      "code": "KM",
+      "country": "Comoros",
+      "iso3166": "KM"
+    },
+    {
+      "active": false,
+      "code": "KN",
+      "country": "Saint Kitts and Nevis",
+      "iso3166": "KN"
+    },
+    {
+      "active": false,
+      "code": "KP",
+      "country": "North Korea",
+      "iso3166": "KP"
+    },
+    {
+      "active": false,
+      "code": "KR",
+      "country": "South Korea",
+      "iso3166": "KR"
+    },
+    {
+      "active": false,
+      "code": "KW",
+      "country": "Kuwait",
+      "iso3166": "KW"
+    },
+    {
+      "active": false,
+      "code": "KY",
+      "country": "Cayman Islands",
+      "iso3166": "KY"
+    },
+    {
+      "active": false,
+      "code": "KZ",
+      "country": "Kazakhstan",
+      "iso3166": "KZ"
+    },
+    {
+      "active": false,
+      "code": "LA",
+      "country": "Laos",
+      "iso3166": "LA"
+    },
+    {
+      "active": false,
+      "code": "LB",
+      "country": "Lebanon",
+      "iso3166": "LB"
+    },
+    {
+      "active": false,
+      "code": "LC",
+      "country": "Saint Lucia",
+      "iso3166": "LC"
+    },
+    {
+      "active": false,
+      "code": "LI",
+      "country": "Liechtenstein",
+      "iso3166": "LI"
+    },
+    {
+      "active": false,
+      "code": "LK",
+      "country": "Sri Lanka",
+      "iso3166": "LK"
+    },
+    {
+      "active": false,
+      "code": "LR",
+      "country": "Liberia",
+      "iso3166": "LR"
+    },
+    {
+      "active": false,
+      "code": "LS",
+      "country": "Lesotho",
+      "iso3166": "LS"
+    },
+    {
+      "active": false,
+      "code": "LT",
+      "country": "Lithuania",
+      "iso3166": "LT"
+    },
+    {
+      "active": false,
+      "code": "LU",
+      "country": "Luxembourg",
+      "iso3166": "LU"
+    },
+    {
+      "active": false,
+      "code": "LV",
+      "country": "Latvia",
+      "iso3166": "LV"
+    },
+    {
+      "active": false,
+      "code": "LY",
+      "country": "Libyan Arab Jamahiriya",
+      "iso3166": "LY"
+    },
+    {
+      "active": false,
+      "code": "MA",
+      "country": "Morocco",
+      "iso3166": "MA"
+    },
+    {
+      "active": false,
+      "code": "MC",
+      "country": "Monaco",
+      "iso3166": "MC"
+    },
+    {
+      "active": false,
+      "code": "MD",
+      "country": "Moldova",
+      "iso3166": "MD"
+    },
+    {
+      "active": false,
+      "code": "ME",
+      "country": "Montenegro",
+      "iso3166": "ME"
+    },
+    {
+      "active": false,
+      "code": "MF",
+      "country": "Saint Martin (French part)",
+      "iso3166": "MF"
+    },
+    {
+      "active": false,
+      "code": "MG",
+      "country": "Madagascar",
+      "iso3166": "MG"
+    },
+    {
+      "active": false,
+      "code": "MH",
+      "country": "Marshall Islands",
+      "iso3166": "MH"
+    },
+    {
+      "active": false,
+      "code": "MK",
+      "country": "Macedonia",
+      "iso3166": "MK"
+    },
+    {
+      "active": false,
+      "code": "ML",
+      "country": "Mali",
+      "iso3166": "ML"
+    },
+    {
+      "active": false,
+      "code": "MM",
+      "country": "Myanmar",
+      "iso3166": "MM"
+    },
+    {
+      "active": false,
+      "code": "MN",
+      "country": "Mongolia",
+      "iso3166": "MN"
+    },
+    {
+      "active": false,
+      "code": "MO",
+      "country": "Macao",
+      "iso3166": "MO"
+    },
+    {
+      "active": false,
+      "code": "MP",
+      "country": "Northern Mariana Islands",
+      "iso3166": "MP"
+    },
+    {
+      "active": false,
+      "code": "MQ",
+      "country": "Martinique",
+      "iso3166": "MQ"
+    },
+    {
+      "active": false,
+      "code": "MR",
+      "country": "Mauritania",
+      "iso3166": "MR"
+    },
+    {
+      "active": false,
+      "code": "MS",
+      "country": "Montserrat",
+      "iso3166": "MS"
+    },
+    {
+      "active": false,
+      "code": "MT",
+      "country": "Malta",
+      "iso3166": "MT"
+    },
+    {
+      "active": false,
+      "code": "MU",
+      "country": "Mauritius",
+      "iso3166": "MU"
+    },
+    {
+      "active": false,
+      "code": "MV",
+      "country": "Maldives",
+      "iso3166": "MV"
+    },
+    {
+      "active": false,
+      "code": "MW",
+      "country": "Malawi",
+      "iso3166": "MW"
+    },
+    {
+      "active": false,
+      "code": "MX",
+      "country": "Mexico",
+      "iso3166": "MX"
+    },
+    {
+      "active": false,
+      "code": "MY",
+      "country": "Malaysia",
+      "iso3166": "MY"
+    },
+    {
+      "active": false,
+      "code": "MZ",
+      "country": "Mozambique",
+      "iso3166": "MZ"
+    },
+    {
+      "active": false,
+      "code": "NA",
+      "country": "Namibia",
+      "iso3166": "NA"
+    },
+    {
+      "active": false,
+      "code": "NC",
+      "country": "New Caledonia",
+      "iso3166": "NC"
+    },
+    {
+      "active": false,
+      "code": "NE",
+      "country": "Niger",
+      "iso3166": "NE"
+    },
+    {
+      "active": false,
+      "code": "NF",
+      "country": "Norfolk Island",
+      "iso3166": "NF"
+    },
+    {
+      "active": false,
+      "code": "NG",
+      "country": "Nigeria",
+      "iso3166": "NG"
+    },
+    {
+      "active": false,
+      "code": "NI",
+      "country": "Nicaragua",
+      "iso3166": "NI"
+    },
+    {
+      "active": false,
+      "code": "NL",
+      "country": "Netherlands",
+      "iso3166": "NL"
+    },
+    {
+      "active": false,
+      "code": "NO",
+      "country": "Norway",
+      "iso3166": "NO"
+    },
+    {
+      "active": false,
+      "code": "NP",
+      "country": "Nepal",
+      "iso3166": "NP"
+    },
+    {
+      "active": false,
+      "code": "NR",
+      "country": "Nauru",
+      "iso3166": "NR"
+    },
+    {
+      "active": false,
+      "code": "NU",
+      "country": "Niue",
+      "iso3166": "NU"
+    },
+    {
+      "active": false,
+      "code": "NZ",
+      "country": "New Zealand",
+      "iso3166": "NZ"
+    },
+    {
+      "active": false,
+      "code": "OM",
+      "country": "Oman",
+      "iso3166": "OM"
+    },
+    {
+      "active": false,
+      "code": "PA",
+      "country": "Panama",
+      "iso3166": "PA"
+    },
+    {
+      "active": false,
+      "code": "PE",
+      "country": "Peru",
+      "iso3166": "PE"
+    },
+    {
+      "active": false,
+      "code": "PF",
+      "country": "French Polynesia",
+      "iso3166": "PF"
+    },
+    {
+      "active": false,
+      "code": "PG",
+      "country": "Papua New Guinea",
+      "iso3166": "PG"
+    },
+    {
+      "active": false,
+      "code": "PH",
+      "country": "Philippines",
+      "iso3166": "PH"
+    },
+    {
+      "active": false,
+      "code": "PK",
+      "country": "Pakistan",
+      "iso3166": "PK"
+    },
+    {
+      "active": false,
+      "code": "PL",
+      "country": "Poland",
+      "iso3166": "PL"
+    },
+    {
+      "active": false,
+      "code": "PM",
+      "country": "Saint Pierre and Miquelon",
+      "iso3166": "PM"
+    },
+    {
+      "active": false,
+      "code": "PN",
+      "country": "Pitcairn",
+      "iso3166": "PN"
+    },
+    {
+      "active": false,
+      "code": "PR",
+      "country": "Puerto Rico",
+      "iso3166": "PR"
+    },
+    {
+      "active": false,
+      "code": "PS",
+      "country": "Palestinian Territory",
+      "iso3166": "PS"
+    },
+    {
+      "active": false,
+      "code": "PT",
+      "country": "Portugal",
+      "iso3166": "PT"
+    },
+    {
+      "active": false,
+      "code": "PW",
+      "country": "Palau",
+      "iso3166": "PW"
+    },
+    {
+      "active": false,
+      "code": "PY",
+      "country": "Paraguay",
+      "iso3166": "PY"
+    },
+    {
+      "active": false,
+      "code": "QA",
+      "country": "Qatar",
+      "iso3166": "QA"
+    },
+    {
+      "active": false,
+      "code": "RE",
+      "country": "Reunion",
+      "iso3166": "RE"
+    },
+    {
+      "active": false,
+      "code": "RO",
+      "country": "Romania",
+      "iso3166": "RO"
+    },
+    {
+      "active": false,
+      "code": "RS",
+      "country": "Serbia",
+      "iso3166": "RS"
+    },
+    {
+      "active": false,
+      "code": "RU",
+      "country": "Russian Federation",
+      "iso3166": "RU"
+    },
+    {
+      "active": false,
+      "code": "RW",
+      "country": "Rwanda",
+      "iso3166": "RW"
+    },
+    {
+      "active": false,
+      "code": "SA",
+      "country": "Saudi Arabia",
+      "iso3166": "SA"
+    },
+    {
+      "active": false,
+      "code": "SB",
+      "country": "Solomon Islands",
+      "iso3166": "SB"
+    },
+    {
+      "active": false,
+      "code": "SC",
+      "country": "Seychelles",
+      "iso3166": "SC"
+    },
+    {
+      "active": false,
+      "code": "SD",
+      "country": "Sudan",
+      "iso3166": "SD"
+    },
+    {
+      "active": false,
+      "code": "SE",
+      "country": "Sweden",
+      "iso3166": "SE"
+    },
+    {
+      "active": false,
+      "code": "SG",
+      "country": "Singapore",
+      "iso3166": "SG"
+    },
+    {
+      "active": false,
+      "code": "SH",
+      "country": "St. Helena and Dependencies",
+      "iso3166": "SH"
+    },
+    {
+      "active": false,
+      "code": "SI",
+      "country": "Slovenia",
+      "iso3166": "SI"
+    },
+    {
+      "active": false,
+      "code": "SJ",
+      "country": "Svalbard and Jan Mayen",
+      "iso3166": "SJ"
+    },
+    {
+      "active": false,
+      "code": "SK",
+      "country": "Slovakia",
+      "iso3166": "SK"
+    },
+    {
+      "active": false,
+      "code": "SL",
+      "country": "Sierra Leone",
+      "iso3166": "SL"
+    },
+    {
+      "active": false,
+      "code": "SM",
+      "country": "San Marino",
+      "iso3166": "SM"
+    },
+    {
+      "active": false,
+      "code": "SN",
+      "country": "Senegal",
+      "iso3166": "SN"
+    },
+    {
+      "active": false,
+      "code": "SO",
+      "country": "Somalia",
+      "iso3166": "SO"
+    },
+    {
+      "active": false,
+      "code": "SR",
+      "country": "Suriname",
+      "iso3166": "SR"
+    },
+    {
+      "active": false,
+      "code": "ST",
+      "country": "Sao Tome and Principe",
+      "iso3166": "ST"
+    },
+    {
+      "active": false,
+      "code": "SV",
+      "country": "El Salvador",
+      "iso3166": "SV"
+    },
+    {
+      "active": false,
+      "code": "SY",
+      "country": "Syrian Arab Republic",
+      "iso3166": "SY"
+    },
+    {
+      "active": false,
+      "code": "SZ",
+      "country": "Swaziland",
+      "iso3166": "SZ"
+    },
+    {
+      "active": false,
+      "code": "TC",
+      "country": "Turks and Caicos Islands",
+      "iso3166": "TC"
+    },
+    {
+      "active": false,
+      "code": "TD",
+      "country": "Chad",
+      "iso3166": "TD"
+    },
+    {
+      "active": false,
+      "code": "TF",
+      "country": "French Southern Territories",
+      "iso3166": "TF"
+    },
+    {
+      "active": false,
+      "code": "TG",
+      "country": "Togo",
+      "iso3166": "TG"
+    },
+    {
+      "active": false,
+      "code": "TH",
+      "country": "Thailand",
+      "iso3166": "TH"
+    },
+    {
+      "active": false,
+      "code": "TJ",
+      "country": "Tajikistan",
+      "iso3166": "TJ"
+    },
+    {
+      "active": false,
+      "code": "TK",
+      "country": "Tokelau",
+      "iso3166": "TK"
+    },
+    {
+      "active": false,
+      "code": "TL",
+      "country": "Timor-Leste",
+      "iso3166": "TL"
+    },
+    {
+      "active": false,
+      "code": "TM",
+      "country": "Turkmenistan",
+      "iso3166": "TM"
+    },
+    {
+      "active": false,
+      "code": "TN",
+      "country": "Tunisia",
+      "iso3166": "TN"
+    },
+    {
+      "active": false,
+      "code": "TO",
+      "country": "Tonga",
+      "iso3166": "TO"
+    },
+    {
+      "active": false,
+      "code": "TR",
+      "country": "Turkey",
+      "iso3166": "TR"
+    },
+    {
+      "active": false,
+      "code": "TT",
+      "country": "Trinidad and Tobago",
+      "iso3166": "TT"
+    },
+    {
+      "active": false,
+      "code": "TV",
+      "country": "Tuvalu",
+      "iso3166": "TV"
+    },
+    {
+      "active": false,
+      "code": "TW",
+      "country": "Taiwan",
+      "iso3166": "TW"
+    },
+    {
+      "active": false,
+      "code": "TZ",
+      "country": "Tanzania",
+      "iso3166": "TZ"
+    },
+    {
+      "active": false,
+      "code": "UA",
+      "country": "Ukraine",
+      "iso3166": "UA"
+    },
+    {
+      "active": false,
+      "code": "UG",
+      "country": "Uganda",
+      "iso3166": "UG"
+    },
+    {
+      "active": false,
+      "code": "UM",
+      "country": "U.S. Minor Outlying Islands",
+      "iso3166": "UM"
+    },
+    {
+      "active": true,
+      "code": "US",
+      "country": "United States",
+      "iso3166": "US"
+    },
+    {
+      "active": false,
+      "code": "UY",
+      "country": "Uruguay",
+      "iso3166": "UY"
+    },
+    {
+      "active": false,
+      "code": "UZ",
+      "country": "Uzbekistan",
+      "iso3166": "UZ"
+    },
+    {
+      "active": false,
+      "code": "VA",
+      "country": "Vatican City State",
+      "iso3166": "VA"
+    },
+    {
+      "active": false,
+      "code": "VC",
+      "country": "St. Vincent and Grenadines",
+      "iso3166": "VC"
+    },
+    {
+      "active": false,
+      "code": "VE",
+      "country": "Venezuela",
+      "iso3166": "VE"
+    },
+    {
+      "active": false,
+      "code": "VG",
+      "country": "Virgin Islands, British",
+      "iso3166": "VG"
+    },
+    {
+      "active": false,
+      "code": "VI",
+      "country": "Virgin Islands, U.S.",
+      "iso3166": "VI"
+    },
+    {
+      "active": false,
+      "code": "VN",
+      "country": "Viet Nam",
+      "iso3166": "VN"
+    },
+    {
+      "active": false,
+      "code": "VU",
+      "country": "Vanuatu",
+      "iso3166": "VU"
+    },
+    {
+      "active": false,
+      "code": "WF",
+      "country": "Wallis and Futuna",
+      "iso3166": "WF"
+    },
+    {
+      "active": false,
+      "code": "WS",
+      "country": "Samoa",
+      "iso3166": "WS"
+    },
+    {
+      "active": false,
+      "code": "YE",
+      "country": "Yemen",
+      "iso3166": "YE"
+    },
+    {
+      "active": false,
+      "code": "YT",
+      "country": "Mayotte",
+      "iso3166": "YT"
+    },
+    {
+      "active": false,
+      "code": "ZA",
+      "country": "South Africa",
+      "iso3166": "ZA"
+    },
+    {
+      "active": false,
+      "code": "ZM",
+      "country": "Zambia",
+      "iso3166": "ZM"
+    },
+    {
+      "active": false,
+      "code": "ZW",
+      "country": "Zimbabwe",
+      "iso3166": "ZW"
+    }
+  ]
+}

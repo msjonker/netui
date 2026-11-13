@@ -1,0 +1,6 @@
+#!/bin/sh
+# Dev container only: Docker denies the namespace clone ujail needs, and procd
+# has no unjailed fallback. Drop the jail options and run the command after "--".
+while [ $# -gt 0 ] && [ "$1" != "--" ]; do shift; done
+[ "$1" = "--" ] && shift
+exec "$@"

@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+/*
+ * Palette. Semantic tokens switch with the OS theme; use
+ * the utilities (bg-surface, text-muted, border-line, bg-accent, ...) rather
+ * than raw colors so both themes stay consistent.
+ */
+:root {
+  --bg: #f4f5f6;
+  --surface: #ffffff;
+  --subtle: #f6f6f8;
+  --hover: #f0f1f3;
+  --line: #e3e5e8;
+  --line-strong: #d0d3d8;
+  --fg: #212327;
+  --muted: #808893;
+  --faint: #b6bbc2;
+  --accent: #006fff;
+  --accent-hover: #0059cc;
+  --accent-soft: #e5f0ff;
+  --ok: #38cc65;
+  --ok-soft: #e6f8ec;
+  --warn: #ff8f1f;
+  --warn-soft: #fff3e5;
+  --bad: #f03a3e;
+  --bad-soft: #feebec;
+  --violet: #8f55ee;
+  --rail: #ffffff;
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131416;
+    --surface: #1d1e21;
+    --subtle: #222327;
+    --hover: #26282c;
+    --line: #2e3034;
+    --line-strong: #3a3d42;
+    --fg: #f4f5f6;
+    --muted: #a1a6ae;
+    --faint: #5d626a;
+    --accent: #4797ff;
+    --accent-hover: #6aabff;
+    --accent-soft: #15253d;
+    --ok: #4ad677;
+    --ok-soft: #15301f;
+    --warn: #ffa046;
+    --warn-soft: #3a2812;
+    --bad: #ff5a5e;
+    --bad-soft: #3b1b1c;
+    --violet: #a67bff;
+    --rail: #1a1b1e;
+    --shadow: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-violet: var(--violet);
+  --color-rail: var(--rail);
+  --shadow-pop: var(--shadow);
+  --font-sans: "Lato", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+  body {
+    @apply bg-bg font-sans text-[13px] text-fg antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.35);
+  }
+}
+
+@layer components {
+  .input {
+    @apply h-8 w-full rounded-md border border-line bg-surface px-2.5 text-[13px] text-fg outline-none transition-colors placeholder:text-faint hover:border-line-strong focus:border-accent disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted;
+  }
+  .input[aria-invalid="true"] {
+    @apply border-bad;
+  }
+  select.input {
+    @apply appearance-none bg-no-repeat pr-7;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23808893' stroke-width='1.5'%3E%3Cpath d='m1 1 4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.6rem center;
+  }
+  .table {
+    @apply w-full border-collapse text-left;
+  }
+  .table th {
+    @apply sticky top-0 z-[1] h-9 border-b border-line bg-surface px-3 text-xs font-normal whitespace-nowrap text-muted;
+  }
+  .table td {
+    @apply h-10 border-b border-line px-3 whitespace-nowrap;
+  }
+  .table tbody tr {
+    @apply transition-colors;
+  }
+  .table tbody tr[data-clickable] {
+    @apply cursor-pointer hover:bg-hover;
+  }
+  .table tbody tr[aria-selected="true"] {
+    @apply bg-accent-soft;
+  }
+}
+
+/* uPlot */
+.u-legend {
+  display: none;
+}
+.uplot,
+.uplot * {
+  font-family: inherit !important;
+}
+.u-axis {
+  color: var(--muted);
+}

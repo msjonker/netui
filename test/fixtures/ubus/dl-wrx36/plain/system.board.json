@@ -1,0 +1,17 @@
+{
+  "board_name": "dynalink,dl-wrx36",
+  "hostname": "OpenWrt",
+  "kernel": "6.12.51",
+  "model": "Dynalink DL-WRX36",
+  "release": {
+    "builddate": "1760312302",
+    "description": "OpenWrt SNAPSHOT r0-957029c3",
+    "distribution": "OpenWrt",
+    "firmware_url": "https://downloads.openwrt.org/",
+    "revision": "r0-957029c3",
+    "target": "qualcommax/ipq807x",
+    "version": "SNAPSHOT"
+  },
+  "rootfs_type": "squashfs",
+  "system": "ARMv8 Processor rev 4"
+}

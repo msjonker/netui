@@ -1,0 +1,16 @@
+{
+  "model": {
+    "id": "qemu-standard-pc-q35-ich9-2009",
+    "name": "QEMU Standard PC (Q35 + ICH9, 2009)"
+  },
+  "network": {
+    "lan": {
+      "device": "eth0",
+      "protocol": "static"
+    },
+    "wan": {
+      "device": "eth1",
+      "protocol": "dhcp"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "dhcp6_leases": [],
+  "dhcp_leases": [
+    {
+      "duid": "0004c7d5039207364ba2adeff02af97b69b6",
+      "expires": 3581,
+      "hostname": "vmclient-iot",
+      "iaid": "9e0bda75",
+      "ipaddr": "10.232.20.107",
+      "macaddr": "52:54:00:23:02:00"
+    },
+    {
+      "duid": "0004c7d5039207364ba2adeff02af97b69b6",
+      "expires": 43110,
+      "hostname": "vmclient",
+      "iaid": "a1a5b3d2",
+      "ipaddr": "10.232.1.107",
+      "macaddr": "52:54:00:23:02:00"
+    }
+  ]
+}

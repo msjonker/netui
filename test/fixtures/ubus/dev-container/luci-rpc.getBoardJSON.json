@@ -1,0 +1,16 @@
+{
+  "model": {
+    "id": "acer-predator-phn16-73",
+    "name": "Acer Predator PHN16-73"
+  },
+  "network": {
+    "lan": {
+      "device": "eth0",
+      "protocol": "static"
+    },
+    "wan": {
+      "device": "eth1",
+      "protocol": "dhcp"
+    }
+  }
+}

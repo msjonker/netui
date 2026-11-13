@@ -1,0 +1,36 @@
+{
+  "values": {
+    "Businesshours": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "Businesshours",
+      ".type": "entry",
+      "daysofweek": "Monday Tuesday Wednesday Thursday Friday",
+      "enabled": "0",
+      "forcewifidown": "0",
+      "starttime": "06:00",
+      "stoptime": "22:00"
+    },
+    "Weekend": {
+      ".anonymous": false,
+      ".index": 2,
+      ".name": "Weekend",
+      ".type": "entry",
+      "daysofweek": "Saturday Sunday",
+      "enabled": "0",
+      "forcewifidown": "1",
+      "starttime": "00:00",
+      "stoptime": "00:00"
+    },
+    "cfg013fd6": {
+      ".anonymous": true,
+      ".index": 0,
+      ".name": "cfg013fd6",
+      ".type": "global",
+      "enabled": "0",
+      "logging": "0",
+      "modules_retries": "10",
+      "recheck_interval": "10"
+    }
+  }
+}

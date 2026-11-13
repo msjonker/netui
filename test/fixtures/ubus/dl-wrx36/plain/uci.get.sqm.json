@@ -1,0 +1,23 @@
+{
+  "values": {
+    "eth1": {
+      ".anonymous": false,
+      ".index": 0,
+      ".name": "eth1",
+      ".type": "queue",
+      "download": "85000",
+      "egress_ecn": "ECN",
+      "enabled": "0",
+      "etarget": "auto",
+      "ingress_ecn": "ECN",
+      "interface": "eth1",
+      "itarget": "auto",
+      "linklayer": "none",
+      "qdisc": "cake",
+      "qdisc_advanced": "0",
+      "qdisc_really_really_advanced": "0",
+      "script": "piece_of_cake.qos",
+      "upload": "10000"
+    }
+  }
+}

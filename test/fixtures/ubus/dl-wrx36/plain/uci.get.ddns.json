@@ -1,0 +1,42 @@
+{
+  "values": {
+    "global": {
+      ".anonymous": false,
+      ".index": 0,
+      ".name": "global",
+      ".type": "ddns",
+      "ddns_dateformat": "%F %R",
+      "ddns_loglines": "250",
+      "upd_privateip": "0"
+    },
+    "myddns_ipv4": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "myddns_ipv4",
+      ".type": "service",
+      "domain": "yourhost.example.com",
+      "interface": "wan",
+      "ip_network": "wan",
+      "ip_source": "network",
+      "lookup_host": "yourhost.example.com",
+      "password": "REDACTED",
+      "service_name": "dyndns.org",
+      "username": "your_username"
+    },
+    "myddns_ipv6": {
+      ".anonymous": false,
+      ".index": 2,
+      ".name": "myddns_ipv6",
+      ".type": "service",
+      "domain": "yourhost.example.com",
+      "interface": "wan6",
+      "ip_network": "wan6",
+      "ip_source": "network",
+      "lookup_host": "yourhost.example.com",
+      "password": "REDACTED",
+      "update_url": "http://[USERNAME]:[PASSWORD]@your.provider.net/nic/update?hostname=[DOMAIN]&myip=[IP]",
+      "use_ipv6": "1",
+      "username": "your_username"
+    }
+  }
+}

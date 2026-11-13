@@ -1,0 +1,16 @@
+{
+  "board_name": "acer-predator-phn16-73",
+  "hostname": "netui-dev",
+  "kernel": "7.2.6-070206-generic",
+  "model": "Acer Predator PHN16-73",
+  "release": {
+    "builddate": "1782737960",
+    "description": "OpenWrt 25.12.5 r33051-f5dae5ece4",
+    "distribution": "OpenWrt",
+    "firmware_url": "https://downloads.openwrt.org/",
+    "revision": "r33051-f5dae5ece4",
+    "target": "x86/64",
+    "version": "25.12.5"
+  },
+  "system": "Intel(R) Core(TM) Ultra 9 275HX"
+}

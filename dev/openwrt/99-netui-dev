@@ -1,0 +1,26 @@
+#!/bin/sh
+# First boot of the dev container only. Aligns OpenWrt's static addressing with
+# the addresses Docker assigned (see compose.yaml) and creates the netui login.
+
+uci -q batch <<UCI
+set system.@system[0].hostname='netui-dev'
+
+delete network.lan.ipaddr
+add_list network.lan.ipaddr='10.231.1.2/24'
+
+set network.wan=interface
+set network.wan.device='eth1'
+set network.wan.proto='static'
+add_list network.wan.ipaddr='10.231.0.2/24'
+set network.wan.gateway='10.231.0.1'
+add_list network.wan.dns='1.1.1.1'
+add_list network.wan.dns='9.9.9.9'
+
+set rpcd.netui=login
+set rpcd.netui.username='netui'
+set rpcd.netui.password='$(uhttpd -m netui)'
+add_list rpcd.netui.read='netui'
+add_list rpcd.netui.write='netui'
+UCI
+uci commit
+exit 0

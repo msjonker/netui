@@ -1,0 +1,30 @@
+{
+  "values": {
+    "cfg01e48a": {
+      ".anonymous": true,
+      ".index": 0,
+      ".name": "cfg01e48a",
+      ".type": "system",
+      "hostname": "netui-vm",
+      "log_size": "128",
+      "timezone": "GMT0",
+      "ttylogin": "0",
+      "urandom_seed": "0",
+      "zonename": "UTC"
+    },
+    "ntp": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "ntp",
+      ".type": "timeserver",
+      "enable_server": "0",
+      "enabled": "1",
+      "server": [
+        "0.openwrt.pool.ntp.org",
+        "1.openwrt.pool.ntp.org",
+        "2.openwrt.pool.ntp.org",
+        "3.openwrt.pool.ntp.org"
+      ]
+    }
+  }
+}

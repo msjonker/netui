@@ -1,0 +1,14 @@
+log.read.synthetic.json is HAND-WRITTEN, not recorded.
+
+It continues plain/log.read.json (ids 1039+) with syslog lines the DL-WRX36
+test router had not produced when the fixture was recorded: WAN up/down (WAN
+unplugged), hostapd station events (no WiFi client yet), DHCPACK/RELEASE for a
+phone, failed ssh/LuCI logins, password/pubkey ssh logins.
+
+Message formats come from the router's own binaries (strings /usr/sbin/hostapd,
+/usr/sbin/dropbear; /usr/share/ucode/luci/dispatcher.uc) and netifd/dnsmasq
+lines already seen in the real log. Priorities are facility*8+severity as logd
+reports them (daemon.notice 29, daemon.info 30, authpriv.warn 84, ...).
+MACs 3a:7c:12:9e:44:01 and 9e:12:aa:30:5b:77 are invented.
+
+Replace with a real recording once the router has seen these events.

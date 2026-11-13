@@ -1,0 +1,53 @@
+{
+  "values": {
+    "cfg01e48a": {
+      ".anonymous": true,
+      ".index": 0,
+      ".name": "cfg01e48a",
+      ".type": "system",
+      "cronloglevel": "7",
+      "hostname": "OpenWrt",
+      "log_size": "128",
+      "timezone": "GMT0",
+      "ttylogin": "0",
+      "urandom_seed": "0",
+      "zonename": "UTC"
+    },
+    "led_wan_port_link_green": {
+      ".anonymous": false,
+      ".index": 2,
+      ".name": "led_wan_port_link_green",
+      ".type": "led",
+      "dev": "wan",
+      "mode": "link_2500",
+      "name": "WAN-PORT-LINK-GREEN",
+      "sysfs": "90000.mdio-1:1c:green:wan",
+      "trigger": "netdev"
+    },
+    "led_wan_port_link_yellow": {
+      ".anonymous": false,
+      ".index": 3,
+      ".name": "led_wan_port_link_yellow",
+      ".type": "led",
+      "dev": "wan",
+      "mode": "tx rx link_10 link_100 link_1000",
+      "name": "WAN-PORT-LINK-YELLOW",
+      "sysfs": "90000.mdio-1:1c:yellow:wan",
+      "trigger": "netdev"
+    },
+    "ntp": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "ntp",
+      ".type": "timeserver",
+      "enable_server": "0",
+      "enabled": "1",
+      "server": [
+        "0.openwrt.pool.ntp.org",
+        "1.openwrt.pool.ntp.org",
+        "2.openwrt.pool.ntp.org",
+        "3.openwrt.pool.ntp.org"
+      ]
+    }
+  }
+}

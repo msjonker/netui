@@ -1,0 +1,299 @@
+{
+  "_note": "Observed on OpenWrt 25.12.5 dev container. Values are the JSON-RPC result tuple [status, data?] or {error}. Recorded by hand.",
+  "set_denied_package": [
+    6
+  ],
+  "set": [
+    0
+  ],
+  "add": [
+    0,
+    {
+      "section": "cfg0e3837"
+    }
+  ],
+  "delete_option": [
+    0
+  ],
+  "delete_section": [
+    0
+  ],
+  "changes_all": [
+    0,
+    {
+      "changes": {
+        "dhcp": [
+          [
+            "remove",
+            "lan",
+            "ra_slaac"
+          ]
+        ],
+        "firewall": [
+          [
+            "add",
+            "cfg0e3837",
+            "redirect"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "name",
+            "probe"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "src",
+            "wan"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "src_dport",
+            "8080"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "dest",
+            "lan"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "dest_ip",
+            "10.231.1.128"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "dest_port",
+            "80"
+          ],
+          [
+            "list-add",
+            "cfg0e3837",
+            "proto",
+            "tcp"
+          ],
+          [
+            "set",
+            "cfg0e3837",
+            "target",
+            "DNAT"
+          ],
+          [
+            "remove",
+            "cfg0c92bd"
+          ]
+        ],
+        "network": [
+          [
+            "remove",
+            "lan",
+            "ipaddr"
+          ],
+          [
+            "list-add",
+            "lan",
+            "ipaddr",
+            "10.231.1.2/24"
+          ],
+          [
+            "list-add",
+            "lan",
+            "ipaddr",
+            "10.231.1.3/24"
+          ]
+        ]
+      }
+    }
+  ],
+  "changes_one_config": [
+    0,
+    {
+      "changes": [
+        [
+          "remove",
+          "lan",
+          "ra_slaac"
+        ]
+      ]
+    }
+  ],
+  "changes_other_session": [
+    0,
+    {
+      "changes": {}
+    }
+  ],
+  "confirm_nothing_pending": [
+    5
+  ],
+  "rollback_nothing_pending": [
+    5
+  ],
+  "revert": [
+    0
+  ],
+  "revert_unchanged_config": [
+    4
+  ],
+  "changes_after_revert": [
+    0,
+    {
+      "changes": {
+        "dhcp": [
+          [
+            "remove",
+            "lan",
+            "ra_slaac"
+          ]
+        ],
+        "network": [
+          [
+            "remove",
+            "lan",
+            "ipaddr"
+          ],
+          [
+            "list-add",
+            "lan",
+            "ipaddr",
+            "10.231.1.2/24"
+          ],
+          [
+            "list-add",
+            "lan",
+            "ipaddr",
+            "10.231.1.3/24"
+          ]
+        ]
+      }
+    }
+  ],
+  "apply_rollback": [
+    0
+  ],
+  "apply_while_pending": [
+    6
+  ],
+  "confirm_other_session": [
+    6
+  ],
+  "changes_while_pending": [
+    0,
+    {
+      "changes": {}
+    }
+  ],
+  "explicit_rollback": [
+    0
+  ],
+  "changes_after_rollback": [
+    0,
+    {
+      "changes": {
+        "dhcp": [
+          [
+            "remove",
+            "lan",
+            "ra_slaac"
+          ]
+        ],
+        "network": [
+          [
+            "remove",
+            "lan",
+            "ipaddr"
+          ],
+          [
+            "list-add",
+            "lan",
+            "ipaddr",
+            "10.231.1.2/24"
+          ],
+          [
+            "list-add",
+            "lan",
+            "ipaddr",
+            "10.231.1.3/24"
+          ]
+        ]
+      }
+    }
+  ],
+  "get_while_clean": [
+    0,
+    {
+      "value": "150"
+    }
+  ],
+  "invalid_session": {
+    "error": {
+      "code": -32002,
+      "message": "Access denied"
+    }
+  },
+  "add_with_values": [
+    0,
+    {
+      "section": "cfg06fe63"
+    }
+  ],
+  "delete_options_array": [
+    0
+  ],
+  "set_empty_string_removes_option": [
+    0
+  ],
+  "delete_missing_option": [
+    4
+  ],
+  "changes_after_add_with_values_and_deletes": [
+    0,
+    {
+      "changes": [
+        [
+          "add",
+          "cfg06fe63",
+          "host"
+        ],
+        [
+          "set",
+          "cfg06fe63",
+          "name",
+          "t1"
+        ],
+        [
+          "list-add",
+          "cfg06fe63",
+          "mac",
+          "02:00:00:00:00:01"
+        ],
+        [
+          "set",
+          "cfg06fe63",
+          "ip",
+          "10.231.1.77"
+        ],
+        [
+          "remove",
+          "lan",
+          "ra_slaac"
+        ],
+        [
+          "remove",
+          "lan",
+          "leasetime"
+        ],
+        [
+          "remove",
+          "lan",
+          "start"
+        ]
+      ]
+    }
+  ]
+}

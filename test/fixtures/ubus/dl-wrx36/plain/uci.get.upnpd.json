@@ -1,0 +1,43 @@
+{
+  "values": {
+    "cfg02ed70": {
+      ".anonymous": true,
+      ".index": 1,
+      ".name": "cfg02ed70",
+      ".type": "perm_rule",
+      "action": "allow",
+      "comment": "Allow high ports",
+      "ext_ports": "1024-65535",
+      "int_addr": "0.0.0.0/0",
+      "int_ports": "1024-65535"
+    },
+    "cfg03ed70": {
+      ".anonymous": true,
+      ".index": 2,
+      ".name": "cfg03ed70",
+      ".type": "perm_rule",
+      "action": "deny",
+      "comment": "Default deny",
+      "ext_ports": "0-65535",
+      "int_addr": "0.0.0.0/0",
+      "int_ports": "0-65535"
+    },
+    "config": {
+      ".anonymous": false,
+      ".index": 0,
+      ".name": "config",
+      ".type": "upnpd",
+      "download": "1024",
+      "enable_natpmp": "1",
+      "enable_upnp": "1",
+      "enabled": "0",
+      "igdv1": "1",
+      "internal_iface": "lan",
+      "log_output": "0",
+      "port": "5000",
+      "secure_mode": "1",
+      "upload": "512",
+      "upnp_lease_file": "/var/run/miniupnpd.leases"
+    }
+  }
+}

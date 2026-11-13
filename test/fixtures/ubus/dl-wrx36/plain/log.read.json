@@ -1,0 +1,1404 @@
+{
+  "log": [
+    {
+      "id": 839,
+      "msg": "netifd: Interface 'lan' has link connectivity loss",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903405
+    },
+    {
+      "id": 840,
+      "msg": "netifd: Interface 'lan' has link connectivity",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903405
+    },
+    {
+      "id": 841,
+      "msg": "[  611.716545] br-lan: port 1(lan1) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903418
+    },
+    {
+      "id": 842,
+      "msg": "[  611.716591] br-lan: port 1(lan1) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903419
+    },
+    {
+      "id": 843,
+      "msg": "[  611.720631] nss-dp 3a001600.dp4 lan1: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903419
+    },
+    {
+      "id": 844,
+      "msg": "[  611.726395] nss-dp 3a001600.dp4 lan1: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903424
+    },
+    {
+      "id": 845,
+      "msg": "[  611.734248] br-lan: port 2(lan2) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903435
+    },
+    {
+      "id": 846,
+      "msg": "[  611.737645] br-lan: port 2(lan2) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903435
+    },
+    {
+      "id": 847,
+      "msg": "[  611.742799] nss-dp 3a001400.dp3 lan2: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903435
+    },
+    {
+      "id": 848,
+      "msg": "[  611.748324] nss-dp 3a001400.dp3 lan2: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903446
+    },
+    {
+      "id": 849,
+      "msg": "[  611.755770] br-lan: port 3(lan3) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903457
+    },
+    {
+      "id": 850,
+      "msg": "[  611.759754] br-lan: port 3(lan3) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903457
+    },
+    {
+      "id": 851,
+      "msg": "[  611.764935] nss-dp 3a001200.dp2 lan3: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903457
+    },
+    {
+      "id": 852,
+      "msg": "[  611.770275] nss-dp 3a001200.dp2 lan3: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903469
+    },
+    {
+      "id": 853,
+      "msg": "[  611.778034] br-lan: port 4(lan4) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903474
+    },
+    {
+      "id": 854,
+      "msg": "[  611.781920] br-lan: port 4(lan4) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903474
+    },
+    {
+      "id": 855,
+      "msg": "[  611.787070] nss-dp 3a001000.dp1 lan4: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903485
+    },
+    {
+      "id": 856,
+      "msg": "netifd: Interface 'lan' is enabled",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903491
+    },
+    {
+      "id": 857,
+      "msg": "hostapd: Set MLD config: [ ]",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903494
+    },
+    {
+      "id": 858,
+      "msg": "wpa_supplicant[2812]: Set MLD config: [ ]",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903494
+    },
+    {
+      "id": 859,
+      "msg": "hostapd: Reload all interfaces",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903494
+    },
+    {
+      "id": 860,
+      "msg": "[  611.792465] nss-dp 3a001000.dp1 lan4: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312903494
+    },
+    {
+      "id": 861,
+      "msg": "netifd: bridge 'br-lan' link is down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903495
+    },
+    {
+      "id": 862,
+      "msg": "netifd: Interface 'lan' has link connectivity loss",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903495
+    },
+    {
+      "id": 863,
+      "msg": "netifd: Interface 'lan' is setting up now",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903495
+    },
+    {
+      "id": 864,
+      "msg": "netifd: Interface 'lan' is now up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903495
+    },
+    {
+      "id": 865,
+      "msg": "netifd: bridge 'br-lan' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903497
+    },
+    {
+      "id": 866,
+      "msg": "netifd: Interface 'lan' has link connectivity",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903497
+    },
+    {
+      "id": 867,
+      "msg": "netifd: bridge 'br-lan' link is down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903497
+    },
+    {
+      "id": 868,
+      "msg": "netifd: Interface 'lan' has link connectivity loss",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903497
+    },
+    {
+      "id": 869,
+      "msg": "netifd: Network device 'lan1' link is down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312903497
+    },
+    {
+      "id": 870,
+      "msg": "mwan3-hotplug[8781]: hotplug called on lan before mwan3 has been set up",
+      "priority": 12,
+      "source": 1,
+      "time": 1760312903822
+    },
+    {
+      "id": 871,
+      "msg": "firewall: Reloading firewall due to ifup of lan (br-lan)",
+      "priority": 13,
+      "source": 1,
+      "time": 1760312903959
+    },
+    {
+      "id": 872,
+      "msg": "dnsmasq[1]: read /etc/hosts - 12 names",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312904831
+    },
+    {
+      "id": 873,
+      "msg": "dnsmasq[1]: read /tmp/hosts/dhcp.cfg01411c - 4 names",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312904831
+    },
+    {
+      "id": 874,
+      "msg": "dnsmasq[1]: read /tmp/hosts/odhcpd - 0 names",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312904831
+    },
+    {
+      "id": 875,
+      "msg": "dnsmasq-dhcp[1]: read /etc/ethers - 0 addresses",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312904831
+    },
+    {
+      "id": 876,
+      "msg": "[  614.882132] nss-dp 3a001600.dp4 lan1: PHY Link up speed: 1000",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312906584
+    },
+    {
+      "id": 877,
+      "msg": "[  614.882238] br-lan: port 1(lan1) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312906584
+    },
+    {
+      "id": 878,
+      "msg": "[  614.886869] br-lan: port 1(lan1) entered forwarding state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760312906585
+    },
+    {
+      "id": 879,
+      "msg": "netifd: Network device 'lan1' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312906585
+    },
+    {
+      "id": 880,
+      "msg": "netifd: bridge 'br-lan' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312906585
+    },
+    {
+      "id": 881,
+      "msg": "netifd: Interface 'lan' has link connectivity",
+      "priority": 29,
+      "source": 1,
+      "time": 1760312906585
+    },
+    {
+      "id": 882,
+      "msg": "dnsmasq-dhcp[1]: DHCPDISCOVER(br-lan) 192.168.1.137 00:00:5e:00:53:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312907646
+    },
+    {
+      "id": 883,
+      "msg": "dnsmasq-dhcp[1]: DHCPOFFER(br-lan) 192.168.1.137 00:00:5e:00:53:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312907646
+    },
+    {
+      "id": 884,
+      "msg": "dnsmasq-dhcp[1]: DHCPREQUEST(br-lan) 192.168.1.137 00:00:5e:00:53:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312907647
+    },
+    {
+      "id": 885,
+      "msg": "dnsmasq-dhcp[1]: DHCPACK(br-lan) 192.168.1.137 00:00:5e:00:53:01 workstation",
+      "priority": 30,
+      "source": 1,
+      "time": 1760312907647
+    },
+    {
+      "id": 886,
+      "msg": "dropbear[8488]: Exit (root) from <192.168.1.137:43730>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312909506
+    },
+    {
+      "id": 887,
+      "msg": "dropbear[9245]: Child connection from 192.168.1.137:35576",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312930901
+    },
+    {
+      "id": 888,
+      "msg": "dropbear[9245]: Auth succeeded with blank password for 'root' from 192.168.1.137:35576",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312930975
+    },
+    {
+      "id": 889,
+      "msg": "dropbear[9245]: Exit (root) from <192.168.1.137:35576>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312930981
+    },
+    {
+      "id": 890,
+      "msg": "dropbear[9247]: Child connection from 192.168.1.137:35578",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312930990
+    },
+    {
+      "id": 891,
+      "msg": "dropbear[9247]: Auth succeeded with blank password for 'root' from 192.168.1.137:35578",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312931065
+    },
+    {
+      "id": 892,
+      "msg": "dropbear[9247]: Exit (root) from <192.168.1.137:35578>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312931077
+    },
+    {
+      "id": 893,
+      "msg": "dropbear[9250]: Child connection from 192.168.1.137:57104",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312954672
+    },
+    {
+      "id": 894,
+      "msg": "dropbear[9250]: Auth succeeded with blank password for 'root' from 192.168.1.137:57104",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312954745
+    },
+    {
+      "id": 895,
+      "msg": "dropbear[9250]: Exit (root) from <192.168.1.137:57104>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312954749
+    },
+    {
+      "id": 896,
+      "msg": "dropbear[9252]: Child connection from 192.168.1.137:57112",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312954756
+    },
+    {
+      "id": 897,
+      "msg": "dropbear[9252]: Auth succeeded with blank password for 'root' from 192.168.1.137:57112",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312954835
+    },
+    {
+      "id": 898,
+      "msg": "dropbear[9252]: Exit (root) from <192.168.1.137:57112>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312954842
+    },
+    {
+      "id": 899,
+      "msg": "dropbear[9255]: Child connection from 192.168.1.137:37590",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312964049
+    },
+    {
+      "id": 900,
+      "msg": "dropbear[9255]: Auth succeeded with blank password for 'root' from 192.168.1.137:37590",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312964125
+    },
+    {
+      "id": 901,
+      "msg": "dropbear[9255]: Exit (root) from <192.168.1.137:37590>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312964133
+    },
+    {
+      "id": 902,
+      "msg": "dropbear[9258]: Child connection from 192.168.1.137:37602",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312964144
+    },
+    {
+      "id": 903,
+      "msg": "dropbear[9258]: Auth succeeded with blank password for 'root' from 192.168.1.137:37602",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312964226
+    },
+    {
+      "id": 904,
+      "msg": "dropbear[9258]: Exit (root) from <192.168.1.137:37602>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312964243
+    },
+    {
+      "id": 905,
+      "msg": "dropbear[9260]: Child connection from 192.168.1.137:37606",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312964263
+    },
+    {
+      "id": 906,
+      "msg": "dropbear[9260]: Auth succeeded with blank password for 'root' from 192.168.1.137:37606",
+      "priority": 85,
+      "source": 1,
+      "time": 1760312964335
+    },
+    {
+      "id": 907,
+      "msg": "dropbear[9260]: Exit (root) from <192.168.1.137:37606>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760312964341
+    },
+    {
+      "id": 908,
+      "msg": "dropbear[9270]: Child connection from 192.168.1.137:46822",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313146695
+    },
+    {
+      "id": 909,
+      "msg": "dropbear[9270]: Auth succeeded with blank password for 'root' from 192.168.1.137:46822",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313146776
+    },
+    {
+      "id": 910,
+      "msg": "dropbear[9270]: Exit (root) from <192.168.1.137:46822>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313146836
+    },
+    {
+      "id": 911,
+      "msg": "dropbear[9297]: Child connection from 192.168.1.137:43514",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313198301
+    },
+    {
+      "id": 912,
+      "msg": "dropbear[9297]: Auth succeeded with blank password for 'root' from 192.168.1.137:43514",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313198385
+    },
+    {
+      "id": 913,
+      "msg": "dropbear[9297]: Exit (root) from <192.168.1.137:43514>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313198437
+    },
+    {
+      "id": 914,
+      "msg": "dropbear[9314]: Child connection from 192.168.1.137:38554",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313207932
+    },
+    {
+      "id": 915,
+      "msg": "dropbear[9314]: Auth succeeded with blank password for 'root' from 192.168.1.137:38554",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313208015
+    },
+    {
+      "id": 916,
+      "msg": "hostapd: Set MLD config: [ ]",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208037
+    },
+    {
+      "id": 917,
+      "msg": "wpa_supplicant[2812]: Set MLD config: [ ]",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208037
+    },
+    {
+      "id": 918,
+      "msg": "hostapd: Reload all interfaces",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208037
+    },
+    {
+      "id": 919,
+      "msg": "netifd: radio0 (9320): wifi-scripts: Starting",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208071
+    },
+    {
+      "id": 920,
+      "msg": "netifd: radio0 (9320): command failed: Not supported (-95)",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208081
+    },
+    {
+      "id": 921,
+      "msg": "wpa_supplicant[2812]: Set new config for phy phy0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208097
+    },
+    {
+      "id": 922,
+      "msg": "hostapd: Set new config for phy phy0: /var/run/hostapd-phy0.conf",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208111
+    },
+    {
+      "id": 923,
+      "msg": "hostapd: Restart interface for phy phy0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208111
+    },
+    {
+      "id": 924,
+      "msg": "hostapd: Configuration file: <inline> (phy phy0) --> new PHY",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208167
+    },
+    {
+      "id": 925,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208167
+    },
+    {
+      "id": 926,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208167
+    },
+    {
+      "id": 927,
+      "msg": "[  916.528261] br-lan: port 5(phy0-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208225
+    },
+    {
+      "id": 928,
+      "msg": "[  916.528328] br-lan: port 5(phy0-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208225
+    },
+    {
+      "id": 929,
+      "msg": "[  916.532824] ath11k c000000.wifi phy0-ap0: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208237
+    },
+    {
+      "id": 930,
+      "msg": "[  916.538435] ath11k c000000.wifi phy0-ap0: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208237
+    },
+    {
+      "id": 931,
+      "msg": "hostapd: phy0-ap0: interface state UNINITIALIZED->COUNTRY_UPDATE",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208237
+    },
+    {
+      "id": 932,
+      "msg": "hostapd: phy0-ap0: interface state COUNTRY_UPDATE->HT_SCAN",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208240
+    },
+    {
+      "id": 933,
+      "msg": "netifd: radio0 (9320): wifi-scripts: Configuring 'phy0' txantenna: 4294967295, rxantenna: 4294967295 distance: 0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208244
+    },
+    {
+      "id": 934,
+      "msg": "netifd: radio0 (9320): wifi-scripts: Preparing interface: phy0-ap0 with MAC: f4:52:46:08:dc:a7",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208244
+    },
+    {
+      "id": 935,
+      "msg": "netifd: radio1 (9364): wifi-scripts: Starting",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208278
+    },
+    {
+      "id": 936,
+      "msg": "netifd: radio1 (9364): command failed: Not supported (-95)",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208288
+    },
+    {
+      "id": 937,
+      "msg": "wpa_supplicant[2812]: Set new config for phy phy1",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208304
+    },
+    {
+      "id": 938,
+      "msg": "hostapd: Set new config for phy phy1: /var/run/hostapd-phy1.conf",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208313
+    },
+    {
+      "id": 939,
+      "msg": "hostapd: Restart interface for phy phy1",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208314
+    },
+    {
+      "id": 940,
+      "msg": "hostapd: Configuration file: <inline> (phy phy1) --> new PHY",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208369
+    },
+    {
+      "id": 941,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208369
+    },
+    {
+      "id": 942,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208369
+    },
+    {
+      "id": 943,
+      "msg": "[  916.687808] br-lan: port 6(phy1-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208385
+    },
+    {
+      "id": 944,
+      "msg": "[  916.687878] br-lan: port 6(phy1-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208385
+    },
+    {
+      "id": 945,
+      "msg": "[  916.692301] ath11k c000000.wifi phy1-ap0: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208385
+    },
+    {
+      "id": 946,
+      "msg": "[  916.698016] ath11k c000000.wifi phy1-ap0: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208397
+    },
+    {
+      "id": 947,
+      "msg": "[  916.704121] br-lan: port 6(phy1-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208408
+    },
+    {
+      "id": 948,
+      "msg": "[  916.710257] br-lan: port 6(phy1-ap0) entered forwarding state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208408
+    },
+    {
+      "id": 949,
+      "msg": "hostapd: phy1-ap0: interface state UNINITIALIZED->COUNTRY_UPDATE",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208409
+    },
+    {
+      "id": 950,
+      "msg": "[  916.716139] br-lan: port 6(phy1-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208415
+    },
+    {
+      "id": 951,
+      "msg": "[  916.887348] br-lan: port 6(phy1-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208584
+    },
+    {
+      "id": 952,
+      "msg": "[  916.887395] br-lan: port 6(phy1-ap0) entered forwarding state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313208585
+    },
+    {
+      "id": 953,
+      "msg": "netifd: Network device 'phy1-ap0' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208585
+    },
+    {
+      "id": 954,
+      "msg": "hostapd: phy1-ap0: interface state COUNTRY_UPDATE->ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208795
+    },
+    {
+      "id": 955,
+      "msg": "hostapd: phy1-ap0: AP-ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208795
+    },
+    {
+      "id": 956,
+      "msg": "netifd: radio1 (9364): wifi-scripts: Configuring 'phy1' txantenna: 4294967295, rxantenna: 4294967295 distance: 0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208802
+    },
+    {
+      "id": 957,
+      "msg": "netifd: radio1 (9364): wifi-scripts: Preparing interface: phy1-ap0 with MAC: f4:52:46:08:dc:a8",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208802
+    },
+    {
+      "id": 958,
+      "msg": "wpa_supplicant[2812]: Start pending MLD interfaces",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313208803
+    },
+    {
+      "id": 959,
+      "msg": "netifd: Network device 'phy0-ap0' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313209174
+    },
+    {
+      "id": 960,
+      "msg": "[  917.476666] br-lan: port 5(phy0-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313209175
+    },
+    {
+      "id": 961,
+      "msg": "[  917.476714] br-lan: port 5(phy0-ap0) entered forwarding state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313209175
+    },
+    {
+      "id": 962,
+      "msg": "hostapd: phy0-ap0: interface state HT_SCAN->ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313209225
+    },
+    {
+      "id": 963,
+      "msg": "hostapd: phy0-ap0: AP-ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313209225
+    },
+    {
+      "id": 964,
+      "msg": "dropbear[9314]: Exit (root) from <192.168.1.137:38554>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313228127
+    },
+    {
+      "id": 965,
+      "msg": "dropbear[9423]: Child connection from 192.168.1.137:40946",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313235375
+    },
+    {
+      "id": 966,
+      "msg": "dropbear[9423]: Auth succeeded with blank password for 'root' from 192.168.1.137:40946",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313235456
+    },
+    {
+      "id": 967,
+      "msg": "hostapd: Set MLD config: [ ]",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235480
+    },
+    {
+      "id": 968,
+      "msg": "wpa_supplicant[2812]: Set MLD config: [ ]",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235480
+    },
+    {
+      "id": 969,
+      "msg": "hostapd: Reload all interfaces",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235480
+    },
+    {
+      "id": 970,
+      "msg": "hostapd: Reloaded settings for phy phy0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235482
+    },
+    {
+      "id": 971,
+      "msg": "hostapd: Reloaded settings for phy phy1",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235484
+    },
+    {
+      "id": 972,
+      "msg": "netifd: radio0 (9431): wifi-scripts: Starting",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235517
+    },
+    {
+      "id": 973,
+      "msg": "netifd: radio0 (9431): command failed: Not supported (-95)",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235522
+    },
+    {
+      "id": 974,
+      "msg": "netifd: radio0 (9431): command failed: Not supported (-95)",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235526
+    },
+    {
+      "id": 975,
+      "msg": "wpa_supplicant[2812]: Set new config for phy phy0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235543
+    },
+    {
+      "id": 976,
+      "msg": "hostapd: Set new config for phy phy0: /var/run/hostapd-phy0.conf",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 977,
+      "msg": "hostapd: Restart interface for phy phy0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 978,
+      "msg": "hostapd: Remove interface 'phy0'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 979,
+      "msg": "hostapd: phy0-ap0: interface state ENABLED->DISABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 980,
+      "msg": "hostapd: phy0-ap0: AP-DISABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 981,
+      "msg": "hostapd: phy0-ap0: CTRL-EVENT-TERMINATING",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 982,
+      "msg": "hostapd: rmdir[ctrl_interface=/var/run/hostapd]: Permission denied",
+      "priority": 27,
+      "source": 1,
+      "time": 1760313235554
+    },
+    {
+      "id": 983,
+      "msg": "hostapd: nl80211: deinit ifname=phy0-ap0 disabled_11b_rates=0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235555
+    },
+    {
+      "id": 984,
+      "msg": "[  943.902139] ath11k c000000.wifi phy0-ap0: left allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235605
+    },
+    {
+      "id": 985,
+      "msg": "[  943.902194] ath11k c000000.wifi phy0-ap0: left promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235605
+    },
+    {
+      "id": 986,
+      "msg": "[  943.907406] br-lan: port 5(phy0-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235606
+    },
+    {
+      "id": 987,
+      "msg": "netifd: Network device 'phy0-ap0' link is down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235606
+    },
+    {
+      "id": 988,
+      "msg": "hostapd: Configuration file: <inline> (phy phy0) --> new PHY",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235931
+    },
+    {
+      "id": 989,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235931
+    },
+    {
+      "id": 990,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235932
+    },
+    {
+      "id": 991,
+      "msg": "[  944.275147] br-lan: port 5(phy0-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235978
+    },
+    {
+      "id": 992,
+      "msg": "[  944.275194] br-lan: port 5(phy0-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235978
+    },
+    {
+      "id": 993,
+      "msg": "[  944.279597] ath11k c000000.wifi phy0-ap0: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235978
+    },
+    {
+      "id": 994,
+      "msg": "hostapd: phy0-ap0: interface state UNINITIALIZED->COUNTRY_UPDATE",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235985
+    },
+    {
+      "id": 995,
+      "msg": "[  944.285582] ath11k c000000.wifi phy0-ap0: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313235985
+    },
+    {
+      "id": 996,
+      "msg": "hostapd: phy0-ap0: interface state COUNTRY_UPDATE->HT_SCAN",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313235987
+    },
+    {
+      "id": 997,
+      "msg": "netifd: radio0 (9431): wifi-scripts: Configuring 'phy0' txantenna: 4294967295, rxantenna: 4294967295 distance: 0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236006
+    },
+    {
+      "id": 998,
+      "msg": "netifd: radio0 (9431): wifi-scripts: Preparing interface: phy0-ap0 with MAC: f4:52:46:08:dc:a7",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236006
+    },
+    {
+      "id": 999,
+      "msg": "netifd: radio1 (9482): wifi-scripts: Starting",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236041
+    },
+    {
+      "id": 1000,
+      "msg": "netifd: radio1 (9482): command failed: Not supported (-95)",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236047
+    },
+    {
+      "id": 1001,
+      "msg": "netifd: radio1 (9482): command failed: Not supported (-95)",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236050
+    },
+    {
+      "id": 1002,
+      "msg": "wpa_supplicant[2812]: Set new config for phy phy1",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236068
+    },
+    {
+      "id": 1003,
+      "msg": "hostapd: Set new config for phy phy1: /var/run/hostapd-phy1.conf",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1004,
+      "msg": "hostapd: Restart interface for phy phy1",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1005,
+      "msg": "hostapd: Remove interface 'phy1'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1006,
+      "msg": "hostapd: phy1-ap0: interface state ENABLED->DISABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1007,
+      "msg": "hostapd: phy1-ap0: AP-DISABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1008,
+      "msg": "hostapd: phy1-ap0: CTRL-EVENT-TERMINATING",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1009,
+      "msg": "hostapd: rmdir[ctrl_interface=/var/run/hostapd]: Permission denied",
+      "priority": 27,
+      "source": 1,
+      "time": 1760313236077
+    },
+    {
+      "id": 1010,
+      "msg": "hostapd: nl80211: deinit ifname=phy1-ap0 disabled_11b_rates=0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236078
+    },
+    {
+      "id": 1011,
+      "msg": "[  944.432044] ath11k c000000.wifi phy1-ap0: left allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236135
+    },
+    {
+      "id": 1012,
+      "msg": "[  944.432095] ath11k c000000.wifi phy1-ap0: left promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236135
+    },
+    {
+      "id": 1013,
+      "msg": "[  944.437355] br-lan: port 6(phy1-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236135
+    },
+    {
+      "id": 1014,
+      "msg": "netifd: Network device 'phy1-ap0' link is down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236265
+    },
+    {
+      "id": 1015,
+      "msg": "netifd: Network device 'phy0-ap0' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236450
+    },
+    {
+      "id": 1016,
+      "msg": "hostapd: Configuration file: <inline> (phy phy1) --> new PHY",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236451
+    },
+    {
+      "id": 1017,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236451
+    },
+    {
+      "id": 1018,
+      "msg": "hostapd: Configuration file: Reading configuration file '<inline>'",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236452
+    },
+    {
+      "id": 1019,
+      "msg": "[  944.752681] br-lan: port 5(phy0-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236454
+    },
+    {
+      "id": 1020,
+      "msg": "[  944.752733] br-lan: port 5(phy0-ap0) entered forwarding state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236455
+    },
+    {
+      "id": 1021,
+      "msg": "[  944.775507] br-lan: port 6(phy1-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236478
+    },
+    {
+      "id": 1022,
+      "msg": "[  944.775554] br-lan: port 6(phy1-ap0) entered disabled state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236478
+    },
+    {
+      "id": 1023,
+      "msg": "[  944.780055] ath11k c000000.wifi phy1-ap0: entered allmulticast mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236478
+    },
+    {
+      "id": 1024,
+      "msg": "[  944.785792] ath11k c000000.wifi phy1-ap0: entered promiscuous mode",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236484
+    },
+    {
+      "id": 1025,
+      "msg": "hostapd: phy1-ap0: interface state UNINITIALIZED->COUNTRY_UPDATE",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236485
+    },
+    {
+      "id": 1026,
+      "msg": "[  944.808954] br-lan: port 6(phy1-ap0) entered blocking state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236506
+    },
+    {
+      "id": 1027,
+      "msg": "[  944.808999] br-lan: port 6(phy1-ap0) entered forwarding state",
+      "priority": 6,
+      "source": 0,
+      "time": 1760313236506
+    },
+    {
+      "id": 1028,
+      "msg": "netifd: Network device 'phy1-ap0' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236506
+    },
+    {
+      "id": 1029,
+      "msg": "hostapd: phy1-ap0: interface state COUNTRY_UPDATE->ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236545
+    },
+    {
+      "id": 1030,
+      "msg": "hostapd: phy1-ap0: AP-ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236545
+    },
+    {
+      "id": 1031,
+      "msg": "hostapd: phy0-ap0: interface state HT_SCAN->ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236595
+    },
+    {
+      "id": 1032,
+      "msg": "hostapd: phy0-ap0: AP-ENABLED",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236595
+    },
+    {
+      "id": 1033,
+      "msg": "netifd: radio1 (9482): wifi-scripts: Configuring 'phy1' txantenna: 4294967295, rxantenna: 4294967295 distance: 0",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236601
+    },
+    {
+      "id": 1034,
+      "msg": "netifd: radio1 (9482): wifi-scripts: Preparing interface: phy1-ap0 with MAC: f4:52:46:08:dc:a8",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236601
+    },
+    {
+      "id": 1035,
+      "msg": "wpa_supplicant[2812]: Start pending MLD interfaces",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313236602
+    },
+    {
+      "id": 1036,
+      "msg": "dropbear[9423]: Exit (root) from <192.168.1.137:40946>: Disconnect received",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313250566
+    },
+    {
+      "id": 1037,
+      "msg": "dropbear[9538]: Child connection from 192.168.1.137:52428",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313265676
+    },
+    {
+      "id": 1038,
+      "msg": "dropbear[9538]: Auth succeeded with blank password for 'root' from 192.168.1.137:52428",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313265756
+    }
+  ]
+}

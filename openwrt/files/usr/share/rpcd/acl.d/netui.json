@@ -1,0 +1,38 @@
+{
+	"netui": {
+		"description": "netui management UI",
+		"read": {
+			"ubus": {
+				"network.interface": [ "dump" ],
+				"network.device": [ "status" ],
+				"iwinfo": [ "devices", "info", "assoclist", "scan", "survey", "freqlist", "txpowerlist", "countrylist" ],
+				"hostapd.*": [ "get_status", "get_clients" ],
+				"luci-rpc": [ "getBoardJSON", "getDHCPLeases", "getHostHints" ],
+				"luci": [ "getTimezones", "getLocaltime", "getConntrackList" ],
+				"luci.upnp": [ "get_status" ],
+				"luci.ddns": [ "get_services_status", "get_ddns_state" ],
+				"luci.wireguard": [ "getWgInstances" ],
+				"log": [ "read" ],
+				"system": [ "board", "info" ],
+				"uci": [ "get", "state", "changes" ]
+			},
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule" ]
+		},
+		"write": {
+			"ubus": {
+				"uci": [ "set", "add", "delete", "rename", "order", "apply", "confirm", "rollback", "revert" ],
+				"hostapd.*": [ "del_client" ],
+				"luci.upnp": [ "delete_rule" ],
+				"luci.wireguard": [ "generateKeyPair", "generatePsk" ],
+				"system": [ "reboot" ],
+				"file": [ "exec" ]
+			},
+			"file": {
+				"/etc/init.d/sqm": [ "exec" ],
+				"/etc/init.d/ddns": [ "exec" ],
+				"/usr/bin/wifi_schedule.sh": [ "exec" ]
+			},
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule" ]
+		}
+	}
+}

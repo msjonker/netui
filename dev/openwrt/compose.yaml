@@ -1,0 +1,80 @@
+# Dev router. NOT the target device: no radios, and the release may differ
+# from production. Good enough for transport, LuCI-rpc and UCI shapes.
+#
+#   npm run router:up     -> LuCI at http://10.231.1.2/, netui at http://10.231.1.2/netui/
+#   login: netui / netui  (root has no password)
+name: netui-openwrt
+
+services:
+  openwrt:
+    build:
+      context: .
+      args:
+        OPENWRT_TAG: ${OPENWRT_TAG:-x86-64-25.12.5}
+    image: netui-openwrt:${OPENWRT_TAG:-x86-64-25.12.5}
+    container_name: netui-openwrt
+    hostname: netui-dev
+    cap_add: [NET_ADMIN, NET_RAW]
+    networks:
+      lan:
+        interface_name: eth0
+        ipv4_address: 10.231.1.2
+        mac_address: "02:4e:55:00:01:02"
+      wan:
+        interface_name: eth1
+        ipv4_address: 10.231.0.2
+        mac_address: "02:4e:55:00:00:02"
+    volumes:
+      - ../../openwrt/files/usr/share/rpcd/acl.d/netui.json:/usr/share/rpcd/acl.d/netui.json:ro
+      - ../../dist:/www/netui:ro
+
+  # LAN clients that take real DHCP leases from the router's dnsmasq, so
+  # getDHCPLeases / getHostHints have something to return. The lease is not
+  # applied (-s /bin/true); the container keeps its Docker address.
+  laptop:
+    image: alpine:3
+    container_name: netui-client-laptop
+    cap_add: [NET_RAW]
+    networks:
+      lan:
+        mac_address: "02:4e:55:00:01:10"
+    command: udhcpc -f -i eth0 -s /bin/true -x hostname:laptop -t 0 -A 5
+    depends_on: [openwrt]
+
+  phone:
+    image: alpine:3
+    container_name: netui-client-phone
+    cap_add: [NET_RAW]
+    networks:
+      lan:
+        # Locally administered, like a randomized WiFi MAC. No hostname sent.
+        mac_address: "da:a1:19:00:01:11"
+    command: udhcpc -f -i eth0 -s /bin/true -t 0 -A 5
+    depends_on: [openwrt]
+
+  # WiFi station; only with --profile wifi (started by wifi.sh). No Docker
+  # network: its only link is the simulated radio wifi.sh moves in.
+  station:
+    profiles: [wifi]
+    build:
+      context: .
+      dockerfile: station.Dockerfile
+    image: netui-station
+    container_name: netui-client-tablet
+    network_mode: none
+    cap_add: [NET_ADMIN, NET_RAW]
+    depends_on: [openwrt]
+
+networks:
+  lan:
+    ipam:
+      config:
+        # Docker hands out .2-.63; OpenWrt's DHCP pool is .100-.249.
+        - subnet: 10.231.1.0/24
+          ip_range: 10.231.1.0/26
+          gateway: 10.231.1.1
+  wan:
+    ipam:
+      config:
+        - subnet: 10.231.0.0/24
+          gateway: 10.231.0.1

@@ -1,0 +1,16 @@
+{
+  "dhcp6_leases": [],
+  "dhcp_leases": [
+    {
+      "expires": 41937,
+      "ipaddr": "10.231.1.192",
+      "macaddr": "DA:A1:19:00:01:11"
+    },
+    {
+      "expires": 41937,
+      "hostname": "laptop",
+      "ipaddr": "10.231.1.128",
+      "macaddr": "02:4E:55:00:01:10"
+    }
+  ]
+}

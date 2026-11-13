@@ -1,0 +1,23 @@
+{
+  "dhcp6_leases": [
+    {
+      "duid": "000414d5a8f2a3ac9787ed069cf75a9d0243",
+      "expires": 5382,
+      "hostname": "workstation",
+      "iaid": "cfd18803",
+      "ip6addr": "fd00:5191:f25a::99e",
+      "ip6addrs": [
+        "fd00:5191:f25a::99e/128"
+      ]
+    }
+  ],
+  "dhcp_leases": [
+    {
+      "duid": "0100005e005301",
+      "expires": 43180,
+      "hostname": "workstation",
+      "ipaddr": "192.168.1.137",
+      "macaddr": "00:00:5E:00:53:01"
+    }
+  ]
+}

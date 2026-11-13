@@ -1,0 +1,103 @@
+{
+  "results": [
+    {
+      "active_time": 40986,
+      "busy_time": 12997,
+      "busy_time_ext": 0,
+      "mhz": 2412,
+      "noise": 151,
+      "rx_time": 0,
+      "tx_time": 223
+    },
+    {
+      "active_time": 150,
+      "busy_time": 55,
+      "busy_time_ext": 0,
+      "mhz": 2417,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 34,
+      "busy_time_ext": 0,
+      "mhz": 2422,
+      "noise": 163,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 34,
+      "busy_time_ext": 0,
+      "mhz": 2427,
+      "noise": 158,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 50,
+      "busy_time_ext": 0,
+      "mhz": 2432,
+      "noise": 158,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 70,
+      "busy_time_ext": 0,
+      "mhz": 2437,
+      "noise": 179,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 36,
+      "busy_time_ext": 0,
+      "mhz": 2442,
+      "noise": 164,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 42,
+      "busy_time_ext": 0,
+      "mhz": 2447,
+      "noise": 183,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 62,
+      "busy_time_ext": 0,
+      "mhz": 2452,
+      "noise": 163,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 69,
+      "busy_time_ext": 0,
+      "mhz": 2457,
+      "noise": 158,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 115,
+      "busy_time_ext": 0,
+      "mhz": 2462,
+      "noise": 163,
+      "rx_time": 0,
+      "tx_time": 0
+    }
+  ]
+}

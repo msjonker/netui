@@ -1,0 +1,102 @@
+{
+  "values": {
+    "cfg030f15": {
+      ".anonymous": true,
+      ".index": 2,
+      ".name": "cfg030f15",
+      ".type": "device",
+      "name": "br-lan",
+      "ports": [
+        "eth0",
+        "eth2",
+        "eth3",
+        "eth4"
+      ],
+      "type": "bridge"
+    },
+    "cfg07a1b0": {
+      ".anonymous": true,
+      ".index": 6,
+      ".name": "cfg07a1b0",
+      ".type": "bridge-vlan",
+      "device": "br-lan",
+      "ports": [
+        "eth0:u*",
+        "eth2:u*",
+        "eth3:u*"
+      ],
+      "vlan": "1"
+    },
+    "cfg08a1b0": {
+      ".anonymous": true,
+      ".index": 7,
+      ".name": "cfg08a1b0",
+      ".type": "bridge-vlan",
+      "device": "br-lan",
+      "ports": [
+        "eth2:t",
+        "eth3",
+        "eth4"
+      ],
+      "vlan": "20"
+    },
+    "globals": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "globals",
+      ".type": "globals",
+      "dhcp_default_duid": "0004cd5177e935ef480c9957f2b39d5f45c2",
+      "ula_prefix": "fd02:15d6:88b::/48"
+    },
+    "iot": {
+      ".anonymous": false,
+      ".index": 8,
+      ".name": "iot",
+      ".type": "interface",
+      "device": "br-lan.20",
+      "ipaddr": [
+        "10.232.20.1/24"
+      ],
+      "proto": "static"
+    },
+    "lan": {
+      ".anonymous": false,
+      ".index": 3,
+      ".name": "lan",
+      ".type": "interface",
+      "device": "br-lan.1",
+      "ip6assign": "60",
+      "ipaddr": [
+        "10.232.1.1/24"
+      ],
+      "proto": "static"
+    },
+    "loopback": {
+      ".anonymous": false,
+      ".index": 0,
+      ".name": "loopback",
+      ".type": "interface",
+      "device": "lo",
+      "ipaddr": [
+        "127.0.0.1/8"
+      ],
+      "proto": "static"
+    },
+    "wan": {
+      ".anonymous": false,
+      ".index": 4,
+      ".name": "wan",
+      ".type": "interface",
+      "device": "eth1",
+      "proto": "dhcp"
+    },
+    "wan6": {
+      ".anonymous": false,
+      ".index": 5,
+      ".name": "wan6",
+      ".type": "interface",
+      "device": "eth1",
+      "proto": "dhcpv6"
+    }
+  }
+}

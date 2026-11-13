@@ -1,0 +1,92 @@
+{
+  "led": {
+    "wan_port_link_green": {
+      "device": "wan",
+      "mode": "link_2500",
+      "name": "WAN-PORT-LINK-GREEN",
+      "sysfs": "90000.mdio-1:1c:green:wan",
+      "type": "netdev"
+    },
+    "wan_port_link_yellow": {
+      "device": "wan",
+      "mode": "tx rx link_10 link_100 link_1000",
+      "name": "WAN-PORT-LINK-YELLOW",
+      "sysfs": "90000.mdio-1:1c:yellow:wan",
+      "type": "netdev"
+    }
+  },
+  "model": {
+    "id": "dynalink,dl-wrx36",
+    "name": "Dynalink DL-WRX36"
+  },
+  "network": {
+    "lan": {
+      "ports": [
+        "lan1",
+        "lan2",
+        "lan3",
+        "lan4"
+      ],
+      "protocol": "static"
+    },
+    "wan": {
+      "device": "wan",
+      "protocol": "dhcp"
+    }
+  },
+  "wlan": {
+    "phy0": {
+      "info": {
+        "antenna_rx": 240,
+        "antenna_tx": 240,
+        "bands": {
+          "5G": {
+            "default_channel": 36,
+            "he": true,
+            "ht": true,
+            "max_width": 160,
+            "modes": [
+              "NOHT",
+              "HT20",
+              "VHT20",
+              "HE20",
+              "HT40",
+              "VHT40",
+              "HE40",
+              "VHT80",
+              "HE80",
+              "VHT160",
+              "HE160"
+            ],
+            "vht": true
+          }
+        },
+        "radios": []
+      },
+      "path": "platform/soc@0/c000000.wifi"
+    },
+    "phy1": {
+      "info": {
+        "antenna_rx": 15,
+        "antenna_tx": 15,
+        "bands": {
+          "2G": {
+            "default_channel": 1,
+            "he": true,
+            "ht": true,
+            "max_width": 40,
+            "modes": [
+              "NOHT",
+              "HT20",
+              "HE20",
+              "HT40",
+              "HE40"
+            ]
+          }
+        },
+        "radios": []
+      },
+      "path": "platform/soc@0/c000000.wifi+1"
+    }
+  }
+}

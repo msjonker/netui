@@ -1,0 +1,77 @@
+{
+  "values": {
+    "cfg01411c": {
+      ".anonymous": true,
+      ".index": 0,
+      ".name": "cfg01411c",
+      ".type": "dnsmasq",
+      "authoritative": "1",
+      "boguspriv": "1",
+      "cachesize": "1000",
+      "domain": "lan",
+      "domainneeded": "1",
+      "ednspacket_max": "1232",
+      "expandhosts": "1",
+      "filter_a": "0",
+      "filter_aaaa": "0",
+      "filterwin2k": "0",
+      "leasefile": "/tmp/dhcp.leases",
+      "local": "/lan/",
+      "localise_queries": "1",
+      "localservice": "1",
+      "nonegcache": "0",
+      "nonwildcard": "1",
+      "readethers": "1",
+      "rebind_localhost": "1",
+      "rebind_protection": "1",
+      "resolvfile": "/tmp/resolv.conf.d/resolv.conf.auto"
+    },
+    "iot": {
+      ".anonymous": false,
+      ".index": 4,
+      ".name": "iot",
+      ".type": "dhcp",
+      "interface": "iot",
+      "leasetime": "12h",
+      "limit": "150",
+      "start": "100"
+    },
+    "lan": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "lan",
+      ".type": "dhcp",
+      "dhcpv4": "server",
+      "dhcpv6": "server",
+      "interface": "lan",
+      "leasetime": "12h",
+      "limit": "150",
+      "ra": "server",
+      "ra_flags": [
+        "managed-config",
+        "other-config"
+      ],
+      "ra_slaac": "1",
+      "start": "100"
+    },
+    "odhcpd": {
+      ".anonymous": false,
+      ".index": 3,
+      ".name": "odhcpd",
+      ".type": "odhcpd",
+      "leasefile": "/tmp/hosts/odhcpd",
+      "leasetrigger": "/usr/sbin/odhcpd-update",
+      "loglevel": "4",
+      "maindhcp": "0",
+      "piofolder": "/tmp/odhcpd-piofolder"
+    },
+    "wan": {
+      ".anonymous": false,
+      ".index": 2,
+      ".name": "wan",
+      ".type": "dhcp",
+      "ignore": "1",
+      "interface": "wan"
+    }
+  }
+}

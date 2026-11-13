@@ -1,0 +1,155 @@
+{
+  "interface": [
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "br-lan",
+      "dns-search": [],
+      "dns-server": [],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "lan",
+      "ipv4-address": [
+        {
+          "address": "10.231.1.2",
+          "mask": 24
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [
+        {
+          "address": "fd79:912:c719::",
+          "local-address": {
+            "address": "fd79:912:c719::1",
+            "mask": 60
+          },
+          "mask": 60
+        }
+      ],
+      "l3_device": "br-lan",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [],
+      "up": true,
+      "updated": [
+        "addresses"
+      ],
+      "uptime": 1276
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "lo",
+      "dns-search": [],
+      "dns-server": [],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "loopback",
+      "ipv4-address": [
+        {
+          "address": "127.0.0.1",
+          "mask": 8
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [],
+      "l3_device": "lo",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [],
+      "up": true,
+      "updated": [
+        "addresses"
+      ],
+      "uptime": 1276
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "eth1",
+      "dns-search": [],
+      "dns-server": [
+        "1.1.1.1",
+        "9.9.9.9"
+      ],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "wan",
+      "ipv4-address": [
+        {
+          "address": "10.231.0.2",
+          "mask": 24
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [],
+      "l3_device": "eth1",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [
+        {
+          "mask": 0,
+          "nexthop": "10.231.0.1",
+          "source": "0.0.0.0/0",
+          "target": "0.0.0.0"
+        }
+      ],
+      "up": true,
+      "updated": [
+        "addresses",
+        "routes"
+      ],
+      "uptime": 1276
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "device": "eth1",
+      "dynamic": false,
+      "interface": "wan6",
+      "pending": true,
+      "proto": "dhcpv6",
+      "up": false
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "interface": [
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "br-lan",
+      "dns-search": [],
+      "dns-server": [],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "lan",
+      "ipv4-address": [
+        {
+          "address": "10.232.1.1",
+          "mask": 24
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [
+        {
+          "address": "fd02:15d6:88b::",
+          "local-address": {
+            "address": "fd02:15d6:88b::1",
+            "mask": 60
+          },
+          "mask": 60
+        }
+      ],
+      "l3_device": "br-lan",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [],
+      "up": true,
+      "updated": [
+        "addresses"
+      ],
+      "uptime": 5
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "lo",
+      "dns-search": [],
+      "dns-server": [],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "loopback",
+      "ipv4-address": [
+        {
+          "address": "127.0.0.1",
+          "mask": 8
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [],
+      "l3_device": "lo",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [],
+      "up": true,
+      "updated": [
+        "addresses"
+      ],
+      "uptime": 112
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {
+        "dhcpserver": "10.232.0.1",
+        "hostname": "netui-vm",
+        "leasetime": 3600
+      },
+      "delegation": true,
+      "device": "eth1",
+      "dns-search": [],
+      "dns-server": [
+        "10.232.0.1"
+      ],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "wan",
+      "ipv4-address": [
+        {
+          "address": "10.232.0.133",
+          "mask": 24
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [],
+      "l3_device": "eth1",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "dhcp",
+      "route": [
+        {
+          "mask": 0,
+          "nexthop": "10.232.0.1",
+          "source": "10.232.0.133/32",
+          "target": "0.0.0.0"
+        }
+      ],
+      "up": true,
+      "updated": [
+        "addresses",
+        "routes",
+        "data"
+      ],
+      "uptime": 109
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "device": "eth1",
+      "dynamic": false,
+      "interface": "wan6",
+      "pending": true,
+      "proto": "dhcpv6",
+      "up": false
+    }
+  ]
+}

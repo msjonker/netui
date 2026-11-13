@@ -1,0 +1,12 @@
+{
+  "dhcp6_leases": [],
+  "dhcp_leases": [
+    {
+      "duid": "0100005e005301",
+      "expires": 42841,
+      "hostname": "workstation",
+      "ipaddr": "192.168.1.137",
+      "macaddr": "00:00:5E:00:53:01"
+    }
+  ]
+}

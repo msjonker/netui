@@ -1,0 +1,186 @@
+{
+  "log": [
+    {
+      "id": 1039,
+      "msg": "hostapd: phy0-ap0: STA 3a:7c:12:9e:44:01 IEEE 802.11: associated (aid 1)",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313300000
+    },
+    {
+      "id": 1040,
+      "msg": "hostapd: phy0-ap0: STA 3a:7c:12:9e:44:01 WPA: pairwise key handshake completed (RSN)",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313307000
+    },
+    {
+      "id": 1041,
+      "msg": "hostapd: phy0-ap0: AP-STA-CONNECTED 3a:7c:12:9e:44:01 auth_alg=open",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313314000
+    },
+    {
+      "id": 1042,
+      "msg": "hostapd: phy0-ap0: EAPOL-4WAY-HS-COMPLETED 3a:7c:12:9e:44:01",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313321000
+    },
+    {
+      "id": 1043,
+      "msg": "dnsmasq-dhcp[1]: DHCPDISCOVER(br-lan) 3a:7c:12:9e:44:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313328000
+    },
+    {
+      "id": 1044,
+      "msg": "dnsmasq-dhcp[1]: DHCPOFFER(br-lan) 192.168.1.142 3a:7c:12:9e:44:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313335000
+    },
+    {
+      "id": 1045,
+      "msg": "dnsmasq-dhcp[1]: DHCPREQUEST(br-lan) 192.168.1.142 3a:7c:12:9e:44:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313342000
+    },
+    {
+      "id": 1046,
+      "msg": "dnsmasq-dhcp[1]: DHCPACK(br-lan) 192.168.1.142 3a:7c:12:9e:44:01 iPhone",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313349000
+    },
+    {
+      "id": 1047,
+      "msg": "hostapd: phy1-ap0: AP-STA-POSSIBLE-PSK-MISMATCH 9e:12:aa:30:5b:77",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313356000
+    },
+    {
+      "id": 1048,
+      "msg": "netifd: Network device 'wan' link is up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313363000
+    },
+    {
+      "id": 1049,
+      "msg": "netifd: Interface 'wan' is setting up now",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313370000
+    },
+    {
+      "id": 1050,
+      "msg": "netifd: Interface 'wan' is now up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313377000
+    },
+    {
+      "id": 1051,
+      "msg": "netifd: Interface 'wan6' is now up",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313384000
+    },
+    {
+      "id": 1052,
+      "msg": "firewall: Reloading firewall due to ifup of wan (wan)",
+      "priority": 13,
+      "source": 1,
+      "time": 1760313391000
+    },
+    {
+      "id": 1053,
+      "msg": "dropbear[9601]: Bad password attempt for 'root' from 192.168.1.137:51122",
+      "priority": 84,
+      "source": 1,
+      "time": 1760313398000
+    },
+    {
+      "id": 1054,
+      "msg": "dispatcher.uc: luci: failed login on / for root from 192.168.1.137",
+      "priority": 84,
+      "source": 1,
+      "time": 1760313405000
+    },
+    {
+      "id": 1055,
+      "msg": "dispatcher.uc: luci: accepted login on / for root from 192.168.1.137",
+      "priority": 86,
+      "source": 1,
+      "time": 1760313412000
+    },
+    {
+      "id": 1056,
+      "msg": "hostapd: phy0-ap0: STA 3a:7c:12:9e:44:01 IEEE 802.11: disassociated",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313419000
+    },
+    {
+      "id": 1057,
+      "msg": "hostapd: phy0-ap0: AP-STA-DISCONNECTED 3a:7c:12:9e:44:01",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313426000
+    },
+    {
+      "id": 1058,
+      "msg": "dnsmasq-dhcp[1]: DHCPRELEASE(br-lan) 192.168.1.142 3a:7c:12:9e:44:01",
+      "priority": 30,
+      "source": 1,
+      "time": 1760313433000
+    },
+    {
+      "id": 1059,
+      "msg": "netifd: Network device 'wan' link is down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313440000
+    },
+    {
+      "id": 1060,
+      "msg": "netifd: Interface 'wan' has link connectivity loss",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313447000
+    },
+    {
+      "id": 1061,
+      "msg": "netifd: Interface 'wan' is now down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313454000
+    },
+    {
+      "id": 1062,
+      "msg": "netifd: Interface 'wan6' is now down",
+      "priority": 29,
+      "source": 1,
+      "time": 1760313461000
+    },
+    {
+      "id": 1063,
+      "msg": "dropbear[9610]: Password auth succeeded for 'root' from 192.168.1.137:51200",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313468000
+    },
+    {
+      "id": 1064,
+      "msg": "dropbear[9612]: Pubkey auth succeeded for 'root' with ssh-ed25519 key SHA256:yQ2cLzT8e1kq0p6r0Yx3Qy7bJw2k9mWvZ5n4H1aBcDe from 192.168.1.137:51210",
+      "priority": 85,
+      "source": 1,
+      "time": 1760313475000
+    }
+  ]
+}

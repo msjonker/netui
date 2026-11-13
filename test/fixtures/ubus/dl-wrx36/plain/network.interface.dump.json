@@ -1,0 +1,115 @@
+{
+  "interface": [
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "br-lan",
+      "dns-search": [],
+      "dns-server": [],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "lan",
+      "ipv4-address": [
+        {
+          "address": "192.168.1.1",
+          "mask": 24
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [
+        {
+          "address": "fd00:5191:f25a::",
+          "local-address": {
+            "address": "fd00:5191:f25a::1",
+            "mask": 60
+          },
+          "mask": 60
+        }
+      ],
+      "l3_device": "br-lan",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [],
+      "up": true,
+      "updated": [
+        "addresses"
+      ],
+      "uptime": 363
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "delegation": true,
+      "device": "lo",
+      "dns-search": [],
+      "dns-server": [],
+      "dns_metric": 0,
+      "dynamic": false,
+      "inactive": {
+        "dns-search": [],
+        "dns-server": [],
+        "ipv4-address": [],
+        "ipv6-address": [],
+        "neighbors": [],
+        "route": []
+      },
+      "interface": "loopback",
+      "ipv4-address": [
+        {
+          "address": "127.0.0.1",
+          "mask": 8
+        }
+      ],
+      "ipv6-address": [],
+      "ipv6-prefix": [],
+      "ipv6-prefix-assignment": [],
+      "l3_device": "lo",
+      "metric": 0,
+      "neighbors": [],
+      "pending": false,
+      "proto": "static",
+      "route": [],
+      "up": true,
+      "updated": [
+        "addresses"
+      ],
+      "uptime": 953
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "device": "wan",
+      "dynamic": false,
+      "interface": "wan",
+      "pending": false,
+      "proto": "dhcp",
+      "up": false
+    },
+    {
+      "autostart": true,
+      "available": true,
+      "data": {},
+      "device": "wan",
+      "dynamic": false,
+      "interface": "wan6",
+      "pending": false,
+      "proto": "dhcpv6",
+      "up": false
+    }
+  ]
+}

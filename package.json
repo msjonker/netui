@@ -1,0 +1,42 @@
+{
+  "name": "netui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A friendly web UI for OpenWrt routers, access points and mesh WiFi",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "record-fixtures": "scripts/record-fixtures.sh",
+    "deploy": "vite build && ssh root@$ROUTER_HOST 'mkdir -p /www/netui && rm -rf /www/netui/assets' && scp -O -r dist/* root@$ROUTER_HOST:/www/netui/",
+    "record-fixtures:dev": "NETUI_CONTAINER=netui-openwrt scripts/record-fixtures.sh",
+    "router:up": "mkdir -p dist && docker compose -f dev/openwrt/compose.yaml up -d --build && (dev/openwrt/wifi.sh || echo \"(no simulated WiFi)\")",
+    "router:down": "docker compose -f dev/openwrt/compose.yaml --profile wifi down",
+    "router:reset": "npm run router:down && npm run router:up",
+    "router:shell": "docker exec -it netui-openwrt ash",
+    "router:wifi": "dev/openwrt/wifi.sh"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.104.1",
+    "preact": "^10.29.8",
+    "uplot": "^1.6.32",
+    "uqr": "^0.1.3",
+    "wouter-preact": "^3.13.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/dom": "^8.20.1",
+    "@testing-library/preact": "^3.2.4",
+    "@types/node": "^26.6.4",
+    "jsdom": "^29.1.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "board_name": "qemu-standard-pc-q35-ich9-2009",
+  "hostname": "netui-vm",
+  "kernel": "6.12.94",
+  "model": "QEMU Standard PC (Q35 + ICH9, 2009)",
+  "release": {
+    "builddate": "1782737960",
+    "description": "OpenWrt 25.12.5 r33051-f5dae5ece4",
+    "distribution": "OpenWrt",
+    "firmware_url": "https://downloads.openwrt.org/",
+    "revision": "r33051-f5dae5ece4",
+    "target": "x86/64",
+    "version": "25.12.5"
+  },
+  "rootfs_type": "ext4",
+  "system": "Intel(R) Core(TM) Ultra 9 275HX"
+}

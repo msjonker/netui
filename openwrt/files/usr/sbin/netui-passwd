@@ -1,0 +1,40 @@
+#!/bin/sh
+# Create or update the rpcd login netui signs in with, bound to the netui ACL.
+# Run as root on the router:  netui-passwd [username]   (default: netui)
+
+user="${1:-netui}"
+
+case "$user" in
+	root) echo "netui-passwd: use a dedicated login, not root." >&2; exit 1 ;;
+	*[!a-z0-9_]* | "") echo "netui-passwd: username must be lowercase letters, digits or _." >&2; exit 1 ;;
+esac
+
+existing=$(uci -q get "rpcd.$user")
+if [ -n "$existing" ] && [ "$existing" != login ]; then
+	echo "netui-passwd: rpcd.$user exists and is not a login section." >&2
+	exit 1
+fi
+
+stty -echo 2>/dev/null
+printf 'New password for %s: ' "$user"; read -r pw; echo
+printf 'Repeat password: '; read -r pw2; echo
+stty echo 2>/dev/null
+
+if [ "$pw" != "$pw2" ]; then echo "netui-passwd: passwords do not match." >&2; exit 1; fi
+if [ ${#pw} -lt 8 ]; then echo "netui-passwd: use at least 8 characters." >&2; exit 1; fi
+
+hash=$(uhttpd -m "$pw") || exit 1
+
+uci -q batch <<EOF
+set rpcd.$user=login
+set rpcd.$user.username='$user'
+set rpcd.$user.password='$hash'
+delete rpcd.$user.read
+delete rpcd.$user.write
+add_list rpcd.$user.read='netui'
+add_list rpcd.$user.write='netui'
+commit rpcd
+EOF
+
+/etc/init.d/rpcd reload
+echo "Login '$user' ready. Sign in at http://<router>/netui/ (HTTPS recommended: the session id is a bearer token)."

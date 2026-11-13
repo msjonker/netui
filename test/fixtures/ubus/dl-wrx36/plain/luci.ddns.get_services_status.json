@@ -1,0 +1,16 @@
+{
+  "myddns_ipv4": {
+    "ip": "",
+    "last_update": null,
+    "next_check": null,
+    "next_update": "Stopped",
+    "pid": null
+  },
+  "myddns_ipv6": {
+    "ip": "",
+    "last_update": null,
+    "next_check": null,
+    "next_update": "Stopped",
+    "pid": null
+  }
+}

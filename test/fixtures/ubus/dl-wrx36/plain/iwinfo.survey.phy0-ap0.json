@@ -1,0 +1,256 @@
+{
+  "results": [
+    {
+      "active_time": 37988,
+      "busy_time": 2692,
+      "busy_time_ext": 0,
+      "mhz": 5180,
+      "noise": 146,
+      "rx_time": 0,
+      "tx_time": 195
+    },
+    {
+      "active_time": 150,
+      "busy_time": 8,
+      "busy_time_ext": 0,
+      "mhz": 5200,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 31,
+      "busy_time_ext": 0,
+      "mhz": 5220,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 7,
+      "busy_time_ext": 0,
+      "mhz": 5240,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 8,
+      "busy_time_ext": 0,
+      "mhz": 5260,
+      "noise": 160,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 1,
+      "busy_time_ext": 0,
+      "mhz": 5280,
+      "noise": 160,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 3,
+      "busy_time_ext": 0,
+      "mhz": 5300,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 4,
+      "busy_time_ext": 0,
+      "mhz": 5320,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 5,
+      "busy_time_ext": 0,
+      "mhz": 5500,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 5,
+      "busy_time_ext": 0,
+      "mhz": 5520,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 5,
+      "busy_time_ext": 0,
+      "mhz": 5540,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 9,
+      "busy_time_ext": 0,
+      "mhz": 5560,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 1,
+      "busy_time_ext": 0,
+      "mhz": 5580,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 2,
+      "busy_time_ext": 0,
+      "mhz": 5600,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 5,
+      "busy_time_ext": 0,
+      "mhz": 5620,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 12,
+      "busy_time_ext": 0,
+      "mhz": 5640,
+      "noise": 160,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 8,
+      "busy_time_ext": 0,
+      "mhz": 5660,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 4,
+      "busy_time_ext": 0,
+      "mhz": 5680,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 10,
+      "busy_time_ext": 0,
+      "mhz": 5700,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 5,
+      "busy_time_ext": 0,
+      "mhz": 5720,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 17,
+      "busy_time_ext": 0,
+      "mhz": 5745,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 28,
+      "busy_time_ext": 0,
+      "mhz": 5765,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 11,
+      "busy_time_ext": 0,
+      "mhz": 5785,
+      "noise": 160,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 23,
+      "busy_time_ext": 0,
+      "mhz": 5805,
+      "noise": 160,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 23,
+      "busy_time_ext": 0,
+      "mhz": 5825,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 9,
+      "busy_time_ext": 0,
+      "mhz": 5845,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 3,
+      "busy_time_ext": 0,
+      "mhz": 5865,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    },
+    {
+      "active_time": 150,
+      "busy_time": 3,
+      "busy_time_ext": 0,
+      "mhz": 5885,
+      "noise": 159,
+      "rx_time": 0,
+      "tx_time": 0
+    }
+  ]
+}

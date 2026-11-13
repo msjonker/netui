@@ -1,0 +1,1712 @@
+{
+  "results": [
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:00",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 38,
+      "quality_max": 70,
+      "signal": -72,
+      "ssid": "neighbor-0",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:01",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 20,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 38,
+      "quality_max": 70,
+      "signal": -72,
+      "ssid": "neighbor-1",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:02",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 37,
+      "quality_max": 70,
+      "signal": -73,
+      "ssid": "neighbor-2"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:03",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 38,
+      "quality_max": 70,
+      "signal": -72,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:04",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 38,
+      "quality_max": 70,
+      "signal": -72,
+      "ssid": "neighbor-4",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:05",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 38,
+      "quality_max": 70,
+      "signal": -72,
+      "ssid": "neighbor-5",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:06",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 40,
+      "quality_max": 70,
+      "signal": -70,
+      "ssid": "neighbor-6",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:07",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 42,
+      "quality_max": 70,
+      "signal": -68,
+      "ssid": "neighbor-7",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:08",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 44,
+      "quality_max": 70,
+      "signal": -66,
+      "ssid": "neighbor-8",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:09",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 47,
+      "quality_max": 70,
+      "signal": -63,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:10",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 45,
+      "quality_max": 70,
+      "signal": -65,
+      "ssid": "neighbor-10",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:11",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 20,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 47,
+      "quality_max": 70,
+      "signal": -63,
+      "ssid": "neighbor-11",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:12",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 37,
+      "quality_max": 70,
+      "signal": -73,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:13",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 40,
+      "quality_max": 70,
+      "signal": -70,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:14",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 42,
+      "quality_max": 70,
+      "signal": -68,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:15",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 36,
+      "quality_max": 70,
+      "signal": -74,
+      "ssid": "neighbor-15"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:16",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 20,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 33,
+      "quality_max": 70,
+      "signal": -77,
+      "ssid": "neighbor-16",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:17",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 37,
+      "quality_max": 70,
+      "signal": -73,
+      "ssid": "neighbor-17",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:18",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 39,
+      "quality_max": 70,
+      "signal": -71,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:19",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 41,
+      "quality_max": 70,
+      "signal": -69,
+      "ssid": "neighbor-19",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:20",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 43,
+      "quality_max": 70,
+      "signal": -67,
+      "ssid": "neighbor-20",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:21",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 39,
+      "quality_max": 70,
+      "signal": -71,
+      "ssid": "neighbor-21"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:22",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 34,
+      "quality_max": 70,
+      "signal": -76,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:23",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 46,
+      "quality_max": 70,
+      "signal": -64,
+      "ssid": "neighbor-23",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:24",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 35,
+      "quality_max": 70,
+      "signal": -75,
+      "ssid": "neighbor-24",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:25",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 20,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 39,
+      "quality_max": 70,
+      "signal": -71,
+      "ssid": "neighbor-25",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:26",
+      "channel": 1,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 36,
+      "quality_max": 70,
+      "signal": -74,
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:27",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 34,
+      "quality_max": 70,
+      "signal": -76,
+      "ssid": "neighbor-27",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:28",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 20,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 37,
+      "quality_max": 70,
+      "signal": -73,
+      "ssid": "neighbor-28"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:29",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Master",
+      "quality": 47,
+      "quality_max": 70,
+      "signal": -63,
+      "ssid": "neighbor-29",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:30",
+      "channel": 2,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 2,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2417,
+      "mode": "Master",
+      "quality": 43,
+      "quality_max": 70,
+      "signal": -67,
+      "ssid": "neighbor-30"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:31",
+      "channel": 3,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 3,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2422,
+      "mode": "Master",
+      "quality": 44,
+      "quality_max": 70,
+      "signal": -66,
+      "ssid": "neighbor-31"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:32",
+      "channel": 4,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 4,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2427,
+      "mode": "Master",
+      "quality": 44,
+      "quality_max": 70,
+      "signal": -66,
+      "ssid": "neighbor-32"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:33",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 55,
+      "quality_max": 70,
+      "signal": -55,
+      "ssid": "neighbor-33"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:34",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Mesh Point",
+      "quality": 40,
+      "quality_max": 70,
+      "signal": -70,
+      "ssid": "neighbor-34",
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:35",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Mesh Point",
+      "quality": 49,
+      "quality_max": 70,
+      "signal": -61,
+      "ssid": "neighbor-35",
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:36",
+      "channel": 6,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 51,
+      "quality_max": 70,
+      "signal": -59,
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:37",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 52,
+      "quality_max": 70,
+      "signal": -58,
+      "ssid": "neighbor-37",
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:38",
+      "channel": 6,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 50,
+      "quality_max": 70,
+      "signal": -60,
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:39",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 49,
+      "quality_max": 70,
+      "signal": -61,
+      "ssid": "neighbor-39",
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:40",
+      "channel": 6,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 58,
+      "quality_max": 70,
+      "signal": -52,
+      "ssid": "neighbor-40"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:41",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 56,
+      "quality_max": 70,
+      "signal": -54,
+      "ssid": "neighbor-41"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:42",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 56,
+      "quality_max": 70,
+      "signal": -54,
+      "ssid": "neighbor-42"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:43",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 56,
+      "quality_max": 70,
+      "signal": -54,
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:44",
+      "channel": 6,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 39,
+      "quality_max": 70,
+      "signal": -71,
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      },
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:45",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 39,
+      "quality_max": 70,
+      "signal": -71,
+      "ssid": "neighbor-45",
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:46",
+      "channel": 6,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 6,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2437,
+      "mode": "Master",
+      "quality": 43,
+      "quality_max": 70,
+      "signal": -67,
+      "ssid": "neighbor-46",
+      "vht_operation": {
+        "center_freq_1": 6,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:47",
+      "channel": 7,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 7,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2442,
+      "mode": "Master",
+      "quality": 31,
+      "quality_max": 70,
+      "signal": -79,
+      "ssid": "neighbor-47"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:48",
+      "channel": 8,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 8,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2447,
+      "mode": "Master",
+      "quality": 34,
+      "quality_max": 70,
+      "signal": -76,
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:49",
+      "channel": 1,
+      "encryption": {
+        "authentication": [
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 1,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2412,
+      "mode": "Mesh Point",
+      "quality": 43,
+      "quality_max": 70,
+      "signal": -67,
+      "ssid": "neighbor-49",
+      "vht_operation": {
+        "center_freq_1": 1,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:50",
+      "channel": 10,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 20,
+        "primary_channel": 10,
+        "secondary_channel_offset": "below"
+      },
+      "mhz": 2457,
+      "mode": "Master",
+      "quality": 26,
+      "quality_max": 70,
+      "signal": -84,
+      "ssid": "neighbor-50"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:51",
+      "channel": 11,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 37,
+      "quality_max": 70,
+      "signal": -73,
+      "ssid": "neighbor-51"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:52",
+      "channel": 11,
+      "encryption": {
+        "enabled": false
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 68,
+      "quality_max": 70,
+      "signal": -42,
+      "ssid": "neighbor-52"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:53",
+      "channel": 11,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 68,
+      "quality_max": 70,
+      "signal": -42,
+      "ssid": null
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:54",
+      "channel": 11,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 68,
+      "quality_max": 70,
+      "signal": -42,
+      "ssid": "neighbor-54"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:55",
+      "channel": 11,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 68,
+      "quality_max": 70,
+      "signal": -42,
+      "ssid": "neighbor-55"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:56",
+      "channel": 11,
+      "encryption": {
+        "authentication": [
+          "psk",
+          "sae"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2,
+          3
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 68,
+      "quality_max": 70,
+      "signal": -42,
+      "ssid": "neighbor-56"
+    },
+    {
+      "band": 2,
+      "bssid": "02:00:00:00:00:57",
+      "channel": 11,
+      "encryption": {
+        "authentication": [
+          "psk"
+        ],
+        "ciphers": [
+          "ccmp"
+        ],
+        "enabled": true,
+        "wpa": [
+          2
+        ]
+      },
+      "ht_operation": {
+        "channel_width": 2040,
+        "primary_channel": 11,
+        "secondary_channel_offset": "no secondary"
+      },
+      "mhz": 2462,
+      "mode": "Master",
+      "quality": 31,
+      "quality_max": 70,
+      "signal": -79,
+      "ssid": "neighbor-57",
+      "vht_operation": {
+        "center_freq_1": 11,
+        "center_freq_2": 0,
+        "channel_width": 40
+      }
+    }
+  ]
+}

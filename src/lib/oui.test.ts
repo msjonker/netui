@@ -1,0 +1,35 @@
+import { describe, expect, it } from 'vitest';
+import { ouiVendor, vendorLabel } from './oui';
+
+describe('OUI lookup', () => {
+  it('finds vendors from the IEEE registry in any MAC notation', () => {
+    expect(ouiVendor('b8:27:eb:12:34:56')).toEqual({ name: 'Raspberry Pi', kind: 'computer' });
+    expect(ouiVendor('B8-27-EB-12-34-56')?.name).toBe('Raspberry Pi');
+    expect(ouiVendor('083A8D000001')).toEqual({ name: 'Espressif', kind: 'iot' });
+    expect(ouiVendor('04:0c:ce:00:00:01')).toEqual({ name: 'Apple', kind: undefined });
+    expect(ouiVendor('04:18:0f:00:00:01')).toEqual({ name: 'Samsung', kind: 'tv' });
+    expect(ouiVendor('34:7e:5c:00:00:01')?.name).toBe('Sonos');
+    expect(ouiVendor('00:11:32:00:00:01')).toEqual({ name: 'Synology', kind: 'nas' });
+  });
+
+  it('decodes the first and last entry of a group', () => {
+    // Raspberry Pi's six OUIs, 28:cd:c1 first and e4:5f:01 last; ecobee has one.
+    expect(ouiVendor('28:cd:c1:aa:bb:cc')?.name).toBe('Raspberry Pi');
+    expect(ouiVendor('e4:5f:01:aa:bb:cc')?.name).toBe('Raspberry Pi');
+    expect(ouiVendor('44:61:32:aa:bb:cc')?.name).toBe('ecobee');
+  });
+
+  it('knows nothing about unlisted or malformed addresses', () => {
+    expect(ouiVendor('00:00:00:00:00:01')).toBeUndefined();
+    expect(ouiVendor('not a mac')).toBeUndefined();
+    expect(vendorLabel('00:00:00:00:00:01')).toBeUndefined();
+  });
+
+  it('labels locally administered (randomized) MACs as private', () => {
+    // The recorded dev-container phone and laptop both use private addresses.
+    expect(vendorLabel('DA:A1:19:00:01:11')).toBe('Private address');
+    expect(vendorLabel('02:4e:55:00:01:10')).toBe('Private address');
+    expect(ouiVendor('02:4e:55:00:01:10')).toBeUndefined();
+    expect(vendorLabel('b8:27:eb:00:00:01')).toBe('Raspberry Pi');
+  });
+});

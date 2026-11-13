@@ -1,0 +1,65 @@
+{
+  "values": {
+    "cfg030f15": {
+      ".anonymous": true,
+      ".index": 2,
+      ".name": "cfg030f15",
+      ".type": "device",
+      "name": "br-lan",
+      "ports": [
+        "lan1",
+        "lan2",
+        "lan3",
+        "lan4"
+      ],
+      "type": "bridge"
+    },
+    "globals": {
+      ".anonymous": false,
+      ".index": 1,
+      ".name": "globals",
+      ".type": "globals",
+      "packet_steering": "0",
+      "ula_prefix": "fd00:5191:f25a::/48"
+    },
+    "lan": {
+      ".anonymous": false,
+      ".index": 3,
+      ".name": "lan",
+      ".type": "interface",
+      "device": "br-lan",
+      "ip6assign": "60",
+      "ipaddr": [
+        "192.168.1.1/24"
+      ],
+      "proto": "static"
+    },
+    "loopback": {
+      ".anonymous": false,
+      ".index": 0,
+      ".name": "loopback",
+      ".type": "interface",
+      "device": "lo",
+      "ipaddr": [
+        "127.0.0.1/8"
+      ],
+      "proto": "static"
+    },
+    "wan": {
+      ".anonymous": false,
+      ".index": 4,
+      ".name": "wan",
+      ".type": "interface",
+      "device": "wan",
+      "proto": "dhcp"
+    },
+    "wan6": {
+      ".anonymous": false,
+      ".index": 5,
+      ".name": "wan6",
+      ".type": "interface",
+      "device": "wan",
+      "proto": "dhcpv6"
+    }
+  }
+}

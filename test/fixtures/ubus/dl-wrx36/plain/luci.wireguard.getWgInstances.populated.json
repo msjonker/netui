@@ -1,0 +1,20 @@
+{
+  "wg0": {
+    "fwmark": "off",
+    "listen_port": "51820",
+    "name": "wg0",
+    "peers": [
+      {
+        "allowed_ips": [],
+        "endpoint": "(none)",
+        "latest_handshake": "0",
+        "name": "Phone",
+        "persistent_keepalive": "off",
+        "public_key": "REDACTED",
+        "transfer_rx": "0",
+        "transfer_tx": "0"
+      }
+    ],
+    "public_key": "REDACTED"
+  }
+}
