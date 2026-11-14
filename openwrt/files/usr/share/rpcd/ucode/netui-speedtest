@@ -1,0 +1,134 @@
+// netui.speedtest: an internet speed test with librespeed-cli (LibreSpeed
+// servers) or, when only that is installed, the much smaller speedtestcpp
+// (Ookla servers).
+//
+//   status   a speed test installed, a run in progress, and the last results.
+//   start    run a test in the background (about 30 s, and as much data as
+//            the line moves in that time).
+//
+// rpcd runs ucode in-process, so the test runs as a detached job in
+// /tmp/netui-speedtest. A finished run is added to /etc/netui/speedtest.json
+// the first time status sees it; only speeds, latency and the server are
+// kept, never the public address, provider or location speedtestcpp reports.
+
+'use strict';
+
+import { readfile, writefile, mkdir, access, unlink, rename } from 'fs';
+
+const DIR = '/tmp/netui-speedtest';
+const HISTORY = '/etc/netui/speedtest.json';
+const LIBRESPEED = '/usr/bin/librespeed-cli';
+const SPEEDTEST = '/usr/bin/speedtest';
+const KEEP = 20;
+const TIMEOUT_S = 120;
+
+function tool() {
+	return access(LIBRESPEED) ? 'librespeed' : access(SPEEDTEST) ? 'speedtestcpp' : null;
+}
+
+// speedtestcpp has no connect timeout: a server that does not answer leaves
+// it waiting forever. Pick servers by a real latency test, and stop either
+// tool after two minutes.
+const COMMAND = {
+	librespeed: `${LIBRESPEED} --json --duration 10`,
+	speedtestcpp: `${SPEEDTEST} --force-by-latency-test --output json`,
+};
+
+const job = (name) => `#!/bin/sh
+cd ${DIR} || exit 1
+echo $$ > pid
+echo ${name} > tool
+${COMMAND[name]} > out.json 2> err &
+t=$!
+(
+	i=0
+	while [ $i -lt ${TIMEOUT_S} ] && [ ! -f exit ]; do sleep 1; i=$((i + 1)); done
+	[ -f exit ] || { kill $t; echo 'The speed test did not finish within ${TIMEOUT_S / 60} minutes.' > err; }
+) &
+wait $t
+echo $? > exit
+`;
+
+function parse(s) {
+	try {
+		return length(s) ? json(s) : null;
+	}
+	catch (e) {
+		return null;
+	}
+}
+
+function history() {
+	return parse(readfile(HISTORY)) ?? [];
+}
+
+function running() {
+	const pid = trim(readfile(`${DIR}/pid`) ?? '');
+	return !access(`${DIR}/exit`) && length(pid) > 0 && !!access(`/proc/${pid}`);
+}
+
+// Move a finished run into the history (once), or report why it failed.
+function collect() {
+	const exit = trim(readfile(`${DIR}/exit`) ?? '');
+	if (!length(exit) || access(`${DIR}/collected`))
+		return null;
+	writefile(`${DIR}/collected`, '');
+	const out = parse(readfile(`${DIR}/out.json`));
+	// librespeed-cli prints a list of results in Mbit/s, speedtestcpp one in bit/s.
+	const lib = type(out) == 'array';
+	const r = lib ? out[0] : out;
+	if (exit != '0' || r?.download == null)
+		return trim(readfile(`${DIR}/err`) ?? '') || r?._ || `the speed test exited with ${exit}`;
+	const scale = lib ? 1e6 : 1;
+	const started = +(readfile(`${DIR}/started`) ?? 0);
+	const h = history();
+	unshift(h, {
+		at: started || time(),
+		download: r.download * scale,
+		upload: r.upload * scale,
+		ping: r.ping,
+		jitter: r.jitter,
+		server: r.server?.sponsor ? `${r.server.sponsor} (${r.server.name})` : r.server?.name,
+	});
+	mkdir('/etc/netui', 0700);
+	writefile(`${HISTORY}.new`, sprintf('%J\n', slice(h, 0, KEEP)));
+	rename(`${HISTORY}.new`, HISTORY);
+	return null;
+}
+
+const methods = {
+	status: {
+		call: function() {
+			const error = collect() ?? trim(readfile(`${DIR}/error`) ?? '');
+			if (length(error))
+				writefile(`${DIR}/error`, error);
+			return {
+				available: !!tool(),
+				tool: tool(),
+				running: running(),
+				started: running() ? +(readfile(`${DIR}/started`) ?? 0) : null,
+				error: length(error) ? error : null,
+				history: history(),
+			};
+		}
+	},
+
+	start: {
+		call: function() {
+			const t = tool();
+			if (!t)
+				return { error: 'no speed test is installed (librespeed-cli or speedtestcpp)' };
+			if (running())
+				return { error: 'a speed test is already running' };
+			mkdir(DIR, 0700);
+			for (let f in ['exit', 'pid', 'out.json', 'err', 'collected', 'error', 'tool'])
+				unlink(`${DIR}/${f}`);
+			writefile(`${DIR}/started`, `${time()}`);
+			writefile(`${DIR}/job.sh`, job(t));
+			system(`/bin/sh ${DIR}/job.sh </dev/null >/dev/null 2>&1 &`);
+			return { result: true };
+		}
+	},
+};
+
+return { 'netui.speedtest': methods };

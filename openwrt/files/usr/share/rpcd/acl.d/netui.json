@@ -14,6 +14,7 @@
 				"luci.wireguard": [ "getWgInstances" ],
 				"netui.devices": [ "list", "discover" ],
 				"netui.firmware": [ "status" ],
+				"netui.speedtest": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
@@ -30,6 +31,7 @@
 				"system": [ "reboot" ],
 				"netui.devices": [ "adopt", "forget", "call", "sync", "rename", "credentials" ],
 				"netui.firmware": [ "check", "upgrade" ],
+				"netui.speedtest": [ "start" ],
 				"file": [ "exec" ]
 			},
 			"file": {

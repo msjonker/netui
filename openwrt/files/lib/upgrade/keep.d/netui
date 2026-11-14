@@ -4,6 +4,7 @@
 /usr/share/rpcd/acl.d/netui.json
 /usr/share/rpcd/ucode/netui-devices
 /usr/share/rpcd/ucode/netui-firmware
+/usr/share/rpcd/ucode/netui-speedtest
 /usr/sbin/netui-passwd
 /etc/netui/
 /lib/upgrade/keep.d/netui

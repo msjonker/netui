@@ -5,7 +5,8 @@ import { findUplink, networkLabel, normalizeSystem, uplinkOnline } from '../../m
 import { clientAddresses, displayName } from '../../model/clients';
 import { averageExperience } from '../../model/experience';
 import { topClientsByUsage } from '../../model/traffic';
-import { collapseRepeats, type NetEvent } from '../../model/events';
+import { collapseRepeats, relativeTime, type NetEvent } from '../../model/events';
+import { useSpeedTest } from '../../api/speedtest';
 import { useClientDetails, useClients, useEvents, useSwitch } from '../../model/hooks';
 import { buildTopology } from '../../model/topology';
 import type { SwitchPort } from '../../model/ports';
@@ -80,6 +81,7 @@ function InternetCard() {
   // From the router's view the WAN port receives downloads.
   const tp = useThroughput(uplink?.device);
   const online = uplinkOnline(uplink, tp.query.data);
+  const speed = useSpeedTest().status.data?.history[0];
 
   return (
     <Card
@@ -125,6 +127,12 @@ function InternetCard() {
           <p class="-mt-24 mb-20 text-center text-xs text-muted">Collecting throughput… (updates every 3 s)</p>
         )}
       </div>
+      {speed && (
+        <Link href="/settings/internet" class="mt-2 block text-xs text-muted hover:text-accent">
+          Speed test {relativeTime(speed.at * 1000, Date.now())}: {formatBitrate(speed.download / 8, 0)} down,{' '}
+          {formatBitrate(speed.upload / 8, 0)} up, {Math.round(speed.ping)} ms
+        </Link>
+      )}
     </Card>
   );
 }

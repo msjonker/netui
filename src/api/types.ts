@@ -562,3 +562,27 @@ export interface FirmwareStatus extends DevicePluginError {
 export interface FirmwareStarted extends DevicePluginError {
   result?: boolean;
 }
+
+// --- netui.speedtest --------------------------------------------------------
+// The gateway's speed test plugin (bench-v2/netui.speedtest.status.*).
+
+/** One finished run. Speeds in bit/s, latency in ms, `at` in Unix seconds. */
+export interface SpeedTestResult {
+  at: number;
+  download: number;
+  upload: number;
+  ping: number;
+  jitter: number;
+  server?: string;
+}
+
+export interface SpeedTestStatus {
+  available: boolean;
+  tool: 'librespeed' | 'speedtestcpp' | null;
+  running: boolean;
+  started: number | null;
+  /** Why the last run failed, until the next one starts. */
+  error: string | null;
+  /** Newest first. */
+  history: SpeedTestResult[];
+}

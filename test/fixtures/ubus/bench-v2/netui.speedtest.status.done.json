@@ -1,0 +1,17 @@
+{
+	"available": true,
+	"tool": "librespeed",
+	"running": false,
+	"started": null,
+	"error": null,
+	"history": [
+		{
+			"at": 1794690248,
+			"download": 913150000,
+			"upload": 40080000,
+			"ping": 15.16,
+			"jitter": 1.1799999999999999,
+			"server": "Example City (LibreSpeed)"
+		}
+	]
+}

@@ -5,6 +5,7 @@ import { IconExternal } from '../../components/icons';
 import { Card, LoadError, Page, Spinner } from '../../components/ui';
 import { DdnsCard, SqmCard, UpnpCard } from './Services';
 import { WanDrawer, WanStatusCard } from './Wan';
+import { SpeedTestCard } from './SpeedTest';
 
 const LUCI = '/cgi-bin/luci/admin';
 
@@ -44,7 +45,7 @@ export function InternetPage() {
   ].filter(Boolean);
 
   return (
-    <Page title="Internet" subtitle="WAN connection, Smart Queues, UPnP and Dynamic DNS">
+    <Page title="Internet" subtitle="WAN connection, speed test, Smart Queues, UPnP and Dynamic DNS">
       <LoadError error={firstError(ifaces, network)} />
       {!ifaces.data || !network.data ? (
         <Spinner />
@@ -59,6 +60,7 @@ export function InternetPage() {
               </p>
             </Card>
           )}
+          <SpeedTestCard />
           {sqm.data && l3 && <SqmCard cfg={sqm.data} wanL3={l3} />}
           {upnpd.data && <UpnpCard cfg={upnpd.data} />}
           {ddns.data && wan && <DdnsCard cfg={ddns.data} wan={wan.section} wan6={wan.v6?.section} />}
