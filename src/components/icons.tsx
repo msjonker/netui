@@ -349,3 +349,11 @@ export const IconServer = (p: P) => (
     <path d="M6 6h.01M6 14h.01" />
   </Svg>
 );
+
+export const IconAccessPoint = (p: P) => (
+  <Svg {...p}>
+    <ellipse cx="10" cy="11.5" rx="7" ry="3" />
+    <path d="M3 11.5V13c0 1.66 3.13 3 7 3s7-1.34 7-3v-1.5" />
+    <path d="M7.5 6.5a3.5 3.5 0 0 1 5 0M5.5 4.5a6.5 6.5 0 0 1 9 0" />
+  </Svg>
+);

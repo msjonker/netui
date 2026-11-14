@@ -94,6 +94,28 @@ Browse to **http://192.168.1.1/netui/** and sign in as `netui`. If LuCI is
 installed with HTTPS (`luci-ssl`), use **https://192.168.1.1/netui/** instead:
 the login session is a bearer token, so HTTPS is recommended.
 
+### Adding access points
+
+Any other OpenWrt router (24.10 or 25.x) can become an access point managed
+from netui's **Devices** page. On that router:
+
+1. Install `netui-agent` the same way as above (`netui-agent-0.2.0-r1.apk` or
+   `netui-agent_0.2.0-r1_all.ipk` from the release).
+2. Run `netui-agent prepare` and confirm. It turns the router into a plain
+   access point: every port joins one LAN bridge, it gets its address from the
+   gateway's DHCP, and its own DHCP server, IPv6 announcements and firewall go off.
+3. Plug any of its ports into the gateway's LAN.
+
+On the gateway, open **Devices**: the router appears under *Ready to adopt*.
+Click **Adopt**, name it, and give its current root password (empty on a fresh
+install). netui then gives it a dedicated login and a new random root password
+(shown on its details page), and copies the gateway's WiFi networks to it.
+From then on every WiFi change on the gateway is copied to all access points.
+
+`prepare` is a separate step on purpose: installing the package on your main
+router by mistake changes nothing. WiFi networks on networks other than the LAN
+are not copied yet (they need VLANs carried to the access point).
+
 ### Optional features
 
 These pages appear when the matching OpenWrt packages are installed

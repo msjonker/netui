@@ -351,8 +351,10 @@ export function ApplyDialog({
         <div class="py-2">{resultView(s.result)}</div>
         {s.failedServices && (
           <p class="pb-2 text-xs text-warn" role="status">
-            Saved, but restarting {s.failedServices.join(', ')} failed. The change takes effect after the next restart of
-            the router.
+            Saved, but updating {s.failedServices.join(', ')} failed.{' '}
+            {s.failedServices.includes('access points')
+              ? 'Copy the WiFi again from the Devices page once they are reachable.'
+              : 'The change takes effect after the next restart of the router.'}
           </p>
         )}
       </Modal>

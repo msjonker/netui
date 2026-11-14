@@ -1,0 +1,9 @@
+{
+  "data": {
+    "devices": [
+      "phy1-ap0",
+      "phy2-ap0"
+    ]
+  },
+  "status": 0
+}

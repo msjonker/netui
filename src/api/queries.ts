@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { QueryClient, useQueries, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { read, SessionExpiredError, TransportError } from './ubus';
 import { getChanges, getConfig } from './uci';
+import { discoverDevices, listDevices, relay } from './devices';
 import type {
   AssocList,
   BoardJson,
@@ -440,3 +441,67 @@ export function useWifiScan(devices: string[]) {
  */
 export const reconnectClient = (ifname: string, mac: string) =>
   call(`hostapd.${ifname}`, 'del_client', { addr: mac, reason: 5, deauth: true, ban_time: 0 });
+
+// ---------------------------------------------------------------------------
+// --- Devices (adopted access points, via the gateway's netui.devices plugin)
+
+export const deviceKeys = {
+  list: ['netui.devices', 'list'] as const,
+  pending: ['netui.devices', 'discover'] as const,
+  system: (mac: string) => ['netui.devices', 'call', mac, 'system'] as const,
+  radios: (mac: string) => ['netui.devices', 'call', mac, 'iwinfo'] as const,
+};
+
+/** Adopted access points with live online state. */
+export const useManagedDevices = (refetchInterval: number | false = LIVE_MS) =>
+  useQuery({ queryKey: deviceKeys.list, queryFn: listDevices, refetchInterval });
+
+/** Access points waiting for adoption. Probing the LAN is cheap but not free: every 15 s. */
+export const usePendingDevices = (enabled = true) =>
+  useQuery({ queryKey: deviceKeys.pending, queryFn: discoverDevices, enabled, refetchInterval: 15_000 });
+
+export interface DeviceSystem {
+  info: SystemInfo;
+  board: SystemBoard;
+}
+
+/** Uptime, load, memory and firmware of an adopted device. */
+export const useDeviceSystem = (mac: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: deviceKeys.system(mac ?? ''),
+    enabled: !!mac && enabled,
+    refetchInterval: LIVE_MS,
+    queryFn: async (): Promise<DeviceSystem> => {
+      const [info, board] = await Promise.all([
+        relay<SystemInfo>(mac!, 'system', 'info'),
+        relay<SystemBoard>(mac!, 'system', 'board'),
+      ]);
+      return { info, board };
+    },
+  });
+
+export interface DeviceRadio {
+  ifname: string;
+  info: IwinfoInfo;
+  clients: number;
+}
+
+/** The access point's broadcasting radios and their client counts. */
+export const useDeviceRadios = (mac: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: deviceKeys.radios(mac ?? ''),
+    enabled: !!mac && enabled,
+    refetchInterval: LIVE_MS,
+    queryFn: async (): Promise<DeviceRadio[]> => {
+      const { devices } = await relay<IwinfoDevices>(mac!, 'iwinfo', 'devices');
+      return Promise.all(
+        devices.map(async (ifname) => {
+          const [info, assoc] = await Promise.all([
+            relay<IwinfoInfo>(mac!, 'iwinfo', 'info', { device: ifname }),
+            relay<AssocList>(mac!, 'iwinfo', 'assoclist', { device: ifname }),
+          ]);
+          return { ifname, info, clients: assoc.results.length };
+        }),
+      );
+    },
+  });

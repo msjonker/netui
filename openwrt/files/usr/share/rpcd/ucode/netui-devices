@@ -1,0 +1,445 @@
+// netui.devices: the gateway side of netui multi-AP management.
+//
+// Access points run netui-agent. The browser only ever talks to the gateway;
+// this plugin finds pending agents on the LAN, adopts them (a dedicated login
+// on the AP, stored here), relays an allowlisted set of ubus calls to them and
+// mirrors the gateway's WiFi onto them. Requests to APs go over HTTP to their
+// /ubus with uclient-fetch, so nothing stays resident.
+//
+// rpcd serves one call at a time, so every request to an AP has a short
+// timeout and discovery probes all candidates in parallel.
+
+'use strict';
+
+import { readfile, writefile, mkdir, unlink, chmod, popen, lsdir } from 'fs';
+import { cursor } from 'uci';
+
+const REGISTRY = '/etc/netui/devices.json';
+const RUN = '/tmp/netui';
+const NULL_SID = '00000000000000000000000000000000';
+// Also the UCI section name on the AP, so no hyphen.
+const AP_LOGIN = 'netui_gw';
+
+// What the browser may ask an adopted AP for. The AP's own ACL for the
+// gateway login (netui-agent.json) allows the same set and nothing more.
+const ALLOWED = {
+	'system': ['board', 'info', 'reboot'],
+	'network.interface': ['dump'],
+	'network.device': ['status'],
+	'iwinfo': ['devices', 'info', 'assoclist', 'scan', 'survey', 'freqlist', 'txpowerlist', 'countrylist'],
+	'hostapd.*': ['get_status', 'get_clients', 'del_client'],
+	'log': ['read'],
+	'uci': ['get', 'state', 'changes', 'set', 'add', 'delete', 'rename', 'order', 'apply', 'confirm', 'rollback', 'revert'],
+	'netui.agent': ['info'],
+};
+
+function shellquote(s) {
+	return `'${replace(s, "'", "'\\''")}'`;
+}
+
+function sh(cmd) {
+	const p = popen(cmd);
+	if (!p)
+		return '';
+	const out = p.read('all');
+	p.close();
+	return trim(out ?? '');
+}
+
+function load_registry() {
+	return json(readfile(REGISTRY) ?? '{"devices":{}}');
+}
+
+function save_registry(reg) {
+	mkdir('/etc/netui', 0700);
+	writefile(REGISTRY, sprintf('%.J\n', reg));
+	chmod(REGISTRY, 0600);
+}
+
+function sessions() {
+	return json(readfile(`${RUN}/sessions.json`) ?? '{}');
+}
+
+function save_sessions(s) {
+	mkdir(RUN, 0700);
+	writefile(`${RUN}/sessions.json`, sprintf('%J', s));
+	chmod(`${RUN}/sessions.json`, 0600);
+}
+
+function random_secret(n) {
+	return sh(`tr -dc 'A-Za-z0-9' </dev/urandom | head -c ${n}`);
+}
+
+// One JSON-RPC call to http://ip/ubus. The body goes through a 0600 temp file
+// so passwords never show up in a process list.
+function ubus_at(ip, sid, object, method, args, timeout) {
+	mkdir(RUN, 0700);
+	const body = sh(`mktemp ${RUN}/req.XXXXXX`);
+	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [sid, object, method, args ?? {}] }));
+	chmod(body, 0600);
+	const out = sh(`uclient-fetch -q -T ${timeout ?? 3} -O - --header='Content-Type: application/json' --post-file=${body} ${shellquote(`http://${ip}/ubus`)} 2>/dev/null`);
+	unlink(body);
+	const r = length(out) ? json(out) : null;
+	if (!r)
+		return { error: 'unreachable' };
+	if (r.error)
+		return { error: r.error.message, code: r.error.code };
+	return { status: r.result[0], data: r.result[1] };
+}
+
+function own_addresses() {
+	return split(sh("ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1"), '\n');
+}
+
+// LAN hosts worth probing: DHCP leases plus anything in the neighbour table.
+function lan_hosts() {
+	const hosts = {};
+	for (let line in split(readfile('/tmp/dhcp.leases') ?? '', '\n')) {
+		const f = split(line, ' ');
+		if (length(f) >= 3)
+			hosts[f[2]] = lc(f[1]);
+	}
+	for (let line in split(sh('ip -4 neigh show'), '\n')) {
+		const m = match(line, /^([0-9.]+) dev \S+ lladdr ([0-9a-f:]+)/);
+		if (m && !hosts[m[1]])
+			hosts[m[1]] = m[2];
+	}
+	for (let ip in own_addresses())
+		delete hosts[ip];
+	return hosts;
+}
+
+// Current address of a device: its DHCP lease or neighbour entry by MAC
+// (adoption switches the AP to DHCP), else the last one seen.
+function address_of(dev) {
+	const hosts = lan_hosts();
+	for (let ip, mac in hosts)
+		if (mac == dev.mac)
+			return ip;
+	return dev.ip;
+}
+
+// Probe many hosts at once for netui-agent; returns { ip: info }.
+function probe(ips) {
+	if (!length(ips))
+		return {};
+	mkdir(RUN, 0700);
+	const dir = sh(`mktemp -d ${RUN}/probe.XXXXXX`);
+	const body = `${dir}/body`;
+	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [NULL_SID, 'netui.agent', 'info', {}] }));
+	let cmd = '';
+	for (let ip in ips)
+		cmd += `(uclient-fetch -q -T 2 -O ${dir}/${ip} --header='Content-Type: application/json' --post-file=${body} http://${ip}/ubus >/dev/null 2>&1) & `;
+	sh(`${cmd} wait`);
+	const found = {};
+	for (let ip in ips) {
+		const r = json(readfile(`${dir}/${ip}`) ?? 'null');
+		if (r?.result?.[0] == 0 && r.result[1]?.agent)
+			found[ip] = r.result[1];
+	}
+	sh(`rm -rf ${shellquote(dir)}`);
+	return found;
+}
+
+function public_view(dev, live, ip) {
+	return {
+		mac: dev.mac,
+		name: dev.name,
+		model: live?.model ?? dev.model,
+		board_name: dev.board_name,
+		ip: ip,
+		online: !!live,
+		hostname: live?.hostname,
+		release: live?.release ?? dev.release,
+		agent: live?.agent,
+		adopted_at: dev.adopted_at,
+	};
+}
+
+function login(dev, ip) {
+	const r = ubus_at(ip, NULL_SID, 'session', 'login', { username: AP_LOGIN, password: dev.password });
+	if (r.status != 0)
+		return null;
+	const s = sessions();
+	s[dev.mac] = r.data.ubus_rpc_session;
+	save_sessions(s);
+	return s[dev.mac];
+}
+
+function allowed(object, method) {
+	const key = match(object, /^hostapd\./) ? 'hostapd.*' : object;
+	return index(ALLOWED[key] ?? [], method) >= 0;
+}
+
+// Relay one call to an adopted AP, logging in again once if the session expired.
+function relay(dev, object, method, args) {
+	const ip = address_of(dev);
+	let sid = sessions()[dev.mac] ?? login(dev, ip);
+	if (!sid)
+		return { error: 'login failed', ip: ip };
+	let r = ubus_at(ip, sid, object, method, args);
+	if (r.code == -32002 || r.status == 6) {
+		sid = login(dev, ip);
+		if (!sid)
+			return { error: 'login failed', ip: ip };
+		r = ubus_at(ip, sid, object, method, args);
+	}
+	return r;
+}
+
+// "Office AP" -> "Office-AP": letters, digits and hyphens, as a hostname allows.
+function hostname_for(name) {
+	const h = replace(replace(trim(name ?? ''), /[^A-Za-z0-9-]+/g, '-'), /^-+|-+$/g, '');
+	return substr(length(h) ? h : 'netui-ap', 0, 63);
+}
+
+function band_of(radio) {
+	return radio?.band ?? (match(radio?.hwmode ?? '', /a/) ? '5g' : '2g');
+}
+
+// Higher is better: prefer the newest PHY for client WiFi.
+function phy_rank(htmode) {
+	return match(htmode ?? '', /^EHT/) ? 4 : match(htmode ?? '', /^HE/) ? 3 : match(htmode ?? '', /^VHT/) ? 2 : 1;
+}
+
+function is_lan(net) {
+	return type(net) == 'array' ? index(net, 'lan') >= 0 : index(split(net ?? '', ' '), 'lan') >= 0;
+}
+
+// The gateway's WiFi networks an AP should broadcast too. Only networks on
+// the LAN bridge: other networks would need VLANs carried to the AP.
+function gateway_wifi() {
+	const uci = cursor();
+	const radios = {}, wlans = [], skipped = [];
+	uci.foreach('wireless', 'wifi-device', (s) => { radios[s['.name']] = s; });
+	uci.foreach('wireless', 'wifi-iface', (s) => {
+		if (s.mode != 'ap' || s.disabled == '1')
+			return;
+		if (!is_lan(s.network)) {
+			push(skipped, s.ssid);
+			return;
+		}
+		push(wlans, { section: s['.name'], band: band_of(radios[s.device]), country: radios[s.device]?.country, values: s });
+	});
+	return { wlans, skipped };
+}
+
+const SKIP_OPTIONS = ['device', 'ifname', 'macaddr', 'network', 'bssid'];
+
+function sync_wifi(dev) {
+	const want = gateway_wifi();
+	const got = relay(dev, 'uci', 'get', { config: 'wireless' });
+	if (got.status != 0)
+		return { error: got.error ?? `uci get failed (${got.status})` };
+	const ap = got.data.values;
+
+	// Best radio per band on the AP.
+	const radio_for = {};
+	for (let name, s in ap)
+		if (s['.type'] == 'wifi-device') {
+			const b = band_of(s), cur = radio_for[b];
+			if (!cur || phy_rank(s.htmode) > phy_rank(ap[cur].htmode))
+				radio_for[b] = name;
+		}
+
+	let changes = 0;
+	const keep = {};
+	const set = (section, values) => { relay(dev, 'uci', 'set', { config: 'wireless', section, values }); changes++; };
+
+	for (let w in want.wlans) {
+		const radio = radio_for[w.band];
+		if (!radio)
+			continue;
+		const name = `netui_${w.section}`;
+		keep[name] = true;
+		const values = { mode: 'ap', network: 'lan', device: radio };
+		for (let k, v in w.values)
+			if (substr(k, 0, 1) != '.' && index(SKIP_OPTIONS, k) < 0)
+				values[k] = v;
+		if (!ap[name]) {
+			relay(dev, 'uci', 'add', { config: 'wireless', type: 'wifi-iface', name, values });
+			changes++;
+		}
+		else {
+			set(name, values);
+			// Options switched off on the gateway are removed there, so remove them here too.
+			const gone = filter(keys(ap[name]), (k) => substr(k, 0, 1) != '.' && !exists(values, k));
+			if (length(gone)) {
+				relay(dev, 'uci', 'delete', { config: 'wireless', section: name, options: gone });
+				changes++;
+			}
+		}
+		const radio_values = { disabled: '0' };
+		if (w.country)
+			radio_values.country = w.country;
+		set(radio, radio_values);
+	}
+	for (let name, s in ap)
+		if (s['.type'] == 'wifi-iface' && match(name, /^netui_/) && !keep[name]) {
+			relay(dev, 'uci', 'delete', { config: 'wireless', section: name });
+			changes++;
+		}
+
+	// The device's name doubles as its hostname (DHCP leases, logs).
+	const host = hostname_for(dev.name);
+	const sys = relay(dev, 'uci', 'get', { config: 'system' });
+	if (sys.status == 0)
+		for (let name, s in sys.data.values)
+			if (s['.type'] == 'system' && s.hostname != host) {
+				relay(dev, 'uci', 'set', { config: 'system', section: name, values: { hostname: host } });
+				changes++;
+				break;
+			}
+
+	// WiFi changes cannot cut the wired link, but keep the safety net anyway.
+	const applied = relay(dev, 'uci', 'apply', { rollback: true, timeout: 30 });
+	if (applied.status != 0 && applied.status != 5)
+		return { error: `apply failed (${applied.status ?? applied.error})` };
+	if (applied.status == 0) {
+		sh('sleep 2');
+		relay(dev, 'uci', 'confirm', {});
+	}
+	return { result: true, networks: length(want.wlans), skipped: want.skipped };
+}
+
+const methods = {
+	list: {
+		call: function() {
+			const reg = load_registry();
+			const ips = {};
+			for (let mac, dev in reg.devices)
+				ips[mac] = address_of(dev);
+			const live = probe(values(ips));
+			const out = [];
+			for (let mac, dev in reg.devices) {
+				const info = live[ips[mac]];
+				push(out, public_view(dev, info?.mac == mac ? info : null, ips[mac]));
+			}
+			return { devices: out };
+		}
+	},
+
+	discover: {
+		call: function() {
+			const reg = load_registry();
+			const hosts = lan_hosts();
+			const found = probe(keys(hosts));
+			const pending = [];
+			for (let ip, info in found)
+				if (!reg.devices[info.mac])
+					push(pending, { ip, mac: info.mac, hostname: info.hostname, model: info.model, release: info.release, agent: info.agent, adopted: info.adopted });
+			return { devices: pending };
+		}
+	},
+
+	adopt: {
+		args: { ip: 'ip', password: 'password', name: 'name' },
+		call: function(request) {
+			const a = request.args;
+			if (!match(a.ip, /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/))
+				return { error: 'invalid address' };
+			const root = ubus_at(a.ip, NULL_SID, 'session', 'login', { username: 'root', password: a.password ?? '' });
+			if (root.error)
+				return { error: root.error };
+			if (root.status != 0)
+				return { error: 'wrong root password' };
+			const sid = root.data.ubus_rpc_session;
+			const info = ubus_at(a.ip, sid, 'netui.agent', 'info', {});
+			if (info.status != 0)
+				return { error: 'netui-agent is not installed on that device' };
+
+			const me = trim(readfile('/sys/class/net/br-lan/address') ?? '');
+			const dev = {
+				mac: info.data.mac,
+				name: length(a.name) ? a.name : info.data.hostname,
+				model: info.data.model,
+				board_name: info.data.board_name,
+				release: info.data.release,
+				ip: a.ip,
+				username: AP_LOGIN,
+				password: random_secret(32),
+				root_password: random_secret(20),
+				adopted_at: time(),
+			};
+			const r = ubus_at(a.ip, sid, 'netui.agent', 'adopt', {
+				gateway: me, username: dev.username, password: dev.password, root_password: dev.root_password,
+			});
+			if (r.status != 0 || r.data?.error)
+				return { error: r.data?.error ?? r.error ?? `adopt failed (${r.status})` };
+
+			const reg = load_registry();
+			reg.devices[dev.mac] = dev;
+			save_registry(reg);
+			return { device: public_view(dev, info.data, a.ip) };
+		}
+	},
+
+	forget: {
+		args: { mac: 'mac' },
+		call: function(request) {
+			const reg = load_registry();
+			const dev = reg.devices[request.args.mac];
+			if (!dev)
+				return { error: 'unknown device' };
+			relay(dev, 'netui.agent', 'release', {});
+			delete reg.devices[dev.mac];
+			save_registry(reg);
+			const s = sessions();
+			delete s[dev.mac];
+			save_sessions(s);
+			return { result: true };
+		}
+	},
+
+	call: {
+		args: { mac: 'mac', object: 'object', method: 'method', args: {} },
+		call: function(request) {
+			const a = request.args;
+			const dev = load_registry().devices[a.mac];
+			if (!dev)
+				return { error: 'unknown device' };
+			if (!allowed(a.object, a.method))
+				return { error: 'not allowed' };
+			return relay(dev, a.object, a.method, a.args);
+		}
+	},
+
+	sync: {
+		args: { mac: 'mac' },
+		call: function(request) {
+			const reg = load_registry();
+			const targets = request.args.mac ? [reg.devices[request.args.mac]] : values(reg.devices);
+			const out = {};
+			for (let dev in targets)
+				if (dev)
+					out[dev.mac] = sync_wifi(dev);
+			return { devices: out };
+		}
+	},
+
+	rename: {
+		args: { mac: 'mac', name: 'name' },
+		call: function(request) {
+			const name = trim(request.args.name ?? '');
+			if (!length(name) || length(name) > 64)
+				return { error: 'invalid name' };
+			const reg = load_registry();
+			const dev = reg.devices[request.args.mac];
+			if (!dev)
+				return { error: 'unknown device' };
+			dev.name = name;
+			save_registry(reg);
+			return sync_wifi(dev);
+		}
+	},
+
+	credentials: {
+		args: { mac: 'mac' },
+		call: function(request) {
+			const dev = load_registry().devices[request.args.mac];
+			return dev ? { username: 'root', password: dev.root_password } : { error: 'unknown device' };
+		}
+	},
+};
+
+return { 'netui.devices': methods };

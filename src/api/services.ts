@@ -6,6 +6,7 @@
 // The ACL grants `file exec` on exactly these paths, nothing broader.
 
 import { call } from './ubus';
+import { syncDevices } from './devices';
 
 const HOOKS: Record<string, [command: string, params: string[]][]> = {
   // enable: start at boot like LuCI's SQM page does; start only acts on enabled queues.
@@ -21,7 +22,8 @@ const HOOKS: Record<string, [command: string, params: string[]][]> = {
 export const SERVICE_COMMANDS = [...new Set(Object.values(HOOKS).flatMap((h) => h.map(([c]) => c)))];
 
 /**
- * Run the follow-up commands for the packages an apply touched. Best effort:
+ * Run the follow-up steps for the packages an apply touched: the service
+ * commands above, and copying WiFi changes to adopted access points. Best effort:
  * the config is already committed, so a failure here is reported, not thrown.
  */
 export async function runServiceHooks(packages: readonly string[]): Promise<string[]> {
@@ -34,6 +36,15 @@ export async function runServiceHooks(packages: readonly string[]): Promise<stri
         failed.push(pkg);
         break;
       }
+    }
+  }
+  // Adopted access points broadcast the gateway's WiFi: copy every WiFi change.
+  if (packages.includes('wireless')) {
+    try {
+      const outcomes = Object.values(await syncDevices());
+      if (outcomes.some((o) => o.error)) failed.push('access points');
+    } catch {
+      failed.push('access points');
     }
   }
   return failed;

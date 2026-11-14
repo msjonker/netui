@@ -1,12 +1,13 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import { Link } from 'wouter-preact';
-import { firstError, useInterfaces, useSystemBoard, useSystemInfo } from '../../api/queries';
+import { firstError, useDeviceRadios, useInterfaces, useManagedDevices, useSystemBoard, useSystemInfo } from '../../api/queries';
+import type { ManagedDevice } from '../../api/types';
 import { useClients, useSwitch } from '../../model/hooks';
 import { findUplink, normalizeSystem } from '../../model/network';
 import { buildTopology, type TopoClient, type TopoRadio } from '../../model/topology';
 import { formatDuration } from '../../lib/format';
-import { IconEthernet, IconGlobe, IconRouter, IconWifi, SignalBars } from '../../components/icons';
+import { IconAccessPoint, IconEthernet, IconGlobe, IconRouter, IconWifi, SignalBars } from '../../components/icons';
 import { PortTile } from '../../components/PortTile';
 import { Dot, LoadError, Page, Pill, Spinner, cx } from '../../components/ui';
 
@@ -101,6 +102,37 @@ function ClientList({ clients, empty }: { clients: TopoClient[]; empty: string }
   );
 }
 
+/** An adopted access point: its WiFi and client count, live through the gateway. */
+function AccessPointNode({ d }: { d: ManagedDevice }) {
+  const radios = useDeviceRadios(d.mac, d.online);
+  const ssids = [...new Set((radios.data ?? []).map((r) => r.info.ssid).filter((s): s is string => !!s))];
+  const clients = (radios.data ?? []).reduce((n, r) => n + r.clients, 0);
+  return (
+    <Node
+      icon={<IconAccessPoint size={18} class={d.online ? 'text-accent' : 'text-faint'} />}
+      title={d.name}
+      label={`${d.name} details`}
+      subtitle={[d.model, d.ip].filter(Boolean).join(' · ')}
+      href={`/devices/${d.mac}`}
+      status={d.online ? <Pill>{clients}</Pill> : <Pill tone="bad">Offline</Pill>}
+    >
+      {!d.online ? (
+        <p class="text-xs text-faint">Not reachable.</p>
+      ) : ssids.length > 0 ? (
+        <div class="flex flex-wrap gap-1">
+          {ssids.map((s) => (
+            <Pill key={s} tone="accent">
+              {s}
+            </Pill>
+          ))}
+        </div>
+      ) : (
+        <p class="text-xs text-faint">No WiFi broadcasting.</p>
+      )}
+    </Node>
+  );
+}
+
 function RadioNode({ r }: { r: TopoRadio }) {
   return (
     <div class="flex flex-col items-center">
@@ -138,6 +170,7 @@ export function TopologyPage() {
   const info = useSystemInfo();
   const { sw, error: swError } = useSwitch();
   const { clients, wifi } = useClients();
+  const aps = useManagedDevices();
 
   const topo = useMemo(
     () =>
@@ -228,6 +261,7 @@ export function TopologyPage() {
                   </div>
                 </div>,
                 ...topo.radios.map((r) => <RadioNode key={r.section} r={r} />),
+                ...(aps.data ?? []).map((d) => <AccessPointNode key={d.mac} d={d} />),
                 ...(topo.otherWireless.length
                   ? [
                       <div key="other" class="flex flex-col items-center">

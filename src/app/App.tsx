@@ -24,6 +24,7 @@ import { LogsPage } from '../features/logs/LogsPage';
 import { VpnPage } from '../features/vpn/VpnPage';
 import { RoutingPage } from '../features/routing/RoutingPage';
 import { SystemPage } from '../features/system/SystemPage';
+import { DevicesPage } from '../features/devices/DevicesPage';
 import { SettingsLayout } from './SettingsLayout';
 import { Shell } from './Shell';
 
@@ -140,6 +141,7 @@ function SignedIn({
           <Route path="/" component={DashboardPage} />
           <Route path="/clients/:mac?" component={ClientsPage} />
           <Route path="/topology" component={TopologyPage} />
+          <Route path="/devices/:mac?" component={DevicesPage} />
           <Route path="/insights" component={InsightsPage} />
           <Route path="/logs" component={LogsPage} />
           <Route path="/settings">

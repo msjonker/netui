@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter-preact';
 import { useDevices, useInterfaces, useSystemBoard } from '../api/queries';
 import { findUplink, uplinkOnline } from '../model/network';
 import {
+  IconAccessPoint,
   IconClients,
   IconDashboard,
   IconExternal,
@@ -20,6 +21,7 @@ import { Search } from './Search';
 const NAV = [
   { href: '/', label: 'Dashboard', icon: IconDashboard, match: (p: string) => p === '/' },
   { href: '/topology', label: 'Topology', icon: IconTopology, match: (p: string) => p.startsWith('/topology') },
+  { href: '/devices', label: 'Devices', icon: IconAccessPoint, match: (p: string) => p.startsWith('/devices') },
   { href: '/clients', label: 'Client Devices', icon: IconClients, match: (p: string) => p.startsWith('/clients') },
   { href: '/insights', label: 'Insights', icon: IconInsights, match: (p: string) => p.startsWith('/insights') },
   { href: '/logs', label: 'System Log', icon: IconLog, match: (p: string) => p.startsWith('/logs') },

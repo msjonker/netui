@@ -33,7 +33,9 @@ define Package/netui
   # rpcd-mod-file runs the three service scripts the ACL allows.
   # SQM, UPnP, DDNS, WireGuard and wifischedule stay optional: netui hides
   # what is not installed.
-  DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +uhttpd +uhttpd-mod-ubus +luci-base
+  # rpcd-mod-ucode and uclient-fetch run netui.devices, which adopts access
+  # points and relays calls to them.
+  DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +rpcd-mod-ucode +uclient-fetch +uhttpd +uhttpd-mod-ubus +luci-base
   PKGARCH:=all
 endef
 
@@ -63,6 +65,8 @@ define Package/netui/install
 	$(INSTALL_DATA) ./files/usr/share/rpcd/acl.d/netui.json $(1)/usr/share/rpcd/acl.d/
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/usr/sbin/netui-passwd $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/share/rpcd/ucode
+	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices $(1)/usr/share/rpcd/ucode/
 endef
 
 # rpcd reads ACLs at startup.
@@ -83,4 +87,48 @@ rmdir "$${IPKG_INSTROOT}/www/netui/assets" "$${IPKG_INSTROOT}/www/netui" 2>/dev/
 exit 0
 endef
 
+# ---------------------------------------------------------------------------
+# netui-agent: install on an OpenWrt router to manage it as an access point
+# from a netui gateway's Devices page.
+
+define Package/netui-agent
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=Access point agent for a netui gateway
+  DEPENDS:=+rpcd +rpcd-mod-ucode +uhttpd +uhttpd-mod-ubus
+  PKGARCH:=all
+endef
+
+define Package/netui-agent/description
+  Lets a netui gateway discover, adopt and manage this router as an access
+  point. Run 'netui-agent prepare' once, plug it into the gateway's LAN and
+  adopt it from the gateway's Devices page.
+endef
+
+define Package/netui-agent/install
+	$(INSTALL_DIR) $(1)/usr/share/rpcd/ucode
+	sed -e 's/@VERSION@/$(PKG_VERSION)-r$(PKG_RELEASE)/' ./agent/files/usr/share/rpcd/ucode/netui-agent > $(1)/usr/share/rpcd/ucode/netui-agent
+	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d
+	$(INSTALL_DATA) ./agent/files/usr/share/rpcd/acl.d/netui-agent.json $(1)/usr/share/rpcd/acl.d/
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/libexec/netui-agent
+	$(INSTALL_BIN) ./agent/files/usr/sbin/netui-agent $(1)/usr/sbin/
+	$(INSTALL_BIN) ./agent/files/usr/libexec/netui-agent/access-point $(1)/usr/libexec/netui-agent/
+endef
+
+define Package/netui-agent/postinst
+#!/bin/sh
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	/etc/init.d/rpcd restart
+	[ -f /etc/netui-agent/adopted.json ] || echo "netui-agent: run 'netui-agent prepare', then adopt this router from the gateway's Devices page"
+fi
+exit 0
+endef
+
+define Package/netui-agent/postrm
+#!/bin/sh
+[ -n "$${IPKG_INSTROOT}" ] || /etc/init.d/rpcd restart
+exit 0
+endef
+
 $(eval $(call BuildPackage,netui))
+$(eval $(call BuildPackage,netui-agent))

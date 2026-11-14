@@ -1,0 +1,109 @@
+// netui.agent: the access-point side of netui adoption.
+//
+//   info     anyone on the LAN (unauthenticated ACL): what this device is and
+//            whether a gateway has adopted it. No secrets.
+//   adopt    root only: create the gateway's login, optionally set a new root
+//            password, and turn the device into a bridged access point.
+//   release  the gateway's login: forget the gateway (the device stays an AP).
+
+'use strict';
+
+import { readfile, writefile, mkdir, unlink, access, popen } from 'fs';
+import { cursor } from 'uci';
+import { connect } from 'ubus';
+
+const STATE = '/etc/netui-agent/adopted.json';
+const AGENT_VERSION = '@VERSION@';
+
+function shellquote(s) {
+	return `'${replace(s, "'", "'\\''")}'`;
+}
+
+function adopted() {
+	const raw = readfile(STATE);
+	return raw ? json(raw) : null;
+}
+
+function lan_mac() {
+	return trim(readfile('/sys/class/net/br-lan/address') ?? '') || null;
+}
+
+function sh(cmd) {
+	const p = popen(cmd);
+	if (!p)
+		return null;
+	const out = p.read('all');
+	p.close();
+	return trim(out);
+}
+
+const methods = {
+	info: {
+		call: function() {
+			const board = connect()?.call('system', 'board') ?? {};
+			const state = adopted();
+			return {
+				agent: AGENT_VERSION,
+				mac: lan_mac(),
+				hostname: board.hostname,
+				model: board.model,
+				board_name: board.board_name,
+				release: board.release?.description,
+				adopted: !!state,
+				gateway: state?.gateway,
+			};
+		}
+	},
+
+	adopt: {
+		args: { gateway: 'gateway', username: 'username', password: 'password', root_password: 'root_password' },
+		call: function(request) {
+			const a = request.args;
+			// The username doubles as the UCI section name: letters, digits, underscore.
+			if (!match(a.username, /^[a-z0-9_]{1,32}$/) || length(a.password) < 16 || !length(a.gateway))
+				return { error: 'invalid arguments' };
+
+			const hash = sh(`uhttpd -m ${shellquote(a.password)}`);
+			if (!match(hash, /^\$/))
+				return { error: 'could not hash the password' };
+
+			const uci = cursor();
+			const ok = uci.set('rpcd', a.username, 'login') &&
+				uci.set('rpcd', a.username, 'username', a.username) &&
+				uci.set('rpcd', a.username, 'password', hash) &&
+				uci.set('rpcd', a.username, 'read', ['netui-agent']) &&
+				uci.set('rpcd', a.username, 'write', ['netui-agent']) &&
+				uci.commit('rpcd');
+			if (!ok) {
+				uci.revert('rpcd');
+				return { error: 'could not create the gateway login' };
+			}
+
+			if (length(a.root_password) &&
+			    system(`(echo ${shellquote(a.root_password)}; sleep 1; echo ${shellquote(a.root_password)}) | /bin/busybox passwd root >/dev/null 2>&1`) != 0)
+				return { error: 'could not set the root password' };
+
+			mkdir('/etc/netui-agent', 0700);
+			writefile(STATE, sprintf('%J\n', { gateway: a.gateway, username: a.username, at: time() }));
+
+			// Become a bridged AP after replying: the address may change.
+			system('(sleep 2; /usr/libexec/netui-agent/access-point apply) >/dev/null 2>&1 &');
+			return { result: true };
+		}
+	},
+
+	release: {
+		call: function() {
+			const state = adopted();
+			if (state?.username) {
+				const uci = cursor();
+				uci.delete('rpcd', state.username);
+				uci.commit('rpcd');
+			}
+			unlink(STATE);
+			return { result: true };
+		}
+	},
+};
+
+return { 'netui.agent': methods };

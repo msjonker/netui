@@ -1,0 +1,54 @@
+#!/bin/sh
+# Turn this router into a bridged access point behind a netui gateway:
+# every port (WAN included) joins br-lan, the address comes from the
+# gateway's DHCP, and this device stops routing: no DHCP, RA or firewall.
+# Idempotent.
+#
+#   access-point check   print what would change, change nothing
+#   access-point apply   change it and reload the network
+
+set -e
+mode="${1:-check}"
+
+wan_dev="$(jsonfilter -i /etc/board.json -e '@.network.wan.device' 2>/dev/null || true)"
+br="$(uci show network 2>/dev/null | sed -n "s/^network\.\([^.]*\)\.name='br-lan'$/\1/p" | head -n1)"
+
+if [ -z "$br" ]; then
+	echo "netui-agent: no br-lan bridge device in /etc/config/network" >&2
+	exit 1
+fi
+# A VLAN-filtering bridge needs per-VLAN port membership; do not guess.
+if uci show network 2>/dev/null | grep -q "=bridge-vlan$"; then
+	echo "netui-agent: br-lan uses VLAN filtering (bridge-vlan sections); convert it by hand" >&2
+	exit 1
+fi
+
+if [ "$mode" = check ]; then
+	echo "bridge: $br, ports: $(uci -q get network.$br.ports)${wan_dev:+ + $wan_dev}"
+	echo "lan: $(uci -q get network.lan.proto) -> dhcp; wan/wan6 removed; DHCP, RA and firewall off"
+	exit 0
+fi
+[ "$mode" = apply ] || { echo "usage: access-point check|apply" >&2; exit 2; }
+
+if [ -n "$wan_dev" ]; then
+	uci -q del_list "network.$br.ports=$wan_dev" || true
+	uci add_list "network.$br.ports=$wan_dev"
+fi
+uci -q delete network.wan || true
+uci -q delete network.wan6 || true
+uci set network.lan.proto='dhcp'
+for o in ipaddr netmask gateway dns ip6assign broadcast; do
+	uci -q delete "network.lan.$o" || true
+done
+uci set dhcp.lan.ignore='1'
+uci set dhcp.lan.ra='disabled'
+uci set dhcp.lan.dhcpv6='disabled'
+uci set dhcp.lan.ndp='disabled'
+uci commit network
+uci commit dhcp
+
+/etc/init.d/firewall disable 2>/dev/null || true
+/etc/init.d/firewall stop 2>/dev/null || true
+/etc/init.d/odhcpd reload 2>/dev/null || true
+/etc/init.d/dnsmasq reload 2>/dev/null || true
+service network reload

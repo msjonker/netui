@@ -1,0 +1,26 @@
+#!/bin/sh
+# netui-agent: get this router ready to be adopted by a netui gateway.
+#
+#   netui-agent prepare   become a bridged access point (asks first)
+#   netui-agent status    show whether a gateway has adopted this device
+
+case "$1" in
+prepare)
+	echo "This turns the router into an access point for a netui gateway:"
+	/usr/libexec/netui-agent/access-point check || exit 1
+	echo
+	echo "Afterwards it takes its address from the gateway's DHCP. Plug any port into"
+	echo "the gateway's LAN and adopt it from the gateway's netui Devices page."
+	printf "Continue? [y/N] "
+	read -r answer
+	case "$answer" in y|Y|yes) ;; *) echo "Nothing changed."; exit 1 ;; esac
+	exec /usr/libexec/netui-agent/access-point apply
+	;;
+status)
+	ubus call netui.agent info
+	;;
+*)
+	echo "usage: netui-agent prepare|status" >&2
+	exit 2
+	;;
+esac

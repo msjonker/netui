@@ -1,0 +1,43 @@
+{
+	"unauthenticated": {
+		"description": "netui gateway discovery: what this device is, no secrets",
+		"read": {
+			"ubus": {
+				"netui.agent": [ "info" ]
+			}
+		}
+	},
+	"netui-agent-adopt": {
+		"description": "Adopting this device into a netui gateway (root only: root holds every group)",
+		"write": {
+			"ubus": {
+				"netui.agent": [ "adopt" ]
+			}
+		}
+	},
+	"netui-agent": {
+		"description": "The netui gateway managing this access point",
+		"read": {
+			"ubus": {
+				"netui.agent": [ "info" ],
+				"system": [ "board", "info" ],
+				"network.interface": [ "dump" ],
+				"network.device": [ "status" ],
+				"iwinfo": [ "devices", "info", "assoclist", "scan", "survey", "freqlist", "txpowerlist", "countrylist" ],
+				"hostapd.*": [ "get_status", "get_clients" ],
+				"log": [ "read" ],
+				"uci": [ "get", "state", "changes" ]
+			},
+			"uci": [ "network", "wireless", "system", "dhcp" ]
+		},
+		"write": {
+			"ubus": {
+				"netui.agent": [ "release" ],
+				"uci": [ "set", "add", "delete", "rename", "order", "apply", "confirm", "rollback", "revert" ],
+				"hostapd.*": [ "del_client" ],
+				"system": [ "reboot" ]
+			},
+			"uci": [ "wireless", "system" ]
+		}
+	}
+}

@@ -6,6 +6,7 @@ import {
   useHostHints,
   useInterfaces,
   useLeases,
+  useManagedDevices,
   useUci,
   useWifiState,
 } from '../api/queries';
@@ -70,7 +71,11 @@ export function useClients() {
   const { model: wifi, wireless } = useWifiModel({ assoc: true });
 
   const blocks = useMemo(() => (firewall.data ? normalizeBlockRules(firewall.data) : undefined), [firewall.data]);
-  const clients = useMemo(
+  // Adopted access points take a DHCP lease like anything else; they are
+  // infrastructure, not clients.
+  const managed = useManagedDevices();
+  const infra = useMemo(() => new Set((managed.data ?? []).map((d) => d.mac)), [managed.data]);
+  const merged = useMemo(
     () =>
       mergeClients({
         leases: leases.data,
@@ -83,6 +88,7 @@ export function useClients() {
       }),
     [leases.data, hints.data, dhcp.data, wifi, blocks, devices.data, subnets],
   );
+  const clients = useMemo(() => (infra.size ? merged.filter((c) => !infra.has(c.mac)) : merged), [merged, infra]);
   return {
     clients,
     subnets,

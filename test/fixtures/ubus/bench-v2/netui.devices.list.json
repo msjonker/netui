@@ -1,0 +1,16 @@
+{
+  "devices": [
+    {
+      "adopted_at": 1792276590,
+      "agent": "0.2.0-dev",
+      "board_name": "xiaomi,ax3600",
+      "hostname": "OpenWrt",
+      "ip": "192.168.1.166",
+      "mac": "8c:de:f9:b6:f3:24",
+      "model": "Xiaomi AX3600",
+      "name": "Office AP",
+      "online": true,
+      "release": "OpenWrt 25.12.6 r33311-981c978eff"
+    }
+  ]
+}

@@ -95,6 +95,9 @@ jobs:
           - OpenWrt 24.10: \`opkg install netui_${VERSION}-r1_all.ipk\`
 
           Then run \`netui-passwd\` once to create the login and open \`http://<router>/netui/\`.
+
+          To manage another OpenWrt router as an access point, install \`netui-agent\` on it,
+          run \`netui-agent prepare\`, plug it into the gateway's LAN and adopt it from Devices.
           The packages are unsigned, hence \`--allow-untrusted\` for apk.
           EOF
           gh release create "$GITHUB_REF_NAME" packages/* \

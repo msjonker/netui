@@ -1,0 +1,13 @@
+{
+  "devices": [
+    {
+      "adopted": false,
+      "agent": "0.2.0-dev",
+      "hostname": "OpenWrt",
+      "ip": "192.168.1.2",
+      "mac": "8c:de:f9:b6:f3:24",
+      "model": "Xiaomi AX3600",
+      "release": "OpenWrt 25.12.6 r33311-981c978eff"
+    }
+  ]
+}

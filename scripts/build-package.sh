@@ -39,7 +39,7 @@ docker run --rm \
     ln -s /src/openwrt package/netui
     make defconfig >/dev/null
     make package/netui/compile NETUI_DIST=/src/dist NETUI_VERSION="$NETUI_VERSION" V=s >/tmp/build.log 2>&1 \
-      || { tail -n 60 /tmp/build.log; exit 1; }
+      || { grep -iE "error|No such|missing|cannot" /tmp/build.log | tail -n 25; exit 1; }
     find bin -name "netui*.apk" -o -name "netui*.ipk" | xargs -r cp -t /out
   '
 

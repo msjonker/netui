@@ -12,6 +12,7 @@
 				"luci.upnp": [ "get_status" ],
 				"luci.ddns": [ "get_services_status", "get_ddns_state" ],
 				"luci.wireguard": [ "getWgInstances" ],
+				"netui.devices": [ "list", "discover" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
@@ -25,6 +26,7 @@
 				"luci.upnp": [ "delete_rule" ],
 				"luci.wireguard": [ "generateKeyPair", "generatePsk" ],
 				"system": [ "reboot" ],
+				"netui.devices": [ "adopt", "forget", "call", "sync", "rename", "credentials" ],
 				"file": [ "exec" ]
 			},
 			"file": {

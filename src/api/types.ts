@@ -460,3 +460,77 @@ export interface IwinfoScan {
 export interface InterfaceStatus {
   'ipv6-prefix-assignment'?: { address: string; mask: number; 'local-address'?: IfaceAddress }[];
 }
+
+// ---------------------------------------------------------------------------
+// --- Devices: netui.devices on the gateway (test/fixtures/ubus/bench-v2)
+
+/** An access point adopted by this gateway. */
+export interface ManagedDevice {
+  mac: string;
+  name: string;
+  model?: string;
+  board_name?: string;
+  /** Current address (DHCP lease by MAC), else the last one seen. */
+  ip?: string;
+  online: boolean;
+  hostname?: string;
+  release?: string;
+  /** netui-agent version, only while online. */
+  agent?: string;
+  /** Unix seconds. */
+  adopted_at?: number;
+}
+
+/** An access point running netui-agent that no gateway here has adopted. */
+export interface PendingDevice {
+  ip: string;
+  mac: string;
+  hostname?: string;
+  model?: string;
+  release?: string;
+  agent?: string;
+  /** Adopted by some other gateway. */
+  adopted: boolean;
+}
+
+export interface ManagedDeviceList {
+  devices: ManagedDevice[];
+}
+
+export interface PendingDeviceList {
+  devices: PendingDevice[];
+}
+
+/** netui.devices methods report failures as data, not as a ubus status. */
+export interface DevicePluginError {
+  error?: string;
+}
+
+export interface AdoptResult extends DevicePluginError {
+  device?: ManagedDevice;
+}
+
+/** A call relayed to an access point: its ubus status and data, or a transport error. */
+export interface RelayResult<T> extends DevicePluginError {
+  status?: number;
+  data?: T;
+  code?: number;
+  ip?: string;
+}
+
+export interface SyncOutcome extends DevicePluginError {
+  result?: boolean;
+  /** WiFi networks mirrored onto the device. */
+  networks?: number;
+  /** SSIDs not on the LAN, which need VLANs carried to the AP. */
+  skipped?: string[];
+}
+
+export interface SyncResult {
+  devices: Record<string, SyncOutcome>;
+}
+
+export interface DeviceCredentials extends DevicePluginError {
+  username?: string;
+  password?: string;
+}
