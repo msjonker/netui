@@ -95,30 +95,32 @@ function PendingCard({ pending, onAdopt }: { pending: ReturnType<typeof usePendi
           <code>netui-agent prepare</code>, and plug any of its ports into this router's LAN.
         </Empty>
       ) : (
-        <table class="table" aria-label="Ready to adopt">
-          <thead>
-            <tr><th>Model</th><th>IP address</th><th>MAC address</th><th>Firmware</th><th /></tr>
-          </thead>
-          <tbody>
-            {list.map((p) => (
-              <tr key={p.mac}>
-                <td class="font-medium">{p.model ?? p.hostname ?? 'Unknown device'}</td>
-                <td class="font-mono">{p.ip}</td>
-                <td class="font-mono">{p.mac}</td>
-                <td>{firmwareVersion(p.release) ?? '—'}</td>
-                <td class="text-right">
-                  {p.adopted ? (
-                    <Pill tone="warn">Managed by another gateway</Pill>
-                  ) : (
-                    <Button variant="primary" onClick={() => onAdopt(p)}>
-                      Adopt
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="table" aria-label="Ready to adopt">
+            <thead>
+              <tr><th>Model</th><th>IP address</th><th>MAC address</th><th>Firmware</th><th /></tr>
+            </thead>
+            <tbody>
+              {list.map((p) => (
+                <tr key={p.mac}>
+                  <td class="font-medium">{p.model ?? p.hostname ?? 'Unknown device'}</td>
+                  <td class="font-mono">{p.ip}</td>
+                  <td class="font-mono">{p.mac}</td>
+                  <td>{firmwareVersion(p.release) ?? '—'}</td>
+                  <td class="text-right">
+                    {p.adopted ? (
+                      <Pill tone="warn">Managed by another gateway</Pill>
+                    ) : (
+                      <Button variant="primary" onClick={() => onAdopt(p)}>
+                        Adopt
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </Card>
   );
@@ -173,19 +175,21 @@ export function DevicesPage() {
           </Banner>
         )}
         <Card flush>
-          <table class="table" aria-label="Devices">
-            <thead>
-              <tr>
-                <th>Name</th><th>Status</th><th>Model</th><th>Role</th><th>Uplink</th><th>IP address</th><th>WiFi clients</th><th>Uptime</th><th>Firmware</th>
-              </tr>
-            </thead>
-            <tbody>
-              <GatewayRow />
-              {devices.map((d) => (
-                <DeviceRow key={d.mac} d={d} onOpen={() => navigate(`/devices/${d.mac}`)} />
-              ))}
-            </tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table class="table" aria-label="Devices">
+              <thead>
+                <tr>
+                  <th>Name</th><th>Status</th><th>Model</th><th>Role</th><th>Uplink</th><th>IP address</th><th>WiFi clients</th><th>Uptime</th><th>Firmware</th>
+                </tr>
+              </thead>
+              <tbody>
+                <GatewayRow />
+                {devices.map((d) => (
+                  <DeviceRow key={d.mac} d={d} onOpen={() => navigate(`/devices/${d.mac}`)} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
         <PendingCard pending={pending} onAdopt={setAdopting} />
       </div>

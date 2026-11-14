@@ -41,7 +41,7 @@ function RailLink({ href, label, active, children }: { href: string; label: stri
       )}
     >
       {children}
-      <span class="pointer-events-none absolute left-12 z-30 rounded-md bg-fg px-2 py-1 text-xs whitespace-nowrap text-bg opacity-0 shadow-pop transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+      <span class="pointer-events-none absolute left-12 z-30 hidden rounded-md bg-fg px-2 py-1 text-xs whitespace-nowrap text-bg opacity-0 shadow-pop transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 md:block">
         {label}
       </span>
     </Link>
@@ -79,8 +79,12 @@ export function Shell({
 
   return (
     <div class="flex h-screen overflow-hidden">
-      <nav aria-label="Main" class="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-line bg-rail py-2.5">
-        <Link href="/" aria-label="netui home" class="mb-3">
+      {/* A rail on the left; on phones a tab bar along the bottom. */}
+      <nav
+        aria-label="Main"
+        class="fixed inset-x-0 bottom-0 z-30 flex h-14 shrink-0 items-center justify-around border-t border-line bg-rail px-1 md:static md:h-auto md:w-14 md:flex-col md:justify-start md:gap-1 md:border-t-0 md:border-r md:px-0 md:py-2.5"
+      >
+        <Link href="/" aria-label="netui home" class="mb-3 hidden md:block">
           <Logo />
         </Link>
         {NAV.map(({ href, label, icon: Icon, match }) => (
@@ -88,14 +92,14 @@ export function Shell({
             <Icon />
           </RailLink>
         ))}
-        <div class="flex-1" />
+        <div class="hidden flex-1 md:block" />
         <a
           href="/cgi-bin/luci/"
           target="_blank"
           rel="noopener"
           aria-label="Open LuCI"
           title="Open LuCI (advanced settings)"
-          class="flex size-10 items-center justify-center rounded-lg text-muted hover:bg-hover hover:text-fg"
+          class="hidden size-10 items-center justify-center rounded-lg text-muted hover:bg-hover hover:text-fg md:flex"
         >
           <IconExternal />
         </a>
@@ -103,14 +107,14 @@ export function Shell({
           type="button"
           onClick={onLogout}
           title={`Sign out ${username}`}
-          class="flex size-10 items-center justify-center rounded-lg text-muted hover:bg-hover hover:text-fg"
+          class="hidden size-10 items-center justify-center rounded-lg text-muted hover:bg-hover hover:text-fg md:flex"
         >
           <IconLogout />
         </button>
       </nav>
 
       <div class="flex min-w-0 flex-1 flex-col">
-        <header class="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-5">
+        <header class="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-4 md:px-5">
           <span class="font-semibold">Network</span>
           {board.data && (
             <span class="truncate text-muted">
@@ -124,12 +128,27 @@ export function Shell({
           <Search />
           <InternetStatus />
           <Notifications />
-          <span
-            class="flex size-7 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent uppercase"
-            title={`Signed in as ${username}${readOnly ? ' (read-only)' : ''}`}
-          >
-            {username.slice(0, 1)}
-          </span>
+          <details class="relative">
+            <summary
+              class="flex size-7 cursor-pointer list-none items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent uppercase [&::-webkit-details-marker]:hidden"
+              title={`Signed in as ${username}${readOnly ? ' (read-only)' : ''}`}
+              aria-label="Account"
+            >
+              {username.slice(0, 1)}
+            </summary>
+            <div class="absolute right-0 z-40 mt-2 w-52 rounded-lg border border-line bg-surface p-1 shadow-pop">
+              <div class="px-3 py-2 text-xs text-muted">
+                Signed in as <span class="font-medium text-fg">{username}</span>
+                {readOnly && ' (read-only)'}
+              </div>
+              <a href="/cgi-bin/luci/" target="_blank" rel="noopener" class="flex h-8 items-center gap-2 rounded-md px-3 hover:bg-hover">
+                <IconExternal size={14} /> Open LuCI
+              </a>
+              <button type="button" onClick={onLogout} class="flex h-8 w-full items-center gap-2 rounded-md px-3 text-left hover:bg-hover">
+                <IconLogout size={14} /> Sign out
+              </button>
+            </div>
+          </details>
         </header>
         {readOnly && (
           <div role="status" class="border-b border-line bg-warn-soft px-5 py-1.5 text-xs">
@@ -137,7 +156,7 @@ export function Shell({
           </div>
         )}
         {banner}
-        <main class="min-h-0 flex-1 overflow-y-auto">{children}</main>
+        <main class="min-h-0 flex-1 overflow-y-auto pb-14 md:pb-0">{children}</main>
       </div>
     </div>
   );

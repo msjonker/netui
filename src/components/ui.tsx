@@ -24,14 +24,14 @@ export function Page({
 }) {
   return (
     <div class="flex min-h-full flex-col">
-      <header class="flex min-h-14 flex-wrap items-center gap-3 px-6 pt-4 pb-3">
+      <header class="flex min-h-14 flex-wrap items-center gap-3 px-4 pt-4 pb-3 md:px-6">
         <div class="min-w-0 flex-1">
           <h1 class="text-lg font-semibold tracking-tight">{title}</h1>
           {subtitle && <p class="text-xs text-muted">{subtitle}</p>}
         </div>
         {actions && <div class="flex items-center gap-2">{actions}</div>}
       </header>
-      <div class="flex-1 px-6 pb-6">{children}</div>
+      <div class="flex-1 px-4 pb-6 md:px-6">{children}</div>
     </div>
   );
 }

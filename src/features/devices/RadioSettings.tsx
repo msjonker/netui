@@ -141,30 +141,32 @@ export function RadioSettings({ mac, online }: { mac: string; online: boolean })
   const current = radios.find((r) => r.section === editing);
   return (
     <>
-      <table class="table" aria-label="Radios">
-        <thead>
-          <tr><th>Band</th><th>Role</th><th>Channel</th><th>Width</th><th>Power</th><th>Clients</th><th /></tr>
-        </thead>
-        <tbody>
-          {radios.map((r) => (
-            <tr key={r.section}>
-              <td>{r.bandLabel}</td>
-              <td>{ROLE_LABEL[r.role]}</td>
-              <td>{r.role === 'off' ? '—' : r.channel === 'auto' ? `Auto${r.liveChannel ? ` (${r.liveChannel})` : ''}` : r.channel}</td>
-              <td>{r.role === 'off' ? '—' : widthLabel(r.htmode)}</td>
-              <td>{r.role === 'off' ? '—' : powerLabel(r)}</td>
-              <td>{r.role === 'wifi' || r.role === 'both' ? r.clients : '—'}</td>
-              <td class="text-right">
-                {r.role !== 'off' && (
-                  <Button variant="ghost" aria-label={`Edit ${r.bandLabel} radio`} onClick={() => setEditing(r.section)}>
-                    Edit
-                  </Button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div class="overflow-x-auto">
+        <table class="table" aria-label="Radios">
+          <thead>
+            <tr><th>Band</th><th>Role</th><th>Channel</th><th>Width</th><th>Power</th><th>Clients</th><th /></tr>
+          </thead>
+          <tbody>
+            {radios.map((r) => (
+              <tr key={r.section}>
+                <td>{r.bandLabel}</td>
+                <td>{ROLE_LABEL[r.role]}</td>
+                <td>{r.role === 'off' ? '—' : r.channel === 'auto' ? `Auto${r.liveChannel ? ` (${r.liveChannel})` : ''}` : r.channel}</td>
+                <td>{r.role === 'off' ? '—' : widthLabel(r.htmode)}</td>
+                <td>{r.role === 'off' ? '—' : powerLabel(r)}</td>
+                <td>{r.role === 'wifi' || r.role === 'both' ? r.clients : '—'}</td>
+                <td class="text-right">
+                  {r.role !== 'off' && (
+                    <Button variant="ghost" aria-label={`Edit ${r.bandLabel} radio`} onClick={() => setEditing(r.section)}>
+                      Edit
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {current && wireless.data && <EditRadio mac={mac} radio={current} wireless={wireless.data} onClose={() => setEditing(null)} />}
     </>
   );

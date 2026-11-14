@@ -33,7 +33,7 @@ export function Drawer({
   return (
     <aside
       aria-label={typeof title === 'string' ? title : 'Details'}
-      class="fixed top-12 right-0 bottom-0 z-20 flex w-full max-w-[420px] flex-col border-l border-line bg-surface shadow-pop"
+      class="fixed top-12 right-0 bottom-0 z-40 flex w-full max-w-[420px] flex-col border-l border-line bg-surface shadow-pop"
     >
       <header class="flex items-start gap-3 border-b border-line px-5 py-4">
         {icon && <div class="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-lg bg-subtle text-muted">{icon}</div>}

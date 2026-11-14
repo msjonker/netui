@@ -303,61 +303,65 @@ function RoutesTab({ network }: { network: UciConfig | undefined }) {
         empty="No static routes. Add one to reach networks behind another router."
         onCreate={() => setSel('new')}
       >
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Destination</th>
-              <th>Next hop</th>
-              <th>Interface</th>
-              <th>Metric</th>
-            </tr>
-          </thead>
-          <tbody>
-            {routes?.map((r) => (
-              <tr key={r.section} data-clickable aria-selected={sel === r.section} onClick={() => setSel(r.section!)}>
-                <td class="font-medium">{r.name || <span class="text-muted">Unnamed</span>}</td>
-                <td>
-                  <span class="inline-flex items-center gap-1.5">
-                    <Dot tone={r.enabled ? 'ok' : 'neutral'} /> {r.enabled ? 'Active' : 'Disabled'}
-                  </span>
-                </td>
-                <td class="font-mono text-xs">{r.target}</td>
-                <td class="font-mono text-xs">{r.gateway || <span class="font-sans text-muted">Interface</span>}</td>
-                <td>{networkLabel(r.interface)}</td>
-                <td class="text-muted tabular-nums">{r.metric || '—'}</td>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Destination</th>
+                <th>Next hop</th>
+                <th>Interface</th>
+                <th>Metric</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {routes?.map((r) => (
+                <tr key={r.section} data-clickable aria-selected={sel === r.section} onClick={() => setSel(r.section!)}>
+                  <td class="font-medium">{r.name || <span class="text-muted">Unnamed</span>}</td>
+                  <td>
+                    <span class="inline-flex items-center gap-1.5">
+                      <Dot tone={r.enabled ? 'ok' : 'neutral'} /> {r.enabled ? 'Active' : 'Disabled'}
+                    </span>
+                  </td>
+                  <td class="font-mono text-xs">{r.target}</td>
+                  <td class="font-mono text-xs">{r.gateway || <span class="font-sans text-muted">Interface</span>}</td>
+                  <td>{networkLabel(r.interface)}</td>
+                  <td class="text-muted tabular-nums">{r.metric || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </TableCard>
 
       <TableCard title="Active Routes" rows={active} empty="No interfaces are up.">
-        <table class="table" aria-label="Active routes">
-          <thead>
-            <tr>
-              <th>Destination</th>
-              <th>Next hop</th>
-              <th>Interface</th>
-              <th>Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {active?.map((r, i) => (
-              <tr key={i}>
-                <td class="font-mono text-xs">
-                  {r.target === '0.0.0.0/0' || r.target === '::/0' ? `${r.target} (default)` : r.target}
-                </td>
-                <td class="font-mono text-xs">{r.via || <span class="font-sans text-muted">Direct</span>}</td>
-                <td>
-                  {networkLabel(r.interface)} <span class="font-mono text-xs text-muted">{r.device}</span>
-                </td>
-                <td>{r.kind === 'connected' ? <Pill>Connected</Pill> : <Pill tone="accent">Route</Pill>}</td>
+        <div class="overflow-x-auto">
+          <table class="table" aria-label="Active routes">
+            <thead>
+              <tr>
+                <th>Destination</th>
+                <th>Next hop</th>
+                <th>Interface</th>
+                <th>Type</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {active?.map((r, i) => (
+                <tr key={i}>
+                  <td class="font-mono text-xs">
+                    {r.target === '0.0.0.0/0' || r.target === '::/0' ? `${r.target} (default)` : r.target}
+                  </td>
+                  <td class="font-mono text-xs">{r.via || <span class="font-sans text-muted">Direct</span>}</td>
+                  <td>
+                    {networkLabel(r.interface)} <span class="font-mono text-xs text-muted">{r.device}</span>
+                  </td>
+                  <td>{r.kind === 'connected' ? <Pill>Connected</Pill> : <Pill tone="accent">Route</Pill>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </TableCard>
 
       {network && sel === 'new' && (
@@ -604,26 +608,28 @@ function DnsTab({ dhcp }: { dhcp: UciConfig | undefined }) {
         empty="No local DNS records. Add one to reach a device by name."
         onCreate={() => setSel('new')}
       >
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Host name</th>
-              <th>Type</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records?.map((r) => (
-              <tr key={r.section} data-clickable aria-selected={sel === r.section} onClick={() => setSel(r.section!)}>
-                <td class="font-medium">{r.name}</td>
-                <td>
-                  <Pill tone={r.kind === 'A' ? 'accent' : 'neutral'}>{r.kind === 'A' ? 'Host' : 'Alias'}</Pill>
-                </td>
-                <td class="font-mono text-xs">{r.value}</td>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Host name</th>
+                <th>Type</th>
+                <th>Value</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {records?.map((r) => (
+                <tr key={r.section} data-clickable aria-selected={sel === r.section} onClick={() => setSel(r.section!)}>
+                  <td class="font-medium">{r.name}</td>
+                  <td>
+                    <Pill tone={r.kind === 'A' ? 'accent' : 'neutral'}>{r.kind === 'A' ? 'Host' : 'Alias'}</Pill>
+                  </td>
+                  <td class="font-mono text-xs">{r.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </TableCard>
       {dhcp && <DnsSettingsCard dhcp={dhcp} />}
       {dhcp && sel === 'new' && <RecordForm records={records ?? []} dhcp={dhcp} onClose={() => setSel(null)} />}
