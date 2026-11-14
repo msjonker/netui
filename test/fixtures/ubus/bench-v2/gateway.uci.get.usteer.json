@@ -1,0 +1,15 @@
+{
+  "values": {
+    "cfg01ef5d": {
+      ".anonymous": true,
+      ".index": 0,
+      ".name": "cfg01ef5d",
+      ".type": "usteer",
+      "debug_level": "2",
+      "ipv6": "0",
+      "local_mode": "0",
+      "network": "lan",
+      "syslog": "1"
+    }
+  }
+}

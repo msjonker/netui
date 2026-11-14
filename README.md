@@ -112,6 +112,20 @@ install). netui then gives it a dedicated login and a new random root password
 (shown on its details page), and copies the gateway's WiFi networks to it.
 From then on every WiFi change on the gateway is copied to all access points.
 
+Each access point has its own details page under **Devices**: its uplink,
+the WiFi clients on it (also shown on **Client Devices** and in **Topology**),
+and its radios. Channel, width and transmit power can be set per access point,
+so neighbouring access points do not have to share a channel; changes apply
+with the same 30-second safety net as on the gateway.
+
+#### Client steering
+
+With `usteer` installed on the gateway and the access points, **Settings →
+WiFi → Client steering** offers band steering (prefer 5 GHz), a roaming
+assistant (devices with a weak signal are asked to move to a closer access
+point; this also turns on BSS transition and 802.11k) and a minimum signal.
+The gateway copies these settings to every access point.
+
 #### Wireless mesh
 
 Access points can also reach the gateway over WiFi (wireless mesh). Turn on **Settings → WiFi → Wireless mesh**: the gateway's 5 GHz

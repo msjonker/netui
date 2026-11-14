@@ -6,6 +6,9 @@ import { renderApp } from '../../../test/renderApp';
 import { applyReviewed } from '../../../test/applyFlow';
 import { pick } from '../../../test/dom';
 import { wrxFixtures } from '../../../test/fixtures';
+import usteerJson from '../../../test/fixtures/ubus/bench-v2/gateway.uci.get.usteer.json';
+import type { UciGet } from '../../api/types';
+const usteerFixture: UciGet = usteerJson;
 import { runServiceHooks } from '../../api/services';
 import type { AssocStation } from '../../api/types';
 
@@ -254,5 +257,28 @@ describe('per-access-point radio settings', () => {
     expect(await within(dialog).findByText(/follow the gateway/)).toBeTruthy();
     expect(((await within(dialog).findByLabelText('Channel')) as HTMLSelectElement).disabled).toBe(true);
     expect((within(dialog).getByLabelText('Transmit power') as HTMLSelectElement).disabled).toBe(false);
+  });
+});
+
+describe('client steering', () => {
+  it('turns on the roaming assistant: usteer thresholds plus BSS transition and 802.11k, then copies it to the APs', async () => {
+    resetRouter({ wireless: wrxFixtures('plain').uci.wireless(), usteer: structuredClone(usteerFixture.values) });
+    seedDevices(router, { managed: [recorded.device] });
+    renderApp('#/settings/wifi');
+    const card = (await screen.findByText('Client steering')).closest('section, div.rounded-lg') as HTMLElement;
+    fireEvent.click(within(card).getByRole('switch', { name: 'Roaming assistant' }));
+    pick(card, 'Minimum signal', '-75');
+    fireEvent.click(within(card).getByRole('button', { name: 'Apply Changes' }));
+    await applyReviewed();
+    expect(router.configs.usteer!.cfg01ef5d).toMatchObject({ roam_scan_snr: '-70', roam_trigger_snr: '-75', min_snr: '-75', band_steering_threshold: '5' });
+    expect(router.configs.wireless!.default_radio0).toMatchObject({ bss_transition: '1', ieee80211k: '1' });
+    await waitFor(() => expect(calls('sync')).toHaveLength(1));
+  });
+
+  it('is hidden when usteer is not installed', async () => {
+    resetRouter({ wireless: wrxFixtures('plain').uci.wireless() });
+    renderApp('#/settings/wifi');
+    await screen.findByText('Radios');
+    expect(screen.queryByText('Client steering')).toBeNull();
   });
 });

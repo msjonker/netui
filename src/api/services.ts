@@ -41,11 +41,12 @@ export async function runServiceHooks(packages: readonly string[]): Promise<stri
       }
     }
   }
-  // Adopted access points broadcast the gateway's WiFi: copy every WiFi change.
+  // Adopted access points broadcast the gateway's WiFi and steer clients the
+  // same way: copy every WiFi and client steering change.
   // A bridge change (the mesh toggles spanning tree) first takes br-lan through
   // STP listening and learning, so the access points are unreachable for a few
   // seconds: keep trying for half a minute.
-  if (packages.includes('wireless')) {
+  if (packages.includes('wireless') || packages.includes('usteer')) {
     const attempts = packages.includes('network') ? SYNC_ATTEMPTS : 1;
     let ok = false;
     for (let i = 0; i < attempts && !ok; i++) {

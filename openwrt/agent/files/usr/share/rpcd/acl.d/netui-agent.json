@@ -63,7 +63,8 @@
 				"network",
 				"wireless",
 				"system",
-				"dhcp"
+				"dhcp",
+				"usteer"
 			]
 		},
 		"write": {
@@ -92,7 +93,8 @@
 			"uci": [
 				"wireless",
 				"system",
-				"network"
+				"network",
+				"usteer"
 			]
 		}
 	}

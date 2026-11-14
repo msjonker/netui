@@ -17,7 +17,7 @@
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ]
 		},
 		"write": {
 			"ubus": {
@@ -34,7 +34,7 @@
 				"/etc/init.d/ddns": [ "exec" ],
 				"/usr/bin/wifi_schedule.sh": [ "exec" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ]
 		}
 	}
 }

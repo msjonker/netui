@@ -253,6 +253,34 @@ function gateway_stp() {
 	return out ?? {};
 }
 
+// Client steering: the usteer options netui manages (src/model/steering.ts).
+const STEERING = ['band_steering_threshold', 'roam_scan_snr', 'roam_trigger_snr', 'min_snr'];
+
+function sync_steering(dev) {
+	let want = null;
+	cursor().foreach('usteer', 'usteer', (s) => { want ??= s; });
+	if (!want)
+		return 0;
+	const got = relay(dev, 'uci', 'get', { config: 'usteer' });
+	if (got.status != 0)
+		return 0;	// usteer not installed on the access point
+	for (let name, s in got.data.values)
+		if (s['.type'] == 'usteer') {
+			const set = {}, unset = [];
+			for (let k in STEERING)
+				if (want[k] != null && want[k] != s[k])
+					set[k] = want[k];
+				else if (want[k] == null && s[k] != null)
+					push(unset, k);
+			if (length(set))
+				relay(dev, 'uci', 'set', { config: 'usteer', section: name, values: set });
+			if (length(unset))
+				relay(dev, 'uci', 'delete', { config: 'usteer', section: name, options: unset });
+			return length(set) + length(unset);
+		}
+	return 0;
+}
+
 function sync_stp(dev) {
 	const want = gateway_stp();
 	const got = relay(dev, 'uci', 'get', { config: 'network' });
@@ -356,6 +384,7 @@ function sync_wifi(dev) {
 			}
 
 	changes += sync_stp(dev);
+	changes += sync_steering(dev);
 
 	// Commit without rollback: the changes copied here are already confirmed
 	// on the gateway, and a mesh toggle takes the gateway's own bridge through
