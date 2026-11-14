@@ -74,6 +74,19 @@ export class SessionExpiredError extends Error {
   }
 }
 
+/** A read-only login tried to change something. The session is fine. */
+export class ReadOnlyError extends Error {
+  readonly object: string;
+  readonly method: string;
+
+  constructor(object: string, method: string) {
+    super('Your account is read-only: ask an admin to do this.');
+    this.name = 'ReadOnlyError';
+    this.object = object;
+    this.method = method;
+  }
+}
+
 /** session.login rejected the credentials. */
 export class LoginError extends Error {
   constructor(message = 'Invalid username or password') {
@@ -91,6 +104,8 @@ export interface Session {
   /** rpcd's idle timeout. Each successful call pushes expiresAt forward by this. */
   timeoutMs: number;
   expiresAt: number;
+  /** A viewer login (ACL group netui-viewer): changes are refused, which is not a lost session. */
+  readOnly?: boolean;
 }
 
 /** Receives an optional explanation to show on the login screen. */
@@ -137,6 +152,25 @@ export function expireSession(notice?: string): void {
 function sessionLost(cause: unknown, defer: boolean): SessionExpiredError {
   if (!defer) expireSession();
   return new SessionExpiredError({ cause });
+}
+
+/**
+ * uhttpd answers a call the ACL forbids with the same "Access denied" as an
+ * expired session. For a read-only login, ask whether the session still
+ * exists before treating the refusal as a lost session.
+ */
+async function authFailure(s: Session, cause: unknown, defer: boolean, object: string, method: string): Promise<Error> {
+  if (s.readOnly && (await sessionAlive(s.id))) return new ReadOnlyError(object, method);
+  return sessionLost(cause, defer);
+}
+
+async function sessionAlive(sid: string): Promise<boolean> {
+  try {
+    const raw = (await post(makeRequest(sid, 'session', 'access', {}), DEFAULT_TIMEOUT_MS)) as RpcResponse;
+    return !raw.error && raw.result?.[0] === UbusStatus.OK;
+  } catch {
+    return false;
+  }
 }
 
 function touchSession(s: Session): void {
@@ -261,7 +295,7 @@ export async function call<T>(
   if (!r.ok) {
     const auth =
       r.auth && (opts.permissionDeniedIsAuth !== false || !(r.error instanceof UbusError));
-    if (auth) throw sessionLost(r.error, opts.deferExpiry ?? false);
+    if (auth) throw await authFailure(s, r.error, opts.deferExpiry ?? false, object, method);
     throw r.error;
   }
   touchSession(s);
@@ -296,7 +330,12 @@ export async function batch<const C extends readonly Call[]>(
   const out: Settled<unknown>[] = [];
   for (const [i, c] of calls.entries()) {
     const r = decode(byId.get(requests[i]!.id), c.object, c.method);
-    if (!r.ok && r.auth) throw sessionLost(r.error, false);
+    if (!r.ok && r.auth) {
+      const e = await authFailure(s, r.error, false, c.object, c.method);
+      if (!(e instanceof ReadOnlyError)) throw e;
+      out.push({ ok: false, error: e });
+      continue;
+    }
     out.push(r.ok ? { ok: true, data: r.data } : { ok: false, error: r.error });
   }
   touchSession(s);
@@ -375,6 +414,20 @@ export async function cgiUpload(path: string, file: Blob, mode = '0600'): Promis
   return (await cgi('cgi-upload', form)).json();
 }
 
+/** Whether a session may not change config. An ACL without `session access` (older netui) means an admin. */
+async function readOnly(sid: string): Promise<boolean> {
+  try {
+    const raw = (await post(
+      makeRequest(sid, 'session', 'access', { scope: 'ubus', object: 'uci', function: 'set' }),
+      DEFAULT_TIMEOUT_MS,
+    )) as RpcResponse;
+    const data = raw.result?.[1] as { access?: boolean } | undefined;
+    return raw.result?.[0] === UbusStatus.OK && data?.access === false;
+  } catch {
+    return false;
+  }
+}
+
 export async function login(username: string, password: string): Promise<Session> {
   const raw = await post(
     makeRequest(NULL_SESSION, 'session', 'login', { username, password }),
@@ -400,6 +453,7 @@ export async function login(username: string, password: string): Promise<Session
     username,
     timeoutMs,
     expiresAt: Date.now() + (typeof expires === 'number' ? expires * 1000 : timeoutMs),
+    readOnly: await readOnly(id),
   };
   saveSession(session);
   return session;

@@ -3,6 +3,7 @@ import { useCallback, useContext, useMemo, useRef, useState } from 'preact/hooks
 import { useQueryClient } from '@tanstack/react-query';
 import { browserDeps, runApply, type ApplyDeps, type ApplyPhase, type ApplyPlan, type ApplyResult } from './apply';
 import { getChanges, revert, stage, type UciOp } from './uci';
+import { getSession } from './ubus';
 import { runServiceHooks } from './services';
 import type { UciChange } from './types';
 
@@ -134,7 +135,8 @@ export function useApplyController(deps: () => ApplyDeps = browserDeps): ApplyCo
   }, []);
 
   return useMemo(
-    () => ({ state, start, review, confirm, discard, close, busy: state.step !== 'idle' }),
+    // A read-only login changes nothing: every Apply button stays disabled.
+    () => ({ state, start, review, confirm, discard, close, busy: state.step !== 'idle' || !!getSession()?.readOnly }),
     [state, start, review, confirm, discard, close],
   );
 }

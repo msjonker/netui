@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { Link, useLocation } from 'wouter-preact';
 import { useDevices, useInterfaces, useSystemBoard } from '../api/queries';
+import { getSession } from '../api/ubus';
 import { findUplink, uplinkOnline } from '../model/network';
 import {
   IconAccessPoint,
@@ -74,6 +75,7 @@ export function Shell({
 }) {
   const [path] = useLocation();
   const board = useSystemBoard();
+  const readOnly = !!getSession()?.readOnly;
 
   return (
     <div class="flex h-screen overflow-hidden">
@@ -124,11 +126,16 @@ export function Shell({
           <Notifications />
           <span
             class="flex size-7 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent uppercase"
-            title={`Signed in as ${username}`}
+            title={`Signed in as ${username}${readOnly ? ' (read-only)' : ''}`}
           >
             {username.slice(0, 1)}
           </span>
         </header>
+        {readOnly && (
+          <div role="status" class="border-b border-line bg-warn-soft px-5 py-1.5 text-xs">
+            Read-only access: you can look at everything, but changes are left to an admin.
+          </div>
+        )}
         {banner}
         <main class="min-h-0 flex-1 overflow-y-auto">{children}</main>
       </div>

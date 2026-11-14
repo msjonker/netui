@@ -4,6 +4,7 @@ import {
   NULL_SESSION,
   RpcError,
   SessionExpiredError,
+  ReadOnlyError,
   TransportError,
   UbusError,
   batch,
@@ -47,9 +48,33 @@ beforeEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('read-only sessions', () => {
+  function seedViewer() {
+    sessionStorage.setItem(
+      'netui.session',
+      JSON.stringify({ id: SID, username: 'viewer', timeoutMs: 300_000, expiresAt: Date.now() + 300_000, readOnly: true }),
+    );
+  }
+
+  it('reports a refused change as read-only while the session lives', async () => {
+    seedViewer();
+    mockRouter(([, obj]) => (obj === 'session' ? [0, {}] : { error: { code: -32002, message: 'Access denied' } }));
+    await expect(call('uci', 'set', {})).rejects.toBeInstanceOf(ReadOnlyError);
+    expect(getSession()?.id).toBe(SID);
+  });
+
+  it('still notices an expired viewer session', async () => {
+    seedViewer();
+    mockRouter(() => ({ error: { code: -32002, message: 'Access denied' } }));
+    await expect(call('uci', 'set', {})).rejects.toBeInstanceOf(SessionExpiredError);
+    expect(getSession()).toBeNull();
+  });
+});
+
 describe('login', () => {
   it('logs in with the null session and stores the session id', async () => {
     const fetchMock = mockRouter(([sid, obj, method, args]) => {
+      if (method === 'access') return [0, { access: true }];
       expect([sid, obj, method]).toEqual([NULL_SESSION, 'session', 'login']);
       expect(args).toEqual({ username: 'netui', password: 'pw' });
       return [0, { ubus_rpc_session: SID, timeout: 300, expires: 299 }];
@@ -57,10 +82,28 @@ describe('login', () => {
 
     const s = await login('netui', 'pw');
 
-    expect(fetchMock).toHaveBeenCalledOnce();
+    // The login, then whether the session may change config.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(s.id).toBe(SID);
+    expect(s.readOnly).toBe(false);
     expect(getSession()?.id).toBe(SID);
     expect(s.expiresAt).toBeGreaterThan(Date.now() + 298_000);
+  });
+
+  it('marks a viewer login read-only', async () => {
+    mockRouter(([sid, , method, args]) => {
+      if (method === 'login') return [0, { ubus_rpc_session: SID, timeout: 300, expires: 299 }];
+      expect([sid, args]).toEqual([SID, { scope: 'ubus', object: 'uci', function: 'set' }]);
+      return [0, { access: false }];
+    });
+    expect((await login('viewer', 'pw')).readOnly).toBe(true);
+  });
+
+  it('treats a router without session access (older ACL) as an admin', async () => {
+    mockRouter(([, , method]) =>
+      method === 'login' ? [0, { ubus_rpc_session: SID, timeout: 300 }] : { error: { code: -32002, message: 'Access denied' } },
+    );
+    expect((await login('netui', 'pw')).readOnly).toBe(false);
   });
 
   it('throws LoginError on permission denied', async () => {

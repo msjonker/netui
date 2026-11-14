@@ -2,7 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import { onlineManager, useQueryClient } from '@tanstack/react-query';
 import { useLocaltime, useSystemBoard, useSystemInfo, useTimezones, useUci, firstError } from '../../api/queries';
 import { useApply } from '../../api/useApply';
-import { expireSession } from '../../api/ubus';
+import { expireSession, getSession } from '../../api/ubus';
 import { useFirmware } from '../../api/useFirmware';
 import type { RestartResult } from '../../api/firmware';
 import { splitList } from '../../model/dns';
@@ -25,6 +25,7 @@ import { Banner, Button, Card, Detail, Field, LoadError, Meter, Page, Spinner, T
 import { rebootAndWait, rebootDeps, waitForRestart, type RebootPhase } from './reboot';
 import { BusyOverlay, PHASE_TEXT } from './BusyOverlay';
 import { BackupCard } from './Backup';
+import { AdminsCard } from './Admins';
 
 const PLAN = { returnTo: '/settings/system' };
 
@@ -313,7 +314,8 @@ export function SystemPage() {
         <div class="space-y-4">
           <GeneralCard />
           <Restart />
-          <BackupCard />
+          {!getSession()?.readOnly && <BackupCard />}
+          <AdminsCard />
         </div>
         <div class="space-y-4">
           <DeviceCard />

@@ -1,0 +1,191 @@
+// netui.users: the rpcd logins that can sign in to netui, and their role.
+//
+//   admin   read and write through the netui ACL group (what netui-passwd
+//           creates)
+//   viewer  read through netui-viewer only: sees everything netui shows,
+//           changes nothing, cannot download a backup
+//
+//   list                            netui logins (never the password hashes)
+//   add {username, password, role}
+//   remove {username}
+//   password {username, password}
+//   role {username, role}
+//
+// Only logins with exactly these groups are touched; root and logins made for
+// other tools are invisible here. The last admin stays (the UI also keeps
+// people from removing or demoting themselves). A changed role or a removed
+// login ends that user's sessions. Logins are not network config: changes
+// are committed directly.
+//
+// rpcd runs this plugin in its own (only) thread: calling rpcd's objects
+// (session, uci, file) from here, directly or through the ubus CLI, waits on
+// itself until the call times out. Session cleanup therefore runs in the
+// background, after the reply.
+
+'use strict';
+
+import { cursor } from 'uci';
+import { popen } from 'fs';
+
+const ROLES = {
+	admin: { read: ['netui'], write: ['netui'] },
+	viewer: { read: ['netui-viewer'], write: [] },
+};
+
+function shellquote(s) {
+	return `'${replace(s, "'", "'\\''")}'`;
+}
+
+function lists(v) {
+	return type(v) == 'array' ? v : v ? split(v, /\s+/) : [];
+}
+
+function role_of(s) {
+	const read = join(' ', sort(lists(s.read)));
+	const write = join(' ', sort(lists(s.write)));
+	for (let name, r in ROLES)
+		if (read == join(' ', r.read) && write == join(' ', r.write))
+			return name;
+	return null;
+}
+
+function logins() {
+	const out = [];
+	cursor().foreach('rpcd', 'login', (s) => {
+		const role = role_of(s);
+		if (role && s.username != 'root')
+			push(out, { section: s['.name'], username: s.username, role });
+	});
+	return out;
+}
+
+function hash(password) {
+	const p = popen(`uhttpd -m ${shellquote(password)}`);
+	const out = trim(p?.read('all') ?? '');
+	p?.close();
+	return match(out, /^\$/) ? out : null;
+}
+
+// End a user's sessions so a new role (or no login) applies at once. In the
+// background: rpcd answers `session list` only after this call returns.
+function sign_out_later(username) {
+	system(`(sleep 1; ubus -S call session list | while read -r l; do ` +
+		`[ "$(echo "$l" | jsonfilter -e '@.data.username')" = ${shellquote(username)} ] && ` +
+		`ubus call session destroy "{\\"ubus_rpc_session\\":\\"$(echo "$l" | jsonfilter -e '@.ubus_rpc_session')\\"}"; ` +
+		`done) >/dev/null 2>&1 &`);
+}
+
+const USERNAME = /^[a-z][a-z0-9_]{0,31}$/;
+
+function check_password(p) {
+	return type(p) == 'string' && length(p) >= 8 && length(p) <= 128;
+}
+
+function find(username) {
+	return filter(logins(), (l) => l.username == username)[0];
+}
+
+function admins() {
+	return length(filter(logins(), (l) => l.role == 'admin'));
+}
+
+function set_role(uci, section, role) {
+	uci.delete('rpcd', section, 'read');
+	uci.delete('rpcd', section, 'write');
+	if (length(ROLES[role].read))
+		uci.set('rpcd', section, 'read', ROLES[role].read);
+	if (length(ROLES[role].write))
+		uci.set('rpcd', section, 'write', ROLES[role].write);
+}
+
+const methods = {
+	list: {
+		call: function() {
+			return { users: map(logins(), (l) => ({ username: l.username, role: l.role })) };
+		}
+	},
+
+	add: {
+		args: { username: 'username', password: 'password', role: 'role' },
+		call: function(request) {
+			const a = request.args;
+			if (!match(a.username, USERNAME) || a.username == 'root')
+				return { error: 'Use lowercase letters, digits and _, starting with a letter.' };
+			if (!ROLES[a.role])
+				return { error: 'unknown role' };
+			if (!check_password(a.password))
+				return { error: 'Use a password of at least 8 characters.' };
+			const uci = cursor();
+			let taken = !!uci.get('rpcd', a.username);
+			uci.foreach('rpcd', 'login', (s) => { if (s.username == a.username) taken = true; });
+			if (taken)
+				return { error: `${a.username} is already a login on this router.` };
+			const h = hash(a.password);
+			if (!h)
+				return { error: 'could not hash the password' };
+			uci.set('rpcd', a.username, 'login');
+			uci.set('rpcd', a.username, 'username', a.username);
+			uci.set('rpcd', a.username, 'password', h);
+			set_role(uci, a.username, a.role);
+			if (!uci.commit('rpcd'))
+				return { error: 'could not save the login' };
+			return { result: true };
+		}
+	},
+
+	remove: {
+		args: { username: 'username' },
+		call: function(request) {
+			const l = find(request.args.username);
+			if (!l)
+				return { error: 'no such netui user' };
+			if (l.role == 'admin' && admins() < 2)
+				return { error: 'Keep at least one admin.' };
+			const uci = cursor();
+			uci.delete('rpcd', l.section);
+			if (!uci.commit('rpcd'))
+				return { error: 'could not save' };
+			sign_out_later(l.username);
+			return { result: true };
+		}
+	},
+
+	password: {
+		args: { username: 'username', password: 'password' },
+		call: function(request) {
+			const l = find(request.args.username);
+			if (!l)
+				return { error: 'no such netui user' };
+			if (!check_password(request.args.password))
+				return { error: 'Use a password of at least 8 characters.' };
+			const h = hash(request.args.password);
+			if (!h)
+				return { error: 'could not hash the password' };
+			const uci = cursor();
+			uci.set('rpcd', l.section, 'password', h);
+			return uci.commit('rpcd') ? { result: true } : { error: 'could not save' };
+		}
+	},
+
+	role: {
+		args: { username: 'username', role: 'role' },
+		call: function(request) {
+			const a = request.args;
+			const l = find(a.username);
+			if (!l)
+				return { error: 'no such netui user' };
+			if (!ROLES[a.role])
+				return { error: 'unknown role' };
+			if (l.role == 'admin' && a.role != 'admin' && admins() < 2)
+				return { error: 'Keep at least one admin.' };
+			const uci = cursor();
+			set_role(uci, l.section, a.role);
+			if (!uci.commit('rpcd'))
+				return { error: 'could not save' };
+			sign_out_later(l.username);
+			return { result: true };
+		}
+	},
+};
+
+return { 'netui.users': methods };

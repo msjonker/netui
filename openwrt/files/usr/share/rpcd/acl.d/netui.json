@@ -19,7 +19,10 @@
 				"netui.services": [ "adblock", "portal" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
-				"uci": [ "get", "state", "changes" ]
+				"uci": [ "get", "state", "changes" ],
+				"file": [ "exec" ],
+				"session": [ "access" ],
+				"netui.users": [ "list" ]
 			},
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ],
 			"file": {
@@ -38,7 +41,7 @@
 				"netui.firmware": [ "check", "upgrade" ],
 				"netui.speedtest": [ "start" ],
 				"netui.services": [ "adblock_apply", "portal_apply", "portal_auth", "portal_deauth" ],
-				"file": [ "exec" ]
+				"netui.users": [ "add", "remove", "password", "role" ]
 			},
 			"file": {
 				"/etc/init.d/sqm": [ "exec" ],
@@ -49,6 +52,36 @@
 			},
 			"cgi-io": [ "upload" ],
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ]
+		}
+	},
+	"netui-viewer": {
+		"description": "netui read-only users: everything netui shows, no changes, no backup",
+		"read": {
+			"ubus": {
+				"network.interface": [ "dump" ],
+				"network.device": [ "status" ],
+				"iwinfo": [ "devices", "info", "assoclist", "scan", "survey", "freqlist", "txpowerlist", "countrylist" ],
+				"hostapd.*": [ "get_status", "get_clients" ],
+				"luci-rpc": [ "getBoardJSON", "getDHCPLeases", "getHostHints" ],
+				"luci": [ "getTimezones", "getLocaltime", "getUnixtime", "getConntrackList" ],
+				"luci.upnp": [ "get_status" ],
+				"luci.ddns": [ "get_services_status", "get_ddns_state" ],
+				"luci.wireguard": [ "getWgInstances" ],
+				"mwan3": [ "status" ],
+				"netui.devices": [ "list", "discover" ],
+				"netui.firmware": [ "status" ],
+				"netui.speedtest": [ "status" ],
+				"netui.services": [ "adblock", "portal" ],
+				"log": [ "read" ],
+				"system": [ "board", "info" ],
+				"uci": [ "get", "state", "changes" ],
+				"file": [ "exec" ],
+				"session": [ "access" ]
+			},
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ],
+			"file": {
+				"/usr/sbin/nlbw": [ "exec" ]
+			}
 		}
 	}
 }

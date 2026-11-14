@@ -8,7 +8,7 @@ import { vi } from 'vitest';
 import { render } from '@testing-library/preact';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createQueryClient } from '../src/api/queries';
-import { saveSession } from '../src/api/ubus';
+import { saveSession, type Session } from '../src/api/ubus';
 import * as uci from '../src/api/uci';
 import type { ApplyDeps } from '../src/api/apply';
 import { App } from '../src/app/App';
@@ -35,9 +35,10 @@ export function fastDeps(over: Partial<ApplyDeps> = {}) {
   return deps;
 }
 
-export function renderApp(hash = '#/', deps = fastDeps()) {
+/** `as` overrides the signed-in session, e.g. { readOnly: true } for a viewer. */
+export function renderApp(hash = '#/', deps = fastDeps(), as: Partial<Session> = {}) {
   location.hash = hash;
-  saveSession(session);
+  saveSession({ ...session, ...as });
   const client = createQueryClient();
   const utils = render(
     <QueryClientProvider client={client}>

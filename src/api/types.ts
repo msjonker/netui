@@ -665,3 +665,13 @@ export interface PortalStatus {
   running?: boolean;
   clients?: PortalClient[];
 }
+
+// --- netui.users -------------------------------------------------------------
+
+export type NetuiRole = 'admin' | 'viewer';
+
+/** `netui.users list`: rpcd logins with netui's groups; never their hashes. */
+export interface NetuiUser {
+  username: string;
+  role: NetuiRole;
+}
