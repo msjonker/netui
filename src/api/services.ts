@@ -18,6 +18,9 @@ const HOOKS: Record<string, [command: string, params: string[]][]> = {
   wifi_schedule: [['/usr/bin/wifi_schedule.sh', ['cron']]],
 };
 
+const SYNC_ATTEMPTS = 7;
+const SYNC_RETRY_MS = 5_000;
+
 /** Paths the netui ACL lets the UI execute; kept in sync with acl.d/netui.json. */
 export const SERVICE_COMMANDS = [...new Set(Object.values(HOOKS).flatMap((h) => h.map(([c]) => c)))];
 
@@ -39,13 +42,21 @@ export async function runServiceHooks(packages: readonly string[]): Promise<stri
     }
   }
   // Adopted access points broadcast the gateway's WiFi: copy every WiFi change.
+  // A bridge change (the mesh toggles spanning tree) first takes br-lan through
+  // STP listening and learning, so the access points are unreachable for a few
+  // seconds: keep trying for half a minute.
   if (packages.includes('wireless')) {
-    try {
-      const outcomes = Object.values(await syncDevices());
-      if (outcomes.some((o) => o.error)) failed.push('access points');
-    } catch {
-      failed.push('access points');
+    const attempts = packages.includes('network') ? SYNC_ATTEMPTS : 1;
+    let ok = false;
+    for (let i = 0; i < attempts && !ok; i++) {
+      if (i > 0) await new Promise((r) => setTimeout(r, SYNC_RETRY_MS));
+      try {
+        ok = !Object.values(await syncDevices()).some((o) => o.error);
+      } catch {
+        ok = false;
+      }
     }
+    if (!ok) failed.push('access points');
   }
   return failed;
 }

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { syncDevices } from '../../api/devices';
 import {
   deviceKeys,
+  useDeviceLinks,
   useDeviceRadios,
   useDeviceSystem,
   useManagedDevices,
@@ -14,6 +15,7 @@ import {
 } from '../../api/queries';
 import type { ManagedDevice, PendingDevice } from '../../api/types';
 import { firmwareVersion, sortDevices } from '../../model/devices';
+import { uplinkLabel, uplinkOf } from '../../model/mesh';
 import { formatDuration } from '../../lib/format';
 import { normalizeMac } from '../../lib/mac';
 import { IconAccessPoint, IconRouter } from '../../components/icons';
@@ -37,6 +39,7 @@ function GatewayRow() {
       <td><span class="inline-flex items-center gap-1.5"><Dot tone="ok" /> Online</span></td>
       <td>{board.data?.model ?? '—'}</td>
       <td><Pill tone="accent">Gateway</Pill></td>
+      <td>Internet (WAN)</td>
       <td class="font-mono">{location.hostname}</td>
       <td>{clients}</td>
       <td>{info.data ? formatDuration(info.data.uptime) : '—'}</td>
@@ -48,7 +51,9 @@ function GatewayRow() {
 function DeviceRow({ d, onOpen }: { d: ManagedDevice; onOpen: () => void }) {
   const radios = useDeviceRadios(d.mac, d.online);
   const system = useDeviceSystem(d.mac, d.online);
+  const links = useDeviceLinks(d.mac, d.online);
   const clients = radios.data?.reduce((n, r) => n + r.clients, 0);
+  const uplink = uplinkOf(links.data, radios.data);
   return (
     <tr class="cursor-pointer" onClick={onOpen}>
       <td>
@@ -63,6 +68,7 @@ function DeviceRow({ d, onOpen }: { d: ManagedDevice; onOpen: () => void }) {
       </td>
       <td>{d.model ?? '—'}</td>
       <td><Pill>Access point</Pill></td>
+      <td>{d.online ? uplinkLabel(uplink) : '—'}</td>
       <td class="font-mono">{d.ip ?? '—'}</td>
       <td>{clients ?? '—'}</td>
       <td>{system.data ? formatDuration(system.data.info.uptime) : '—'}</td>
@@ -170,7 +176,7 @@ export function DevicesPage() {
           <table class="table" aria-label="Devices">
             <thead>
               <tr>
-                <th>Name</th><th>Status</th><th>Model</th><th>Role</th><th>IP address</th><th>WiFi clients</th><th>Uptime</th><th>Firmware</th>
+                <th>Name</th><th>Status</th><th>Model</th><th>Role</th><th>Uplink</th><th>IP address</th><th>WiFi clients</th><th>Uptime</th><th>Firmware</th>
               </tr>
             </thead>
             <tbody>

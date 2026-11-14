@@ -64,6 +64,22 @@ describe('runApply', () => {
     expect(confirm).toHaveBeenCalledTimes(3);
   });
 
+  it('gives a longer rollback window to changes that take time to settle', async () => {
+    // Unreachable for 40 s (spanning tree converging), then fine: past the
+    // default 30 s window, inside the plan's 90 s one.
+    const h = harness();
+    h.deps.confirm = vi.fn(async () => {
+      if (h.deps.now() < h.start + 40_000) throw unreachable();
+      return [0];
+    });
+
+    const result = await h.run({ packages: ['network', 'wireless'], disruptive: true, timeoutS: 90 });
+
+    expect(h.deps.apply).toHaveBeenCalledWith(90);
+    expect(result).toEqual({ outcome: 'confirmed' });
+    expect(h.deps.now()).toBeGreaterThanOrEqual(h.start + 40_000);
+  });
+
   it('times out, lets the router roll back, then reverts the restored staged changes', async () => {
     const h = harness({ confirm: vi.fn().mockRejectedValue(unreachable()) });
 

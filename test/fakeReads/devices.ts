@@ -17,6 +17,10 @@ import info2 from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.info.phy2
 import assoc5 from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.assoclist.phy1-ap0.json';
 import assoc2 from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.assoclist.phy2-ap0.json';
 import credentials from '../fixtures/ubus/bench-v2/netui.devices.credentials.json';
+import links from '../fixtures/ubus/bench-v2/netui.devices.call.network.device.status.json';
+import iwDevicesMesh from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.devices.mesh.json';
+import infoMesh from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.info.phy1-mesh0.json';
+import assocMesh from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.assoclist.phy1-mesh0.json';
 
 const recordedList: ManagedDeviceList = listJson;
 const recordedPending: PendingDeviceList = discoverJson;
@@ -30,6 +34,8 @@ export const recorded = {
 interface State {
   managed: ManagedDevice[];
   pending: PendingDevice[];
+  /** The AP also runs the mesh backhaul (phy1-mesh0), as recorded with the cable in. */
+  mesh?: boolean;
 }
 
 const states = new WeakMap<FakeRouter, State>();
@@ -51,6 +57,9 @@ const RELAYED: Record<string, unknown> = {
   'iwinfo.info.phy2-ap0': info2,
   'iwinfo.assoclist.phy1-ap0': assoc5,
   'iwinfo.assoclist.phy2-ap0': assoc2,
+  'iwinfo.info.phy1-mesh0': infoMesh,
+  'iwinfo.assoclist.phy1-mesh0': assocMesh,
+  'network.device.status': links,
 };
 
 export const handle: FakeReadHandler = (object, method, args, router) => {
@@ -89,6 +98,7 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       const a = (args.args ?? {}) as Record<string, unknown>;
       const key = [args.object, args.method, a.device].filter(Boolean).join('.');
       if (key === 'system.reboot') return { status: 0 };
+      if (key === 'iwinfo.devices' && s.mesh) return structuredClone(iwDevicesMesh);
       return key in RELAYED ? structuredClone(RELAYED[key]) : structuredClone(denied);
     }
   }

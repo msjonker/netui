@@ -9,6 +9,7 @@ import { Button, Card, Dot, Empty, Meter, Page, Pill, Spinner } from '../../comp
 import { WlanForm } from './WlanForm';
 import { RadioForm, pct, useChannelLoad } from './RadioForm';
 import { ScheduleCard } from './Schedule';
+import { MeshCard } from './Mesh';
 import { ShareWifi } from './ShareWifi';
 
 type Selection =
@@ -257,6 +258,8 @@ export function WifiPage() {
             </div>
           )}
         </Card>
+
+        <MeshCard />
 
         <ScheduleCard
           sel={sel?.kind === 'schedule' ? sel.id : null}

@@ -112,6 +112,22 @@ install). netui then gives it a dedicated login and a new random root password
 (shown on its details page), and copies the gateway's WiFi networks to it.
 From then on every WiFi change on the gateway is copied to all access points.
 
+#### Wireless mesh
+
+Access points can also reach the gateway over WiFi (wireless mesh). Turn on **Settings → WiFi → Wireless mesh**: the gateway's 5 GHz
+radio gets an encrypted 802.11s mesh link, and every adopted access point is
+given the same one. An access point with a cable uses the cable and keeps the
+mesh as a backup; unplug it and it switches to the mesh within about 20
+seconds (spanning tree picks the path, so there is never a loop). The
+Devices page shows each access point's uplink and mesh signal.
+
+Mesh needs the full `wpad` on the gateway and every access point; the default
+`wpad-basic-*` cannot do encrypted mesh. Replace it in one step, for example on
+25.x: `apk add wpad-mbedtls '!wpad-basic-mbedtls'`. Adopt access points with a
+cable first, then move them where you want them. Turning the mesh on fixes the
+5 GHz channel (all mesh nodes must share it); avoid radar (DFS) channels
+52-144, where a radar hit drops the mesh for about a minute.
+
 `prepare` is a separate step on purpose: installing the package on your main
 router by mistake changes nothing. WiFi networks on networks other than the LAN
 are not copied yet (they need VLANs carried to the access point).

@@ -1,0 +1,59 @@
+{
+  "bitrate": 1297200,
+  "bssid": "F6:52:46:08:DC:A7",
+  "center_chan1": 42,
+  "channel": 36,
+  "country": "US",
+  "encryption": {
+    "authentication": [
+      "sae"
+    ],
+    "ciphers": [
+      "ccmp"
+    ],
+    "enabled": true,
+    "wpa": [
+      3
+    ]
+  },
+  "frequency": 5180,
+  "frequency_offset": 0,
+  "hardware": {
+    "id": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "name": "Qualcomm Atheros IPQ8074"
+  },
+  "htmode": "VHT80",
+  "htmodes": [
+    "HT20",
+    "HT40",
+    "VHT20",
+    "VHT40",
+    "VHT80",
+    "VHT160",
+    "HE20",
+    "HE40",
+    "HE80",
+    "HE160"
+  ],
+  "hwmode": "ac",
+  "hwmodes": [
+    "n",
+    "ac",
+    "ax"
+  ],
+  "hwmodes_text": "ac/ax/n",
+  "mode": "Mesh Point",
+  "noise": -111,
+  "phy": "phy0",
+  "quality": 70,
+  "quality_max": 70,
+  "signal": -12,
+  "ssid": "netui-mesh",
+  "txpower": 25,
+  "txpower_offset": 0
+}

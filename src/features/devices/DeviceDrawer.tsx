@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { deviceCredentials, forgetDevice, relay, renameDevice, syncDevices } from '../../api/devices';
-import { deviceKeys, useDeviceRadios, useDeviceSystem } from '../../api/queries';
+import { deviceKeys, useDeviceLinks, useDeviceRadios, useDeviceSystem } from '../../api/queries';
 import type { DeviceCredentials, ManagedDevice, SyncOutcome } from '../../api/types';
 import { firmwareVersion } from '../../model/devices';
+import { uplinkLabel, uplinkOf } from '../../model/mesh';
 import { formatDuration, formatPercent } from '../../lib/format';
 import { Drawer, Modal } from '../../components/overlay';
 import { IconAccessPoint, IconPower, IconRefresh, IconTrash } from '../../components/icons';
@@ -44,6 +45,7 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
   const qc = useQueryClient();
   const system = useDeviceSystem(device.mac, device.online);
   const radios = useDeviceRadios(device.mac, device.online);
+  const links = useDeviceLinks(device.mac, device.online);
   const [name, setName] = useState(device.name);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
@@ -101,7 +103,7 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
           <Detail
             rows={[
               ['Status', <span class="inline-flex items-center gap-1.5"><Dot tone={device.online ? 'ok' : 'bad'} />{device.online ? 'Online' : 'Offline'}</span>],
-              ['Uplink', 'Wired (LAN)'],
+              ['Uplink', device.online ? uplinkLabel(uplinkOf(links.data, radios.data)) : '—'],
               ['IP address', <span class="font-mono">{device.ip ?? '—'}</span>],
               ['MAC address', <span class="font-mono">{device.mac}</span>],
               ['Firmware', `OpenWrt ${firmwareVersion(system.data?.board.release.description ?? device.release) ?? '—'}`],
@@ -127,9 +129,9 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
                 {radios.data.map((r) => (
                   <tr key={r.ifname}>
                     <td>{band(r.info.frequency)}</td>
-                    <td>{r.info.ssid ?? r.ifname}</td>
+                    <td>{r.mesh ? <span>Mesh backhaul <span class="text-xs text-muted">({r.peers.length} linked)</span></span> : (r.info.ssid ?? r.ifname)}</td>
                     <td>{r.info.channel ?? '—'}</td>
-                    <td>{r.clients}</td>
+                    <td>{r.mesh ? '—' : r.clients}</td>
                   </tr>
                 ))}
               </tbody>

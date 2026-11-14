@@ -3,6 +3,8 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { resetRouter, router } from '../../../test/fakeRouter';
 import { recorded, seedDevices } from '../../../test/fakeReads/devices';
 import { renderApp } from '../../../test/renderApp';
+import { applyReviewed } from '../../../test/applyFlow';
+import { wrxFixtures } from '../../../test/fixtures';
 import { runServiceHooks } from '../../api/services';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
@@ -114,5 +116,66 @@ describe('an adopted access point is infrastructure, not a client', () => {
     renderApp('#/clients');
     await screen.findByRole('table');
     await waitFor(() => expect(screen.queryByText('laptop')).toBeNull());
+  });
+});
+
+describe('wireless mesh', () => {
+  it('shows the uplink and the backhaul radio of a meshed access point', async () => {
+    seedDevices(router, { managed: [recorded.device], mesh: true });
+    renderApp('#/devices');
+    const row = (await within(await screen.findByRole('table', { name: 'Devices' })).findByText('Office AP')).closest('tr')!;
+    await waitFor(() => expect(row.textContent).toContain('Wired (lan1), mesh on standby'));
+    fireEvent.click(row);
+    const radios = await within(await screen.findByRole('complementary', { name: 'Office AP' })).findByRole('table', { name: 'Radios' });
+    await waitFor(() => expect(radios.textContent).toContain('Mesh backhaul'));
+    // The mesh peer is the gateway, not a WiFi client.
+    expect(within(radios).getAllByRole('row').map((r) => r.textContent)).toContainEqual(expect.stringMatching(/Mesh backhaul.*—$/));
+  });
+
+  it('turns meshing on from the WiFi page: 802.11s on 5 GHz and spanning tree, in one review', async () => {
+    resetRouter({ wireless: wrxFixtures('plain').uci.wireless() });
+    renderApp('#/settings/wifi');
+    const card = (await screen.findByText('Wireless mesh')).closest('section, div.rounded-lg') as HTMLElement;
+    fireEvent.click(within(card).getByRole('switch', { name: 'Wireless meshing' }));
+    await applyReviewed();
+    expect(router.configs.wireless!.netui_mesh).toMatchObject({ mode: 'mesh', device: 'radio0', encryption: 'sae', network: 'lan' });
+    const bridge = Object.values(router.configs.network!).find((x) => x.name === 'br-lan');
+    expect(bridge).toMatchObject({ stp: '1', forward_delay: '4' });
+  });
+});
+
+describe('copying WiFi after a bridge change', () => {
+  it('retries while spanning tree settles, then succeeds', async () => {
+    vi.useFakeTimers();
+    try {
+      seedDevices(router, { managed: [recorded.device] });
+      let tries = 0;
+      router.overrides.push((c) =>
+        c.object === 'netui.devices' && c.method === 'sync' && ++tries === 1
+          ? { devices: { [recorded.device.mac]: { error: 'unreachable' } } }
+          : undefined,
+      );
+      const done = runServiceHooks(['wireless', 'network']);
+      await vi.advanceTimersByTimeAsync(6_000);
+      expect(await done).toEqual([]);
+      expect(tries).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives up after half a minute and reports the access points', async () => {
+    vi.useFakeTimers();
+    try {
+      seedDevices(router, { managed: [recorded.device] });
+      router.overrides.push((c) =>
+        c.object === 'netui.devices' && c.method === 'sync' ? { devices: { [recorded.device.mac]: { error: 'unreachable' } } } : undefined,
+      );
+      const done = runServiceHooks(['wireless', 'network']);
+      await vi.advanceTimersByTimeAsync(40_000);
+      expect(await done).toEqual(['access points']);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

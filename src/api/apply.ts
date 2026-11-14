@@ -28,6 +28,11 @@ export interface ApplyPlan {
   returnTo?: string;
   /** Runs once the router confirmed the change, e.g. to close the drawer that made it. */
   onConfirmed?: () => void;
+  /**
+   * Rollback window in seconds (default 30). Longer for changes whose effect
+   * takes time to settle, such as spanning tree on the LAN bridge.
+   */
+  timeoutS?: number;
 }
 
 export type ApplyPhase =
@@ -83,10 +88,11 @@ export async function runApply(
 ): Promise<ApplyResult> {
   onPhase({ phase: 'applying' });
   const started = deps.now();
-  const deadline = started + uci.APPLY_TIMEOUT_S * 1000;
+  const timeoutS = plan.timeoutS ?? uci.APPLY_TIMEOUT_S;
+  const deadline = started + timeoutS * 1000;
 
   try {
-    await deps.apply(uci.APPLY_TIMEOUT_S);
+    await deps.apply(timeoutS);
   } catch (err) {
     if (err instanceof UbusError && err.status === UbusStatus.PERMISSION_DENIED) return { outcome: 'busy' };
     if (err instanceof UbusError && err.status === UbusStatus.NO_DATA) return { outcome: 'nothing' };

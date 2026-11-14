@@ -146,7 +146,11 @@ export function useWifiState(opts: { assoc?: boolean; refetchInterval?: number }
       refetchInterval: interval,
     })),
   });
-  const devices = names.map((ifname, i) => ({ ifname, info: infos[i]?.data, stations: assocs[i]?.data }));
+  // A mesh interface's "stations" are other routers (the backhaul), not clients.
+  const devices = names.map((ifname, i) => {
+    const info = infos[i]?.data;
+    return { ifname, info, stations: info?.mode === 'Mesh Point' ? undefined : assocs[i]?.data };
+  });
   // Shared queries give every caller the same timestamp, so several mounted
   // components sample each poll once.
   const sampledAt = Math.max(0, ...assocs.map((q) => q.dataUpdatedAt));
@@ -483,10 +487,15 @@ export const useDeviceSystem = (mac: string | undefined, enabled = true) =>
 export interface DeviceRadio {
   ifname: string;
   info: IwinfoInfo;
+  /** WiFi clients; 0 for the mesh interface, whose peers are routers. */
   clients: number;
+  /** 802.11s backhaul rather than an access point. */
+  mesh: boolean;
+  /** Mesh peers (other routers) with signal and rates; empty for access points. */
+  peers: AssocList['results'];
 }
 
-/** The access point's broadcasting radios and their client counts. */
+/** The device's radios: broadcasting WiFi and the mesh backhaul, with client counts. */
 export const useDeviceRadios = (mac: string | undefined, enabled = true) =>
   useQuery({
     queryKey: deviceKeys.radios(mac ?? ''),
@@ -500,8 +509,18 @@ export const useDeviceRadios = (mac: string | undefined, enabled = true) =>
             relay<IwinfoInfo>(mac!, 'iwinfo', 'info', { device: ifname }),
             relay<AssocList>(mac!, 'iwinfo', 'assoclist', { device: ifname }),
           ]);
-          return { ifname, info, clients: assoc.results.length };
+          const mesh = info.mode === 'Mesh Point';
+          return { ifname, info, mesh, clients: mesh ? 0 : assoc.results.length, peers: mesh ? assoc.results : [] };
         }),
       );
     },
+  });
+
+/** Link state of the device's ports, to tell a wired uplink from a mesh one. */
+export const useDeviceLinks = (mac: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: [...deviceKeys.system(mac ?? ''), 'links'] as const,
+    enabled: !!mac && enabled,
+    refetchInterval: LIVE_MS,
+    queryFn: () => relay<DeviceStatusMap>(mac!, 'network.device', 'status'),
   });

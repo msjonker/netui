@@ -1,0 +1,9 @@
+{
+  "devices": {
+    "8c:de:f9:b6:f3:24": {
+      "networks": 3,
+      "result": true,
+      "skipped": []
+    }
+  }
+}

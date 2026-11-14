@@ -213,15 +213,59 @@ function gateway_wifi() {
 	const radios = {}, wlans = [], skipped = [];
 	uci.foreach('wireless', 'wifi-device', (s) => { radios[s['.name']] = s; });
 	uci.foreach('wireless', 'wifi-iface', (s) => {
-		if (s.mode != 'ap' || s.disabled == '1')
+		// Access points and the mesh backhaul; client (sta) links stay local.
+		if ((s.mode != 'ap' && s.mode != 'mesh') || s.disabled == '1')
 			return;
 		if (!is_lan(s.network)) {
-			push(skipped, s.ssid);
+			push(skipped, s.ssid ?? s.mesh_id);
 			return;
 		}
-		push(wlans, { section: s['.name'], band: band_of(radios[s.device]), country: radios[s.device]?.country, values: s });
+		const radio = radios[s.device];
+		push(wlans, {
+			section: s['.name'],
+			mesh: s.mode == 'mesh',
+			band: band_of(radio),
+			country: radio?.country,
+			channel: radio?.channel,
+			htmode: radio?.htmode,
+			values: s,
+		});
 	});
 	return { wlans, skipped };
+}
+
+// The LAN bridge's spanning tree settings: on whenever a mesh adds a second
+// path between gateway and access point.
+function gateway_stp() {
+	const uci = cursor();
+	let out = null;
+	uci.foreach('network', 'device', (s) => {
+		if (s.name == 'br-lan')
+			out = { stp: s.stp, forward_delay: s.forward_delay };
+	});
+	return out ?? {};
+}
+
+function sync_stp(dev) {
+	const want = gateway_stp();
+	const got = relay(dev, 'uci', 'get', { config: 'network' });
+	if (got.status != 0)
+		return 0;
+	for (let name, s in got.data.values)
+		if (s['.type'] == 'device' && s.name == 'br-lan') {
+			const set = {}, unset = [];
+			for (let k in ['stp', 'forward_delay'])
+				if (want[k] != null && want[k] != s[k])
+					set[k] = want[k];
+				else if (want[k] == null && s[k] != null)
+					push(unset, k);
+			if (length(set))
+				relay(dev, 'uci', 'set', { config: 'network', section: name, values: set });
+			if (length(unset))
+				relay(dev, 'uci', 'delete', { config: 'network', section: name, options: unset });
+			return length(set) + length(unset);
+		}
+	return 0;
 }
 
 const SKIP_OPTIONS = ['device', 'ifname', 'macaddr', 'network', 'bssid'];
@@ -250,9 +294,10 @@ function sync_wifi(dev) {
 		const radio = radio_for[w.band];
 		if (!radio)
 			continue;
-		const name = `netui_${w.section}`;
+		// Sections netui itself created on the gateway keep their name.
+		const name = match(w.section, /^netui_/) ? w.section : `netui_${w.section}`;
 		keep[name] = true;
-		const values = { mode: 'ap', network: 'lan', device: radio };
+		const values = { mode: w.mesh ? 'mesh' : 'ap', network: 'lan', device: radio };
 		for (let k, v in w.values)
 			if (substr(k, 0, 1) != '.' && index(SKIP_OPTIONS, k) < 0)
 				values[k] = v;
@@ -272,6 +317,13 @@ function sync_wifi(dev) {
 		const radio_values = { disabled: '0' };
 		if (w.country)
 			radio_values.country = w.country;
+		// Mesh peers must share the channel: follow the gateway's.
+		if (w.mesh) {
+			if (w.channel)
+				radio_values.channel = w.channel;
+			if (w.htmode)
+				radio_values.htmode = w.htmode;
+		}
 		set(radio, radio_values);
 	}
 	for (let name, s in ap)
@@ -291,13 +343,16 @@ function sync_wifi(dev) {
 				break;
 			}
 
-	// WiFi changes cannot cut the wired link, but keep the safety net anyway.
-	const applied = relay(dev, 'uci', 'apply', { rollback: true, timeout: 30 });
-	if (applied.status != 0 && applied.status != 5)
-		return { error: `apply failed (${applied.status ?? applied.error})` };
-	if (applied.status == 0) {
-		sh('sleep 2');
-		relay(dev, 'uci', 'confirm', {});
+	changes += sync_stp(dev);
+
+	// Commit without rollback: the changes copied here are already confirmed
+	// on the gateway, and a mesh toggle takes the gateway's own bridge through
+	// spanning tree, so a confirm would often miss its window and roll back
+	// correct settings. Recovery is another sync, which the UI retries.
+	if (changes) {
+		const applied = relay(dev, 'uci', 'apply', { rollback: false });
+		if (applied.status != 0 && applied.status != 5)
+			return { error: `apply failed (${applied.status ?? applied.error})` };
 	}
 	return { result: true, networks: length(want.wlans), skipped: want.skipped };
 }

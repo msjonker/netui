@@ -1,7 +1,8 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import { Link } from 'wouter-preact';
-import { firstError, useDeviceRadios, useInterfaces, useManagedDevices, useSystemBoard, useSystemInfo } from '../../api/queries';
+import { firstError, useDeviceLinks, useDeviceRadios, useInterfaces, useManagedDevices, useSystemBoard, useSystemInfo } from '../../api/queries';
+import { uplinkLabel, uplinkOf } from '../../model/mesh';
 import type { ManagedDevice } from '../../api/types';
 import { useClients, useSwitch } from '../../model/hooks';
 import { findUplink, normalizeSystem } from '../../model/network';
@@ -105,14 +106,16 @@ function ClientList({ clients, empty }: { clients: TopoClient[]; empty: string }
 /** An adopted access point: its WiFi and client count, live through the gateway. */
 function AccessPointNode({ d }: { d: ManagedDevice }) {
   const radios = useDeviceRadios(d.mac, d.online);
-  const ssids = [...new Set((radios.data ?? []).map((r) => r.info.ssid).filter((s): s is string => !!s))];
+  const links = useDeviceLinks(d.mac, d.online);
+  const uplink = uplinkOf(links.data, radios.data);
+  const ssids = [...new Set((radios.data ?? []).filter((r) => !r.mesh).map((r) => r.info.ssid).filter((s): s is string => !!s))];
   const clients = (radios.data ?? []).reduce((n, r) => n + r.clients, 0);
   return (
     <Node
       icon={<IconAccessPoint size={18} class={d.online ? 'text-accent' : 'text-faint'} />}
       title={d.name}
       label={`${d.name} details`}
-      subtitle={[d.model, d.ip].filter(Boolean).join(' · ')}
+      subtitle={d.online && uplink.kind !== 'unknown' ? uplinkLabel(uplink) : [d.model, d.ip].filter(Boolean).join(' · ')}
       href={`/devices/${d.mac}`}
       status={d.online ? <Pill>{clients}</Pill> : <Pill tone="bad">Offline</Pill>}
     >
