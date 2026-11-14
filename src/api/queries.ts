@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { QueryClient, useQueries, useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { read, SessionExpiredError, TransportError } from './ubus';
+import { read, SessionExpiredError, TransportError, UbusError, UbusStatus } from './ubus';
 import { getChanges, getConfig } from './uci';
 import { discoverDevices, listDevices, relay } from './devices';
 import type {
@@ -273,7 +273,7 @@ export const deleteUpnpRule = (token: string) => call('luci.upnp', 'delete_rule'
 
 export const systemKeys = {
   timezones: ['luci', 'getTimezones'] as const,
-  localtime: ['luci', 'getLocaltime'] as const,
+  localtime: ['luci', 'getUnixtime'] as const,
 };
 
 /** The zone list ships with the firmware: read once. */
@@ -285,10 +285,20 @@ export const useTimezones = () =>
     refetchOnWindowFocus: false,
   });
 
+/** luci-base renamed getLocaltime to getUnixtime in 2026 (26.x); older releases only have the first. */
+async function routerClock(): Promise<number> {
+  try {
+    return (await read<import('./types').LuciLocaltime>('luci', 'getUnixtime')).result;
+  } catch (e) {
+    if (!(e instanceof UbusError && e.status === UbusStatus.METHOD_NOT_FOUND)) throw e;
+    return (await read<import('./types').LuciLocaltime>('luci', 'getLocaltime')).result;
+  }
+}
+
 export const useLocaltime = () =>
   useQuery({
     queryKey: systemKeys.localtime,
-    queryFn: async () => (await read<import('./types').LuciLocaltime>('luci', 'getLocaltime')).result,
+    queryFn: routerClock,
     refetchInterval: 30_000,
   });
 

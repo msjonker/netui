@@ -1,0 +1,13 @@
+{
+  "available": true,
+  "installed": "25.12.6",
+  "job": {
+    "action": "upgrade",
+    "version": "25.12.99",
+    "started": 1794687682,
+    "running": false,
+    "exit": 1,
+    "log": "Available 'version-to' values from https://sysupgrade.openwrt.org:\n  22.03 release branch\n    22.03.0-rc1\n    22.03.0-rc4\n    22.03.0-rc5\n    22.03.0-rc6\n    22.03.0\n    22.03.1\n    22.03.2\n    22.03.3\n    22.03.4\n    22.03.5\n    22.03.6\n    22.03.7 (latest)\n    22.03-SNAPSHOT\n  23.05 release branch\n    23.05.0-rc1\n    23.05.0-rc2\n    23.05.0-rc3\n    23.05.0-rc4\n    23.05.0\n    23.05.2\n    23.05.3\n    23.05.4\n    23.05.5\n    23.05.6 (latest)\n    23.05-SNAPSHOT\n  24.10 release branch\n    24.10.0-rc1\n    24.10.0-rc2\n    24.10.0-rc3\n    24.10.0-rc4\n    24.10.0-rc5\n    24.10.0-rc6\n    24.10.0-rc7\n    24.10.0\n    24.10.1\n    24.10.2\n    24.10.3\n    24.10.4\n    24.10.5\n    24.10.6\n    24.10.7\n    24.10.8 (latest)\n    24.10-SNAPSHOT\n  25.12 release branch\n    25.12.0-rc1\n    25.12.0-rc2\n    25.12.0-rc3\n    25.12.0-rc4\n    25.12.0-rc5\n    25.12.0\n    25.12.1\n    25.12.2\n    25.12.3\n    25.12.4\n    25.12.5\n    25.12.6 (latest,installed)\n    25.12-SNAPSHOT\n  SNAPSHOT main branch\n    SNAPSHOT (latest)\n\nYour specified version-to '25.12.99' is not available.  Pick one from above.\n"
+  },
+  "branches": null
+}

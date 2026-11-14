@@ -66,16 +66,23 @@ export function parseCheck(job: FirmwareJob): CheckResult | undefined {
   return { from: version(lines, 'Version-from'), to: version(lines, 'Version-to'), outdated, verdict, errors, at: job.started };
 }
 
-const humanize = (s: string) => s.replace(/_/g, ' ');
+/** The build server's stages, as owut prints them ("Status:   building_image"). */
+const STAGE: Record<string, string> = {
+  container_setup: 'setting up',
+  validate_manifest: 'resolving packages',
+  building_image: 'building the image',
+};
+const stage = (s: string) => STAGE[s] ?? s.replace(/_/g, ' ');
 
 export function upgradeProgress(job: FirmwareJob): UpgradeProgress {
   const lines = logLines(job.log);
   let p: UpgradeProgress = { phase: 'preparing', errors: [] };
   for (const l of lines) {
     let m: RegExpExecArray | null;
-    if ((m = /^Status:\s+queued(?: - (\d+) ahead)?/.exec(l))) p = { phase: 'queued', detail: m[1] ? `${m[1]} ahead in the queue` : undefined, errors: [] };
-    else if ((m = /^Status:\s+started(?: - (.+))?/.exec(l))) p = { phase: 'building', detail: m[1] && humanize(m[1]), errors: [] };
-    else if (/^Build succeeded/.test(l)) p = { phase: 'downloading', errors: [] };
+    if ((m = /^Status:\s+queued(?: - (\d+) ahead)?/.exec(l)))
+      p = { phase: 'queued', detail: m[1] === '0' ? 'next in the queue' : m[1] && `${m[1]} ahead in the queue`, errors: [] };
+    else if (/^Status:\s+done\b/.test(l) || /^Build succeeded/.test(l)) p = { phase: 'downloading', errors: [] };
+    else if ((m = /^Status:\s+(?:started - )?([a-z_]+)/.exec(l))) p = { phase: 'building', detail: m[1] === 'started' ? undefined : stage(m[1]!), errors: [] };
     else if ((m = /^Download progress:\s*([\d.]+)%/.exec(l))) p = { phase: 'downloading', detail: `${Math.floor(Number(m[1]))}%`, errors: [] };
     else if (/^Image saved/.test(l)) p = { phase: 'verifying', errors: [] };
     else if (/^Installing .* and rebooting/.test(l)) p = { phase: 'installing', errors: [] };

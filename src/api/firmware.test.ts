@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import type { FirmwareStatus } from './types';
 import { SessionExpiredError, TransportError } from './ubus';
 import { upgradeAndWait, type UpgradeDeps, type UpgradeStep } from './firmware';
-import building from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-building.synthetic.json';
+import building from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-building.json';
 import installing from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-installing.synthetic.json';
-import failed from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-failed.synthetic.json';
+import failed from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-failed.json';
 import idle from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.idle.json';
 
 const S = (x: unknown) => x as FirmwareStatus;
@@ -31,7 +31,7 @@ describe('upgradeAndWait', () => {
 
   it('stops on a failed build without waiting for a restart', async () => {
     const d = deps([S(building), S(failed)]);
-    expect(await upgradeAndWait(d, '25.12.6', () => {})).toMatchObject({ result: 'failed', errors: [expect.stringMatching(/status 500/)] });
+    expect(await upgradeAndWait(d, '25.12.6', () => {})).toMatchObject({ result: 'failed', errors: [expect.stringMatching(/not available/)] });
     expect(d.restart).not.toHaveBeenCalled();
   });
 

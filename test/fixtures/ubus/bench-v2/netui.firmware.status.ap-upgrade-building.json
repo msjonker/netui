@@ -1,0 +1,22 @@
+{
+	"available": true,
+	"installed": "25.12.6",
+	"job": {
+		"action": "upgrade",
+		"version": "25.12.6",
+		"started": 1794687395,
+		"running": true,
+		"exit": null,
+		"log": "ASU-Server     https://sysupgrade.openwrt.org\nUpstream       https://downloads.openwrt.org\nTarget         qualcommax/ipq807x\nProfile        xiaomi_ax3600 (xiaomi,ax3600)\nPackage-arch   aarch64_cortex-a53\nVersion-from   25.12.6 r33311-981c978eff (kernel 6.12.112)\nVersion-to     25.12.6 r33311-981c978eff (kernel 6.12.112)\n35 packages are out-of-date\nThere are 1 missing and 1 modified default packages\nWARNING: There are 1 missing default packages, confirm this is expected before proceeding (run 'owut check --verbose' for details)\nRequest hash:\n  fbda5931df49a36be57edf0438a86b25bc12be2fa9b428b1d7ea0399ab80bbab\n--\nStatus:   queued - 0 ahead of you\nProgress:   0s total =   0s in queue +   0s in build\n--\nStatus:   container_setup\nProgress:   2s total =   0s in queue +   2s in build\n--\nStatus:   validate_manifest\nProgress:   4s total =   0s in queue +   4s in build\nStatus:   validate_manifest\nProgress:   7s total =   0s in queue +   7s in build\nStatus:   validate_manifest\nProgress:   9s total =   0s in queue +   9s in build\nStatus:   validate_manifest\nProgress:  12s total =   0s in queue +  12s in build\nStatus:   validate_manifest\nProgress:  15s total =   0s in queue +  15s in build\nStatus:   validate_manifest\nProgress:  17s total =   0s in queue +  17s in build\nStatus:   validate_manifest\nProgress:  20s total =   0s in queue +  20s in build\nStatus:   validate_manifest\nProgress:  23s total =   0s in queue +  23s in build\nStatus:   validate_manifest\nProgress:  25s total =   0s in queue +  25s in build\nStatus:   validate_manifest\nProgress:  28s total =   0s in queue +  28s in build\nStatus:   validate_manifest\nProgress:  30s total =   0s in queue +  30s in build\nStatus:   validate_manifest\nProgress:  33s total =   0s in queue +  33s in build\nStatus:   validate_manifest\nProgress:  36s total =   0s in queue +  36s in build\nStatus:   validate_manifest\nProgress:  38s total =   0s in queue +  38s in build\nStatus:   validate_manifest\nProgress:  41s total =   0s in queue +  41s in build\nStatus:   validate_manifest\nProgress:  44s total =   0s in queue +  44s in build\nStatus:   validate_manifest\nProgress:  46s total =   0s in queue +  46s in build\n--\nStatus:   building_image\nProgress:  49s total =   0s in queue +  49s in build\nStatus:   building_image\nProgress:  51s total =   0s in queue +  51s in build\nStatus:   building_image\nProgress:  54s total =   0s in queue +  54s in build\nStatus:   building_image\nProgress:  57s total =   0s in queue +  57s in build\nStatus:   building_image\nProgress:  59s total =   0s in queue +  59s in build\nStatus:   building_image\nProgress:  62s total =   0s in queue +  62s in build\nStatus:   building_image\nProgress:  65s total =   0s in queue +  65s in build\nStatus:   building_image\nProgress:  67s total =   0s in queue +  67s in build\nStatus:   building_image\nProgress:  70s total =   0s in queue +  70s in build\nStatus:   building_image\nProgress:  73s total =   0s in queue +  73s in build\nStatus:   building_image\nProgress:  75s total =   0s in queue +  75s in build\nStatus:   building_image\nProgress:  78s total =   0s in queue +  78s in build\nStatus:   building_image\nProgress:  80s total =   0s in queue +  80s in build\n"
+	},
+	"branches": {
+		"current": "25.12",
+		"latest": {
+			"22.03": "22.03.7",
+			"23.05": "23.05.6",
+			"24.10": "24.10.8",
+			"25.12": "25.12.6",
+			"SNAPSHOT": "SNAPSHOT"
+		}
+	}
+}

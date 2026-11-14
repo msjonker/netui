@@ -8,7 +8,7 @@ import { SessionExpiredError } from '../api/ubus';
 import { firmwareTiming } from '../api/firmware';
 import { rebootDeps } from '../features/system/reboot';
 import type { FirmwareStatus } from '../api/types';
-import failed from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-failed.synthetic.json';
+import failed from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-failed.json';
 import checked from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.checked.json';
 
 vi.mock('../api/ubus', async (orig) => (await import('../../test/fakeRouter')).fakeUbusModule(await orig()));
@@ -64,7 +64,7 @@ describe('router firmware', () => {
     router.overrides.push((c) => (c.object === 'netui.firmware' && c.method === 'upgrade' ? { result: true } : undefined));
     fireEvent.click(await within(card).findByRole('button', { name: 'Update' }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Update' }));
-    expect((await within(card).findByRole('alert')).textContent).toMatch(/nothing was installed: Build failed with status 500/);
+    expect((await within(card).findByRole('alert')).textContent).toMatch(/nothing was installed: Your specified version-to '25.12.99' is not available/);
     expect(rebootDeps.probe).not.toHaveBeenCalled();
   });
 

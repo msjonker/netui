@@ -13,6 +13,7 @@
 
 import { readfile, writefile, mkdir, unlink, chmod, popen, lsdir } from 'fs';
 import { cursor } from 'uci';
+import { connect } from 'ubus';
 
 const REGISTRY = '/etc/netui/devices.json';
 const RUN = '/tmp/netui';
@@ -67,6 +68,16 @@ function save_sessions(s) {
 	chmod(`${RUN}/sessions.json`, 0600);
 }
 
+// Whatever answers on port 80 may not be rpcd: a bad reply is no reply.
+function parse(s) {
+	try {
+		return length(s) ? json(s) : null;
+	}
+	catch (e) {
+		return null;
+	}
+}
+
 function random_secret(n) {
 	return sh(`tr -dc 'A-Za-z0-9' </dev/urandom | head -c ${n}`);
 }
@@ -80,11 +91,9 @@ function ubus_at(ip, sid, object, method, args, timeout) {
 	chmod(body, 0600);
 	const out = sh(`uclient-fetch -q -T ${timeout ?? 3} -O - --header='Content-Type: application/json' --post-file=${body} ${shellquote(`http://${ip}/ubus`)} 2>/dev/null`);
 	unlink(body);
-	const r = length(out) ? json(out) : null;
-	if (!r)
-		return { error: 'unreachable' };
-	if (r.error)
-		return { error: r.error.message, code: r.error.code };
+	const r = parse(out);
+	if (type(r?.result) != 'array')
+		return r?.error ? { error: r.error.message, code: r.error.code } : { error: 'unreachable' };
 	return { status: r.result[0], data: r.result[1] };
 }
 
@@ -92,16 +101,18 @@ function own_addresses() {
 	return split(sh("ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1"), '\n');
 }
 
-// LAN hosts worth probing: DHCP leases plus anything in the neighbour table.
+// LAN hosts worth probing: DHCP leases plus the LAN's neighbour table. Never
+// the WAN side: that is someone else's network.
 function lan_hosts() {
+	const lan = connect()?.call('network.interface.lan', 'status')?.l3_device ?? 'br-lan';
 	const hosts = {};
 	for (let line in split(readfile('/tmp/dhcp.leases') ?? '', '\n')) {
 		const f = split(line, ' ');
 		if (length(f) >= 3)
 			hosts[f[2]] = lc(f[1]);
 	}
-	for (let line in split(sh('ip -4 neigh show'), '\n')) {
-		const m = match(line, /^([0-9.]+) dev \S+ lladdr ([0-9a-f:]+)/);
+	for (let line in split(sh(`ip -4 neigh show dev ${shellquote(lan)}`), '\n')) {
+		const m = match(line, /^([0-9.]+) .*lladdr ([0-9a-f:]+)/);
 		if (m && !hosts[m[1]])
 			hosts[m[1]] = m[2];
 	}
@@ -134,7 +145,7 @@ function probe(ips) {
 	sh(`${cmd} wait`);
 	const found = {};
 	for (let ip in ips) {
-		const r = json(readfile(`${dir}/${ip}`) ?? 'null');
+		const r = parse(readfile(`${dir}/${ip}`));
 		if (r?.result?.[0] == 0 && r.result[1]?.agent)
 			found[ip] = r.result[1];
 	}

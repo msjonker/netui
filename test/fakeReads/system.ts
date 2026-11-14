@@ -1,4 +1,5 @@
 // luci getTimezones/getLocaltime and system reboot, from the DL-WRX36 recordings.
+// The recording predates luci-base 26.x, so getUnixtime is not there (the UI falls back).
 import type { FakeReadHandler } from '../fakeRouter';
 import type { LuciLocaltime, LuciTimezones } from '../../src/api/types';
 import timezones from '../fixtures/ubus/dl-wrx36/plain/luci.getTimezones.json';

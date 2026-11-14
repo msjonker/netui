@@ -8,7 +8,7 @@
 				"iwinfo": [ "devices", "info", "assoclist", "scan", "survey", "freqlist", "txpowerlist", "countrylist" ],
 				"hostapd.*": [ "get_status", "get_clients" ],
 				"luci-rpc": [ "getBoardJSON", "getDHCPLeases", "getHostHints" ],
-				"luci": [ "getTimezones", "getLocaltime", "getConntrackList" ],
+				"luci": [ "getTimezones", "getLocaltime", "getUnixtime", "getConntrackList" ],
 				"luci.upnp": [ "get_status" ],
 				"luci.ddns": [ "get_services_status", "get_ddns_state" ],
 				"luci.wireguard": [ "getWgInstances" ],

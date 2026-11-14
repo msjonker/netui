@@ -56,7 +56,7 @@ export function FirmwarePanel({ fw, what, fullscreen }: { fw: FirmwareControl; w
           <div class="text-xs text-muted">{summary}</div>
         </div>
         <div class="flex shrink-0 gap-2">
-          {update && (
+          {update && !step && (
             <Button variant="primary" disabled={busy} onClick={() => setConfirm(update)}>
               Update
             </Button>

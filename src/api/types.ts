@@ -270,7 +270,7 @@ export type DdnsServicesStatus = Record<string, DdnsServiceStatus>;
 /** `luci getTimezones`: zone name (with spaces, as LuCI stores it) -> POSIX TZ string. */
 export type LuciTimezones = Record<string, { tzstring: string }>;
 
-/** `luci getLocaltime`: the router's clock, Unix seconds. */
+/** `luci getUnixtime` (luci-base 26.x, bench-v2/gateway.luci.getUnixtime.json) or the older `luci getLocaltime`: the router's clock, Unix seconds. */
 export interface LuciLocaltime {
   result: number;
 }

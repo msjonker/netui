@@ -121,6 +121,7 @@ optional luci.ddns.get_ddns_state luci.ddns get_ddns_state
 optional luci.wireguard.getWgInstances luci.wireguard getWgInstances
 optional luci.getTimezones luci getTimezones
 optional luci.getLocaltime luci getLocaltime
+optional luci.getUnixtime luci getUnixtime
 optional luci.getConntrackList luci getConntrackList
 optional log.read log read '{"lines":200,"stream":false,"oneshot":true}'
 

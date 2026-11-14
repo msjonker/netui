@@ -3,9 +3,11 @@ import type { FirmwareJob, FirmwareStatus } from '../api/types';
 import idle from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.idle.json';
 import checking from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.checking.json';
 import checked from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.checked.json';
-import building from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-building.synthetic.json';
+import setup from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-setup.json';
+import building from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-building.json';
+import saved from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-saved.json';
+import failed from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.ap-upgrade-failed.json';
 import installing from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-installing.synthetic.json';
-import failed from '../../test/fixtures/ubus/bench-v2/netui.firmware.status.upgrade-failed.synthetic.json';
 import { firmwareView, logLines, newerRelease, parseCheck, upgradeProgress } from './firmware';
 
 const s = (x: unknown) => x as FirmwareStatus;
@@ -40,12 +42,14 @@ describe('firmware check', () => {
 });
 
 describe('firmware upgrade', () => {
-  it('follows owut through the build', () => {
-    expect(upgradeProgress(s(building).job!)).toEqual({ phase: 'building', detail: 'building image', errors: [] });
-    expect(upgradeProgress(job({ action: 'upgrade', running: true, exit: null, log: 'Status:   queued - 2 ahead of you\n' }))).toMatchObject({
-      phase: 'queued',
-      detail: '2 ahead in the queue',
-    });
+  it('follows the recorded upgrade through the build server', () => {
+    expect(upgradeProgress(s(setup).job!)).toEqual({ phase: 'building', detail: 'setting up', errors: [] });
+    expect(upgradeProgress(s(building).job!)).toEqual({ phase: 'building', detail: 'building the image', errors: [] });
+    expect(upgradeProgress(s(saved).job!)).toEqual({ phase: 'verifying', errors: [] });
+    const queued = (n: number) => upgradeProgress(job({ action: 'upgrade', running: true, exit: null, log: `Status:   queued - ${n} ahead of you\n` }));
+    expect(queued(2)).toMatchObject({ phase: 'queued', detail: '2 ahead in the queue' });
+    expect(queued(0)).toMatchObject({ phase: 'queued', detail: 'next in the queue' });
+    expect(upgradeProgress(job({ action: 'upgrade', running: true, exit: null, log: 'Status:   done\n' })).phase).toBe('downloading');
     expect(upgradeProgress(job({ action: 'upgrade', running: true, exit: null, log: 'Download progress:  41.6%  8388608/20185600 bytes\n' }))).toMatchObject({
       phase: 'downloading',
       detail: '41%',
@@ -58,11 +62,13 @@ describe('firmware upgrade', () => {
     expect(firmwareView(s(installing)).upgrade).toMatchObject({ phase: 'installing', version: '25.12.6' });
   });
 
-  it('reports a failed build', () => {
+  it('reports a failed upgrade with owut\'s last word when it prints no ERROR line', () => {
     expect(upgradeProgress(s(failed).job!)).toEqual({
       phase: 'failed',
-      errors: ['Build failed with status 500 (--version-to 25.12.6 --device qualcommax/ipq807x:xiaomi_ax3600:squashfs)'],
+      errors: ["Your specified version-to '25.12.99' is not available.  Pick one from above."],
     });
+    const log = 'Build failed in  61s total =  18s in queue +  43s to build:\nERROR: Build failed with status 500\n';
+    expect(upgradeProgress(job({ action: 'upgrade', exit: 1, log })).errors).toEqual(['Build failed with status 500']);
     // A finished, failed upgrade is not shown as running.
     expect(firmwareView(s(failed)).upgrade).toBeUndefined();
   });

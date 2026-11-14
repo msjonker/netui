@@ -8,6 +8,7 @@ import { type } from '../../../test/dom';
 import { applyReviewed } from '../../../test/applyFlow';
 import uciSystem from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.system.json';
 import { rebootDeps } from './reboot';
+import unixtime from '../../../test/fixtures/ubus/bench-v2/gateway.luci.getUnixtime.json';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 
@@ -52,6 +53,13 @@ describe('System', () => {
     renderApp('#/settings/system');
     // The recording is from October 2025; the test clock is later.
     expect((await screen.findByText(/router's clock is .* behind this browser/)).textContent).toMatch(/NTP/);
+  });
+
+  it('reads the clock with getUnixtime on luci-base 26.x, without the old method', async () => {
+    router.overrides.push((c) => (c.object === 'luci' && c.method === 'getUnixtime' ? structuredClone(unixtime) : undefined));
+    renderApp('#/settings/system');
+    expect(await screen.findByText(/Nov 14, 2026/)).toBeTruthy();
+    expect(router.calls.some((c) => c.method === 'getLocaltime')).toBe(false);
   });
 
   it('shows hardware and firmware', async () => {

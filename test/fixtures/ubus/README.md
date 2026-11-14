@@ -36,8 +36,10 @@ Naming: `<object>.<method>[.<arg>].json`, e.g. `iwinfo.assoclist.phy0-ap0.json`.
 Credential-like fields are redacted to `"REDACTED"` by the script. Client
 hostnames and MACs are not; check the diff before committing.
 
-`bench-v2/netui.firmware.status.*` are `netui.firmware status` on the gateway:
-`idle` before any job, `checking` while `owut check` runs, `checked` after it.
-The `upgrade-*.synthetic.json` files are HAND-WRITTEN from the message formats
-in owut 2026.08 (`/usr/bin/owut`), not recorded: replace them with recordings
-of a real upgrade.
+`bench-v2/netui.firmware.status.*` are `netui.firmware status`: `idle`,
+`checking` and `checked` on the gateway; `ap-upgrade-*` on the AX3600 during a
+real upgrade from the UI (`setup` and `building` while the build server works,
+`saved` after the download, `failed` for a version that does not exist).
+`upgrade-installing.synthetic.json` is HAND-WRITTEN: owut exiting 0 after
+handing the image to sysupgrade, which the recording could not catch before
+the device went down.
