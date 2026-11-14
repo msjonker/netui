@@ -1,0 +1,17 @@
+{
+	"installed": true,
+	"busy": false,
+	"running": true,
+	"clients": [
+		{
+			"mac": "8c:de:f9:b6:f3:26",
+			"ip": "192.168.3.168",
+			"state": "Preauthenticated",
+			"session_start": 0,
+			"session_end": null,
+			"last_active": 1794692768,
+			"download": 0,
+			"upload": 0
+		}
+	]
+}

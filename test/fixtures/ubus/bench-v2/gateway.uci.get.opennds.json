@@ -1,0 +1,12 @@
+{
+  "values": {
+    "setup": {
+      ".anonymous": false,
+      ".type": "opennds",
+      ".name": "setup",
+      ".index": 0,
+      "enabled": "0",
+      "faskey": "REDACTED"
+    }
+  }
+}

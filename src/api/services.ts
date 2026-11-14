@@ -5,6 +5,7 @@
 //   wifi_schedule timers live in crontab, rebuilt only by `wifi_schedule.sh cron`
 //   adblock-fast  ignores being switched off and reuses cached lists on reload;
 //                 netui.services adblock_apply downloads/starts or stops it
+//   opennds       no reload trigger; netui.services portal_apply restarts or stops it
 // The ACL grants `file exec` on exactly these paths, nothing broader.
 
 import { call } from './ubus';
@@ -20,6 +21,12 @@ const HOOKS: Record<string, [command: string, params: string[]][]> = {
   wifi_schedule: [['/usr/bin/wifi_schedule.sh', ['cron']]],
 };
 
+/** Packages whose follow-up runs in the netui.services plugin, in the background. */
+const PLUGIN_HOOKS: [pkg: string, method: string, label: string][] = [
+  ['adblock-fast', 'adblock_apply', 'ad blocking'],
+  ['opennds', 'portal_apply', 'guest portal'],
+];
+
 const SYNC_ATTEMPTS = 7;
 const SYNC_RETRY_MS = 5_000;
 
@@ -33,12 +40,13 @@ export const SERVICE_COMMANDS = [...new Set(Object.values(HOOKS).flatMap((h) => 
  */
 export async function runServiceHooks(packages: readonly string[]): Promise<string[]> {
   const failed: string[] = [];
-  if (packages.includes('adblock-fast')) {
+  for (const [pkg, method, label] of PLUGIN_HOOKS) {
+    if (!packages.includes(pkg)) continue;
     try {
-      const r = await call<{ error?: string }>('netui.services', 'adblock_apply', {}, { permissionDeniedIsAuth: false });
-      if (r?.error) failed.push('ad blocking');
+      const r = await call<{ error?: string }>('netui.services', method, {}, { permissionDeniedIsAuth: false });
+      if (r?.error) failed.push(label);
     } catch {
-      failed.push('ad blocking');
+      failed.push(label);
     }
   }
   for (const pkg of packages) {

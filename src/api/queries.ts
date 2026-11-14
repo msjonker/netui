@@ -245,6 +245,7 @@ export const internetKeys = {
   ddns: ['luci.ddns', 'get_services_status'] as const,
   mwan3: ['mwan3', 'status'] as const,
   adblock: ['netui.services', 'adblock'] as const,
+  portal: ['netui.services', 'portal'] as const,
 };
 
 /** Active UPnP / NAT-PMP port maps. Runtime state, not config. */
@@ -278,6 +279,15 @@ export const useAdblockStatus = (enabled = true) =>
     enabled,
     refetchInterval: (q) => (q.state.data?.busy ? 3_000 : 30_000),
     queryFn: () => read<import('./types').AdblockStatus>('netui.services', 'adblock'),
+  });
+
+/** openNDS: running, and the guests it knows. */
+export const usePortalStatus = (enabled = true) =>
+  useQuery({
+    queryKey: internetKeys.portal,
+    enabled,
+    refetchInterval: (q) => (q.state.data?.busy ? 3_000 : 15_000),
+    queryFn: () => read<import('./types').PortalStatus>('netui.services', 'portal'),
   });
 
 /** mwan3's view of each WAN: online, offline or not tracked (mwan3 installed). */

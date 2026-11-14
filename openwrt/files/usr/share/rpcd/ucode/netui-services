@@ -8,15 +8,43 @@
 //                  the chosen lists and start (enabled), or stop (disabled).
 //                  Downloading takes up to a minute, longer than rpcd lets a
 //                  call run, so it runs in the background; poll adblock.
+//   portal         openNDS (guest captive portal): running, and its clients
+//                  from `ndsctl json`.
+//   portal_apply   after a confirmed apply of opennds' config, which has no
+//                  reload trigger: restart (enabled) or stop it.
+//   portal_auth, portal_deauth {mac}
+//                  let one guest through without the portal, or sign one out.
 
 'use strict';
 
-import { readfile, writefile, mkdir, access, unlink } from 'fs';
+import { readfile, writefile, mkdir, access, unlink, popen } from 'fs';
 import { cursor } from 'uci';
 import { connect } from 'ubus';
 
 const RUN = '/tmp/netui-services';
 const ADBLOCK = '/etc/init.d/adblock-fast';
+const OPENNDS = '/etc/init.d/opennds';
+const NDSCTL = '/usr/bin/ndsctl';
+
+function sh(cmd) {
+	const p = popen(cmd);
+	if (!p)
+		return '';
+	const out = p.read('all');
+	p.close();
+	return out ?? '';
+}
+
+function parse(s) {
+	try {
+		return length(s) ? json(s) : null;
+	}
+	catch (e) {
+		return null;
+	}
+}
+
+const num = (v) => v == null || v == 'null' ? null : +v;
 
 function running(name) {
 	const pid = trim(readfile(`${RUN}/${name}.pid`) ?? '');
@@ -64,5 +92,50 @@ const methods = {
 		}
 	},
 };
+
+function ndsctl_mac(request, action) {
+	const mac = lc(request.args.mac ?? '');
+	if (!match(mac, /^([0-9a-f]{2}:){5}[0-9a-f]{2}$/))
+		return { error: 'invalid MAC address' };
+	const out = trim(sh(`${NDSCTL} ${action} ${mac} 2>&1`));
+	return match(out, /not found|failed|error/i) ? { error: out } : { result: true };
+}
+
+methods.portal = {
+	call: function() {
+		if (!access(OPENNDS))
+			return { installed: false };
+		const up = length(trim(sh('pidof opennds'))) > 0;
+		const list = up ? parse(sh(`${NDSCTL} json 2>/dev/null`)) : null;
+		const clients = [];
+		for (let mac, c in list?.clients ?? {})
+			push(clients, {
+				mac,
+				ip: c.ip,
+				state: c.state,
+				session_start: num(c.session_start),
+				session_end: num(c.session_end),
+				last_active: num(c.last_active),
+				download: num(c.download_this_session),
+				upload: num(c.upload_this_session),
+			});
+		return { installed: true, busy: running('portal'), running: up, clients };
+	}
+};
+
+methods.portal_apply = {
+	call: function() {
+		if (!access(OPENNDS))
+			return { error: 'opennds is not installed' };
+		if (running('portal'))
+			return { error: 'the guest portal is still being applied' };
+		const on = cursor().get_first('opennds', 'opennds', 'enabled') != '0';
+		spawn('portal', `${OPENNDS} ${on ? 'restart' : 'stop'}`);
+		return { result: true };
+	}
+};
+
+methods.portal_auth = { args: { mac: 'mac' }, call: (r) => ndsctl_mac(r, 'auth') };
+methods.portal_deauth = { args: { mac: 'mac' }, call: (r) => ndsctl_mac(r, 'deauth') };
 
 return { 'netui.services': methods };

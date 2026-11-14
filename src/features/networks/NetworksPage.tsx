@@ -16,6 +16,7 @@ import {
   type NewNetworkDraft,
 } from "../../model/vlans";
 import { vlanColor } from "./vlanStyle";
+import { GuestPortalCard } from "./GuestPortal";
 import {
   attachedSubnets,
   moveDraft,
@@ -1130,6 +1131,11 @@ export function NetworksPage() {
           </div>
         )}
       </Card>
+      {networks && networks.length > 0 && (
+        <div class="mt-4">
+          <GuestPortalCard networks={networks} />
+        </div>
+      )}
       {current && network.data && dhcp.data && (
         <NetworkForm
           key={current.id}

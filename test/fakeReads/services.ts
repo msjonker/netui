@@ -3,6 +3,9 @@ import nlbwRecorded from '../fixtures/ubus/bench-v2/gateway.nlbw.json.mac-layer7
 import adblockBlocking from '../fixtures/ubus/bench-v2/netui.services.adblock.blocking.json';
 import adblockApplying from '../fixtures/ubus/bench-v2/netui.services.adblock.applying.json';
 import adblockStopped from '../fixtures/ubus/bench-v2/netui.services.adblock.stopped.json';
+import ndsPreauth from '../fixtures/ubus/bench-v2/gateway.ndsctl.json.preauth.json';
+import ndsAuthenticated from '../fixtures/ubus/bench-v2/gateway.ndsctl.json.authenticated.json';
+import portalStopped from '../fixtures/ubus/bench-v2/netui.services.portal.stopped.json';
 
 // `file exec` for the post-apply service hooks (api/services.ts) and nlbw
 // (usage history). Records the call like any other; returns what rpcd does
@@ -47,8 +50,42 @@ function adblock(method: string, router: FakeRouter) {
   return structuredClone(polls === 0 ? adblockApplying : on ? adblockBlocking : adblockStopped);
 }
 
+/** What the plugin makes of `ndsctl json` (see netui-services). */
+function fromNdsctl(list: { clients: Record<string, Record<string, string>> }) {
+  const num = (v?: string) => (v == null || v === 'null' ? null : Number(v));
+  return Object.entries(list.clients).map(([mac, c]) => ({
+    mac,
+    ip: c.ip,
+    state: c.state!,
+    session_start: num(c.session_start),
+    session_end: num(c.session_end),
+    last_active: num(c.last_active),
+    download: num(c.download_this_session),
+    upload: num(c.upload_this_session),
+  }));
+}
+
+/** openNDS: runs once an apply turned it on; the recorded guest is at the portal until let in. */
+const portalGuests = new WeakMap<object, 'preauth' | 'authenticated' | 'none'>();
+
+function portal(method: string, args: Record<string, unknown>, router: FakeRouter) {
+  if (!router.current('opennds')) return { installed: false };
+  const on = Object.values(router.current('opennds')!)[0]?.enabled !== '0';
+  if (method === 'portal_apply') {
+    portalGuests.set(router, 'preauth');
+    return { result: true };
+  }
+  if (method === 'portal_auth' || method === 'portal_deauth') {
+    portalGuests.set(router, method === 'portal_auth' ? 'authenticated' : 'none');
+    return args.mac ? { result: true } : { error: 'invalid MAC address' };
+  }
+  if (!on || !portalGuests.has(router)) return structuredClone(portalStopped);
+  const g = portalGuests.get(router);
+  return { installed: true, busy: false, running: true, clients: g === 'none' ? [] : fromNdsctl(g === 'authenticated' ? ndsAuthenticated : ndsPreauth) };
+}
+
 export const handle: FakeReadHandler = (object, method, args, router) => {
-  if (object === 'netui.services') return adblock(method, router);
+  if (object === 'netui.services') return method.startsWith('portal') ? portal(method, args, router) : adblock(method, router);
   if (object !== 'file' || method !== 'exec') return undefined;
   if (args.command === '/usr/sbin/nlbw') return nlbw((args.params as string[]) ?? []);
   return { code: 0 };

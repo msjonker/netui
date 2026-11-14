@@ -644,3 +644,24 @@ export interface AdblockStatus {
   warnings?: { code: string; info?: string }[];
   version?: string | null;
 }
+
+/** One device openNDS knows, from `ndsctl json` (bench-v2/gateway.ndsctl.json.*). Times in Unix seconds, data in kB. */
+export interface PortalClient {
+  mac: string;
+  ip?: string;
+  /** Preauthenticated (sees the portal) or Authenticated (signed in). */
+  state: string;
+  session_start: number | null;
+  session_end: number | null;
+  last_active: number | null;
+  download: number | null;
+  upload: number | null;
+}
+
+/** `netui.services portal` (bench-v2/netui.services.portal.*). */
+export interface PortalStatus {
+  installed: boolean;
+  busy?: boolean;
+  running?: boolean;
+  clients?: PortalClient[];
+}

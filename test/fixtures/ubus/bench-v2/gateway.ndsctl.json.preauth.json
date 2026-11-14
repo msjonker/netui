@@ -1,0 +1,33 @@
+{
+  "client_list_length":"1",
+  "clients":{
+    "8c:de:f9:b6:f3:26":{
+      "gatewayname":"netui%20Guest%20WiFi%20Node%3af2524608dca7%20",
+      "gatewayaddress":"192.168.3.1:2050",
+      "gatewayfqdn":"status.client",
+      "version":"10.3.1",
+      "client_type":"cpd_can",
+      "mac":"8c:de:f9:b6:f3:26",
+      "ip":"192.168.3.168",
+      "clientif":"phy0-ap1",
+      "session_start":"0",
+      "session_end":"null",
+      "last_active":"1794692204",
+      "token":"caa25dea",
+      "state":"Preauthenticated",
+      "custom":"none",
+      "download_rate_limit_threshold":"null",
+      "download_packet_rate":"null",
+      "download_bucket_size":"null",
+      "upload_rate_limit_threshold":"null",
+      "upload_packet_rate":"null",
+      "upload_bucket_size":"null",
+      "download_quota":"null",
+      "upload_quota":"null",
+      "download_this_session":"0",
+      "download_session_avg":"0.00",
+      "upload_this_session":"0",
+      "upload_session_avg":"0.00"
+    }
+  }
+}
