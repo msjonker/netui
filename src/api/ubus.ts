@@ -341,6 +341,40 @@ async function flush(): Promise<void> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// cgi-io: plain HTTP endpoints next to /ubus (config backup, file upload) that
+// take the same session id and check its "cgi-io" ACL scope.
+
+const CGI = '/cgi-bin';
+
+async function cgi(path: string, body: BodyInit): Promise<Response> {
+  let res: Response;
+  try {
+    res = await fetch(`${CGI}/${path}`, { method: 'POST', body, cache: 'no-store' });
+  } catch (cause) {
+    throw new TransportError(`${path}: the router did not answer`, { cause });
+  }
+  if (!res.ok) throw new TransportError(`${path}: HTTP ${res.status} ${(await res.text()).trim()}`);
+  touchSession(requireSession());
+  return res;
+}
+
+/** The router's config backup (`sysupgrade -b`), as a .tar.gz. */
+export async function cgiBackup(): Promise<Blob> {
+  return (await cgi('cgi-backup', new URLSearchParams({ sessionid: requireSession().id }))).blob();
+}
+
+/** Write `file` to `path` on the router; the session's ACL must allow writing there. */
+export async function cgiUpload(path: string, file: Blob, mode = '0600'): Promise<{ size: number; checksum: string }> {
+  const form = new FormData();
+  // cgi-io reads the fields in order: the session must come before the data.
+  form.append('sessionid', requireSession().id);
+  form.append('filename', path);
+  form.append('filemode', mode);
+  form.append('filedata', file);
+  return (await cgi('cgi-upload', form)).json();
+}
+
 export async function login(username: string, password: string): Promise<Session> {
   const raw = await post(
     makeRequest(NULL_SESSION, 'session', 'login', { username, password }),

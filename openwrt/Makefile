@@ -75,6 +75,15 @@ endef
 define Package/netui/postinst
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
+	# A firmware upgrade keeps /www/netui (keep.d) but forgets the package, so
+	# reinstalling cannot remove the previous build's assets: drop what is not ours.
+	list=/lib/apk/packages/netui.list
+	[ -f "$$list" ] || list=/usr/lib/opkg/info/netui.list
+	if [ -f "$$list" ]; then
+		for f in /www/netui/assets/*; do
+			grep -qxF "$$f" "$$list" || rm -f "$$f"
+		done
+	fi
 	/etc/init.d/rpcd restart
 	uci -q get rpcd.netui >/dev/null || echo "netui: run 'netui-passwd' to create the login, then open http://<router>/netui/"
 fi

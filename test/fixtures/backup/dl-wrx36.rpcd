@@ -1,0 +1,17 @@
+
+config rpcd
+	option socket '/var/run/ubus/ubus.sock'
+	option timeout '30'
+
+config login
+	option username 'root'
+	option password 'REDACTED'
+	list read '*'
+	list write '*'
+
+config login 'netui'
+	option username 'netui'
+	option password 'REDACTED'
+	list read 'netui'
+	list write 'netui'
+

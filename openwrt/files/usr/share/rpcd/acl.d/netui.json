@@ -13,12 +13,13 @@
 				"luci.ddns": [ "get_services_status", "get_ddns_state" ],
 				"luci.wireguard": [ "getWgInstances" ],
 				"netui.devices": [ "list", "discover" ],
-					"netui.firmware": [ "status" ],
+				"netui.firmware": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ],
+			"cgi-io": [ "backup" ]
 		},
 		"write": {
 			"ubus": {
@@ -28,14 +29,17 @@
 				"luci.wireguard": [ "generateKeyPair", "generatePsk" ],
 				"system": [ "reboot" ],
 				"netui.devices": [ "adopt", "forget", "call", "sync", "rename", "credentials" ],
-					"netui.firmware": [ "check", "upgrade" ],
+				"netui.firmware": [ "check", "upgrade" ],
 				"file": [ "exec" ]
 			},
 			"file": {
 				"/etc/init.d/sqm": [ "exec" ],
 				"/etc/init.d/ddns": [ "exec" ],
-				"/usr/bin/wifi_schedule.sh": [ "exec" ]
+				"/usr/bin/wifi_schedule.sh": [ "exec" ],
+				"/tmp/backup.tar.gz": [ "write" ],
+				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ]
 			},
+			"cgi-io": [ "upload" ],
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ]
 		}
 	}

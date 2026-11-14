@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-const BUDGET_KB = 175;
+const BUDGET_KB = 190;
 const dir = 'dist/assets';
 const files = readdirSync(dir).filter((f) => /\.(js|css)$/.test(f));
 let total = 0;

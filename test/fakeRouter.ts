@@ -51,6 +51,8 @@ export class FakeRouter {
   calls: CallRecord[] = [];
   /** Hooks to override a method: return undefined to fall through. */
   overrides: ((c: CallRecord) => unknown)[] = [];
+  /** Files written through cgi-io upload, by path. */
+  uploads = new Map<string, Blob>();
 
   /** Live state (device status, interface dump, board.json) the reads return. */
   live: { deviceStatus: () => unknown; ifaceDump: () => unknown; board: () => unknown };
@@ -243,6 +245,15 @@ export function fakeUbusModule(actual: typeof Ubus): typeof Ubus {
     ...actual,
     read: run,
     call: (object: string, method: string, args?: object) => run(object, method, args),
+    cgiBackup: async () => {
+      router.calls.push({ object: 'cgi-io', method: 'backup', args: {} });
+      return new Blob(['backup']);
+    },
+    cgiUpload: async (path: string, file: Blob) => {
+      router.calls.push({ object: 'cgi-io', method: 'upload', args: { path } });
+      router.uploads.set(path, file);
+      return { size: file.size, checksum: '' };
+    },
   } as typeof Ubus;
 }
 

@@ -23,6 +23,8 @@ import { FirmwarePanel } from '../../components/FirmwarePanel';
 import { IconExternal, IconPower } from '../../components/icons';
 import { Banner, Button, Card, Detail, Field, LoadError, Meter, Page, Spinner, ToggleRow } from '../../components/ui';
 import { rebootAndWait, rebootDeps, waitForRestart, type RebootPhase } from './reboot';
+import { BusyOverlay, PHASE_TEXT } from './BusyOverlay';
+import { BackupCard } from './Backup';
 
 const PLAN = { returnTo: '/settings/system' };
 
@@ -219,12 +221,6 @@ function FirmwareCard() {
   );
 }
 
-const PHASE_TEXT: Record<RebootPhase, string> = {
-  stopping: 'Shutting down…',
-  starting: 'Starting up. This usually takes one to two minutes.',
-  checking: 'Almost there…',
-};
-
 function Restart() {
   const qc = useQueryClient();
   const [asking, setAsking] = useState(false);
@@ -299,27 +295,9 @@ function Restart() {
         </Modal>
       )}
       {phase && phase !== 'done' && (
-        <div role="alertdialog" aria-label="Restarting" class="fixed inset-0 z-50 flex items-center justify-center bg-bg/95">
-          <div class="max-w-sm space-y-3 text-center">
-            {phase === 'timeout' ? (
-              <>
-                <h2 class="text-lg font-semibold">The router has not come back</h2>
-                <p class="text-muted">
-                  It has been five minutes. Check its power and cables, then reload this page.
-                </p>
-                <Button variant="primary" onClick={() => location.reload()}>
-                  Reload
-                </Button>
-              </>
-            ) : (
-              <>
-                <Spinner class="size-8" />
-                <h2 class="text-lg font-semibold">Restarting…</h2>
-                <p class="text-muted">{PHASE_TEXT[phase]}</p>
-              </>
-            )}
-          </div>
-        </div>
+        <BusyOverlay label="Restarting" title="Restarting…" timedOut={phase === 'timeout'}>
+          {phase !== 'timeout' && PHASE_TEXT[phase]}
+        </BusyOverlay>
       )}
     </Card>
   );
@@ -335,6 +313,7 @@ export function SystemPage() {
         <div class="space-y-4">
           <GeneralCard />
           <Restart />
+          <BackupCard />
         </div>
         <div class="space-y-4">
           <DeviceCard />
