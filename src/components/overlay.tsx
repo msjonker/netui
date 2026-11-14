@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useRef } from 'preact/hooks';
+import { useEffect, useId, useRef } from 'preact/hooks';
 import { IconClose } from './icons';
 import { cx } from './ui';
 
@@ -69,6 +69,8 @@ export function Modal({
   wide?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Unique per dialog: a confirmation can open on top of another dialog.
+  const titleId = useId();
 
   useEffect(() => {
     const d = ref.current!;
@@ -85,7 +87,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
         if (!locked) onClose();
@@ -96,7 +98,7 @@ export function Modal({
       )}
     >
       <header class="flex items-center justify-between gap-3 px-5 pt-5 pb-2">
-        <h2 id="modal-title" class="text-[15px] font-semibold">
+        <h2 id={titleId} class="text-[15px] font-semibold">
           {title}
         </h2>
         {!locked && (

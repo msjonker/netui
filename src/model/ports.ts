@@ -60,6 +60,8 @@ export interface SwitchPort {
   duplex?: 'full' | 'half';
   /** wan: carries an uplink, not editable. lan: in the bridge. unused: neither. */
   role: 'wan' | 'lan' | 'unused';
+  /** For WAN ports: WAN, or WAN2 for the second connection (mwan3's wanb). */
+  wanLabel?: string;
   profile: PortProfile;
   /**
    * Membership the profile cannot express: a tagged PVID ("t*") or several
@@ -176,21 +178,23 @@ export function normalizeSwitch(
     return !m || !vlanFiltering || !vlans.some((v) => v.vid === Number(m[1]));
   });
 
-  const wanDevs = new Set(
-    ifaces
-      .filter((i) => wanNetworks(firewall).has(i['.name']))
-      .map((i) => (str(i.device) ?? '').replace(/\.\d+$/, '')),
-  );
+  const wanIfaces = new Map<string, string[]>();
+  for (const i of ifaces.filter((x) => wanNetworks(firewall).has(x['.name']))) {
+    const dev = (str(i.device) ?? '').replace(/\.\d+$/, '');
+    wanIfaces.set(dev, [...(wanIfaces.get(dev) ?? []), i['.name']]);
+  }
 
   const ports = physicalPorts(network, devices, board, bridgePorts).map((name): SwitchPort => {
     const d = devices?.[name];
     const inBridge = bridgePorts.includes(name);
     const { profile, irregular } = inBridge ? profileOf(name, vlans) : { profile: { tagged: [] }, irregular: false };
+    const wan = wanIfaces.get(name);
     return {
       name,
       carrier: d?.carrier ?? false,
       ...parseSpeed(d?.speed),
-      role: wanDevs.has(name) && !inBridge ? 'wan' : inBridge ? 'lan' : 'unused',
+      role: wan && !inBridge ? 'wan' : inBridge ? 'lan' : 'unused',
+      ...(wan && !inBridge ? { wanLabel: wan.includes('wanb') ? 'WAN2' : 'WAN' } : {}),
       profile,
       irregular,
     };

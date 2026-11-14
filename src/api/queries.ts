@@ -243,6 +243,7 @@ import type { DdnsServicesStatus, UpnpStatus } from './types';
 export const internetKeys = {
   upnp: ['luci.upnp', 'get_status'] as const,
   ddns: ['luci.ddns', 'get_services_status'] as const,
+  mwan3: ['mwan3', 'status'] as const,
 };
 
 /** Active UPnP / NAT-PMP port maps. Runtime state, not config. */
@@ -268,6 +269,15 @@ export const useDdnsStatus = (enabled = true) =>
  * runtime state rather than UCI, so it bypasses the apply flow.
  */
 export const deleteUpnpRule = (token: string) => call('luci.upnp', 'delete_rule', { token });
+
+/** mwan3's view of each WAN: online, offline or not tracked (mwan3 installed). */
+export const useMwanStatus = (enabled = true) =>
+  useQuery({
+    queryKey: internetKeys.mwan3,
+    enabled,
+    refetchInterval: LIVE_MS,
+    queryFn: () => read<import('./types').MwanStatus>('mwan3', 'status'),
+  });
 
 // --- Routing / DNS / System -------------------------------------------------
 

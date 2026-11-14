@@ -601,3 +601,29 @@ export interface NlbwTable {
   columns: string[];
   data: (string | number | null)[][];
 }
+
+// --- mwan3 ------------------------------------------------------------------
+// `mwan3 status` (bench-v2/gateway.mwan3.status.json).
+
+export interface MwanTrackIp {
+  ip: string;
+  status: string;
+  latency: number;
+  packetloss: number;
+}
+
+export interface MwanInterfaceStatus {
+  /** online, offline, connecting, disconnecting, disabled, unknown. */
+  status: string;
+  enabled: boolean;
+  running?: boolean;
+  up?: boolean;
+  uptime?: number;
+  tracking?: string;
+  track_ip?: MwanTrackIp[];
+}
+
+export interface MwanStatus {
+  interfaces: Record<string, MwanInterfaceStatus>;
+  policies?: { ipv4?: Record<string, { interface: string; percent: number }[]> };
+}

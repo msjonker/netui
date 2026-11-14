@@ -6,6 +6,7 @@ import { Card, LoadError, Page, Spinner } from '../../components/ui';
 import { DdnsCard, SqmCard, UpnpCard } from './Services';
 import { WanDrawer, WanStatusCard } from './Wan';
 import { SpeedTestCard } from './SpeedTest';
+import { MultiWanCard } from './MultiWan';
 
 const LUCI = '/cgi-bin/luci/admin';
 
@@ -45,7 +46,7 @@ export function InternetPage() {
   ].filter(Boolean);
 
   return (
-    <Page title="Internet" subtitle="WAN connection, speed test, Smart Queues, UPnP and Dynamic DNS">
+    <Page title="Internet" subtitle="WAN connections, speed test, Smart Queues, UPnP and Dynamic DNS">
       <LoadError error={firstError(ifaces, network)} />
       {!ifaces.data || !network.data ? (
         <Spinner />
@@ -60,13 +61,14 @@ export function InternetPage() {
               </p>
             </Card>
           )}
+          <MultiWanCard network={network.data} firewall={firewall.data} />
           <SpeedTestCard />
           {sqm.data && l3 && <SqmCard cfg={sqm.data} wanL3={l3} />}
           {upnpd.data && <UpnpCard cfg={upnpd.data} />}
           {ddns.data && wan && <DdnsCard cfg={ddns.data} wan={wan.section} wan6={wan.v6?.section} />}
           <Card title="Advanced">
             <p class="text-muted">
-              Multi-WAN, extra WAN interfaces and tunnels are managed in LuCI: <LuciLink href="network/network">Interfaces</LuciLink>
+              More WAN interfaces and tunnels are managed in LuCI: <LuciLink href="network/network">Interfaces</LuciLink>
               {missing.length > 0 && (
                 <>
                   . Not installed here (install the package, then configure it in LuCI):{' '}

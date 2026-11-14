@@ -1,0 +1,224 @@
+{
+	"interfaces": {
+		"wan": {
+			"age": 8,
+			"online": 38,
+			"offline": 0,
+			"uptime": 1880,
+			"score": 10,
+			"lost": 0,
+			"turn": 4,
+			"status": "online",
+			"enabled": true,
+			"running": true,
+			"tracking": "active",
+			"up": true,
+			"track_ip": [
+				{
+					"ip": "1.0.0.1",
+					"status": "up",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "1.1.1.1",
+					"status": "up",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "208.67.222.222",
+					"status": "skipped",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "208.67.220.220",
+					"status": "skipped",
+					"latency": 0,
+					"packetloss": 0
+				}
+			]
+		},
+		"wan6": {
+			"age": 0,
+			"online": 0,
+			"offline": 0,
+			"uptime": 1884,
+			"score": 0,
+			"lost": 0,
+			"turn": 0,
+			"status": "unknown",
+			"enabled": false,
+			"running": false,
+			"tracking": "down",
+			"up": true,
+			"track_ip": [
+				{
+					"ip": "2606:4700:4700::1001",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "2606:4700:4700::1111",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "2620:0:ccd::2",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "2620:0:ccc::2",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				}
+			]
+		},
+		"wanb": {
+			"age": 0,
+			"online": 0,
+			"offline": 0,
+			"uptime": 0,
+			"score": 0,
+			"lost": 0,
+			"turn": 0,
+			"status": "disabled",
+			"enabled": true,
+			"running": false,
+			"tracking": "paused",
+			"up": false,
+			"track_ip": [
+				{
+					"ip": "1.0.0.1",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "1.1.1.1",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "208.67.222.222",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "208.67.220.220",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				}
+			]
+		},
+		"wanb6": {
+			"age": 0,
+			"online": 0,
+			"offline": 0,
+			"uptime": 0,
+			"score": 0,
+			"lost": 0,
+			"turn": 0,
+			"status": "unknown",
+			"enabled": false,
+			"running": false,
+			"tracking": "down",
+			"up": false,
+			"track_ip": [
+				{
+					"ip": "2606:4700:4700::1001",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "2606:4700:4700::1111",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "2620:0:ccd::2",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				},
+				{
+					"ip": "2620:0:ccc::2",
+					"status": "unknown",
+					"latency": 0,
+					"packetloss": 0
+				}
+			]
+		}
+	},
+	"connected": {
+		"ipv4": [
+			"192.168.1.0/24",
+			"192.168.1.255",
+			"192.0.2.0/24",
+			"192.168.1.1",
+			"127.0.0.1",
+			"192.0.2.255",
+			"127.0.0.0/8",
+			"192.0.2.127",
+			"224.0.0.0/3",
+			"127.255.255.255"
+		],
+		"ipv6": [
+			"fe80::/64",
+			"fdc3:f633:2a4c::/64"
+		]
+	},
+	"policies": {
+		"ipv4": {
+			"balanced": [
+				{
+					"interface": "wan",
+					"percent": 100
+				}
+			],
+			"wan_only": [
+				{
+					"interface": "wan",
+					"percent": 100
+				}
+			],
+			"wan_wanb": [
+				{
+					"interface": "wan",
+					"percent": 100
+				}
+			],
+			"wanb_wan": [
+				{
+					"interface": "wan",
+					"percent": 100
+				}
+			]
+		},
+		"ipv6": {
+			"balanced": [
+				
+			],
+			"wan_only": [
+				
+			],
+			"wan_wanb": [
+				
+			],
+			"wanb_wan": [
+				
+			]
+		}
+	}
+}

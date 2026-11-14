@@ -121,7 +121,7 @@ function PortPanel({
               >
                 <IconEthernet size={18} />
                 <span class="font-medium">
-                  {p.role === "wan" ? "WAN" : p.name}
+                  {p.role === "wan" ? (p.wanLabel ?? "WAN") : p.name}
                 </span>
               </span>
               <span
@@ -237,7 +237,7 @@ function PortForm({
 
   return (
     <Drawer
-      title={port.role === "wan" ? `${port.name} (WAN)` : port.name}
+      title={port.role === "wan" ? `${port.name} (${port.wanLabel ?? "WAN"})` : port.name}
       subtitle={speedLabel(port)}
       icon={<IconEthernet size={20} />}
       onClose={onClose}

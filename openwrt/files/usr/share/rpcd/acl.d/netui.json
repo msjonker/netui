@@ -12,6 +12,7 @@
 				"luci.upnp": [ "get_status" ],
 				"luci.ddns": [ "get_services_status", "get_ddns_state" ],
 				"luci.wireguard": [ "getWgInstances" ],
+				"mwan3": [ "status" ],
 				"netui.devices": [ "list", "discover" ],
 				"netui.firmware": [ "status" ],
 				"netui.speedtest": [ "status" ],
@@ -19,7 +20,7 @@
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			},
@@ -45,7 +46,7 @@
 				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3" ]
 		}
 	}
 }

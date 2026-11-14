@@ -21,7 +21,8 @@ export type UciPackage =
   | 'ddns'
   | 'wifi_schedule'
   | 'usteer'
-  | 'nlbwmon';
+  | 'nlbwmon'
+  | 'mwan3';
 
 export async function getConfig(config: string): Promise<UciConfig> {
   const r = await read<UciGet>('uci', 'get', { config });

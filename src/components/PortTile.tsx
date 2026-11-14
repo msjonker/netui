@@ -9,12 +9,12 @@ export function PortTile({
   title,
   children,
 }: {
-  p: { name: string; role: string; carrier: boolean; speed?: number };
+  p: { name: string; role: string; carrier: boolean; speed?: number; wanLabel?: string };
   title?: string;
   /** Extra line under the speed, e.g. the live rate. */
   children?: ComponentChildren;
 }) {
-  const label = p.role === 'wan' ? 'WAN' : p.name;
+  const label = p.role === 'wan' ? (p.wanLabel ?? 'WAN') : p.name;
   return (
     <Link
       href="/settings/ports"
