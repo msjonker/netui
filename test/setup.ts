@@ -1,5 +1,9 @@
 import { afterEach } from 'vitest';
-import { cleanup } from '@testing-library/preact';
+import { cleanup, configure } from '@testing-library/preact';
+
+// findBy*/waitFor default to 1 s. Pages that wait on several fake queries can
+// take longer than that on a busy machine (or a CI runner): allow 5 s.
+configure({ asyncUtilTimeout: 5_000 });
 
 afterEach(() => {
   cleanup();

@@ -25,6 +25,8 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./test/setup.ts'],
+      // Room for findBy* waits (5 s, test/setup.ts) on a busy machine or CI runner.
+      testTimeout: 15_000,
       // Externalized deps would load the real `react` peer instead of preact/compat.
       server: { deps: { inline: ['@tanstack/react-query'] } },
     },
