@@ -16,11 +16,12 @@
 				"netui.devices": [ "list", "discover" ],
 				"netui.firmware": [ "status" ],
 				"netui.speedtest": [ "status" ],
+				"netui.services": [ "adblock" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			},
@@ -36,6 +37,7 @@
 				"netui.devices": [ "adopt", "forget", "call", "sync", "rename", "credentials" ],
 				"netui.firmware": [ "check", "upgrade" ],
 				"netui.speedtest": [ "start" ],
+				"netui.services": [ "adblock_apply" ],
 				"file": [ "exec" ]
 			},
 			"file": {
@@ -46,7 +48,7 @@
 				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast" ]
 		}
 	}
 }

@@ -22,7 +22,8 @@ export type UciPackage =
   | 'wifi_schedule'
   | 'usteer'
   | 'nlbwmon'
-  | 'mwan3';
+  | 'mwan3'
+  | 'adblock-fast';
 
 export async function getConfig(config: string): Promise<UciConfig> {
   const r = await read<UciGet>('uci', 'get', { config });

@@ -160,7 +160,7 @@ describe('Firewall & Security', () => {
   });
 
   it('enables family filtering on a network', async () => {
-    await openTab('Content Filtering');
+    await openTab('Ad Blocking & Filtering');
     pick(document.body, 'Content filter for LAN', 'family');
 
     await applyReviewed();

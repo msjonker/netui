@@ -5,6 +5,7 @@
 /usr/share/rpcd/ucode/netui-devices
 /usr/share/rpcd/ucode/netui-firmware
 /usr/share/rpcd/ucode/netui-speedtest
+/usr/share/rpcd/ucode/netui-services
 /usr/sbin/netui-passwd
 /etc/netui/
 /lib/upgrade/keep.d/netui

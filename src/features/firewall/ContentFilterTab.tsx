@@ -5,6 +5,7 @@ import { filterOps, normalizeFilters, RESOLVERS, type FilterLevel } from '../../
 import { networkLabel, type Subnet } from '../../model/network';
 import { Button, Card, Dot, Empty } from '../../components/ui';
 import { PLAN } from './shared';
+import { AdBlockingCard } from './AdBlocking';
 
 const LEVELS: { value: FilterLevel; label: string }[] = [
   { value: 'none', label: 'None' },
@@ -28,6 +29,7 @@ export function ContentFilterTab({
 
   return (
     <div class="space-y-4">
+      <AdBlockingCard filtered={filters.some((f) => f.level !== 'none')} />
       <Card title="Content Filtering" flush>
         <div class="space-y-2 px-4 pt-3 pb-1 text-xs text-muted">
           <p>

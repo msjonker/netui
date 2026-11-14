@@ -232,7 +232,7 @@ const TABS: { value: Tab; label: string }[] = [
   { value: 'policies', label: 'Policies' },
   { value: 'rules', label: 'Traffic Rules' },
   { value: 'forwards', label: 'Port Forwarding' },
-  { value: 'filtering', label: 'Content Filtering' },
+  { value: 'filtering', label: 'Ad Blocking & Filtering' },
   { value: 'blocked', label: 'Blocked Devices' },
 ];
 

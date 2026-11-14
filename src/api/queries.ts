@@ -244,6 +244,7 @@ export const internetKeys = {
   upnp: ['luci.upnp', 'get_status'] as const,
   ddns: ['luci.ddns', 'get_services_status'] as const,
   mwan3: ['mwan3', 'status'] as const,
+  adblock: ['netui.services', 'adblock'] as const,
 };
 
 /** Active UPnP / NAT-PMP port maps. Runtime state, not config. */
@@ -269,6 +270,15 @@ export const useDdnsStatus = (enabled = true) =>
  * runtime state rather than UCI, so it bypasses the apply flow.
  */
 export const deleteUpnpRule = (token: string) => call('luci.upnp', 'delete_rule', { token });
+
+/** adblock-fast's state; polled quickly while lists download after an apply. */
+export const useAdblockStatus = (enabled = true) =>
+  useQuery({
+    queryKey: internetKeys.adblock,
+    enabled,
+    refetchInterval: (q) => (q.state.data?.busy ? 3_000 : 30_000),
+    queryFn: () => read<import('./types').AdblockStatus>('netui.services', 'adblock'),
+  });
 
 /** mwan3's view of each WAN: online, offline or not tracked (mwan3 installed). */
 export const useMwanStatus = (enabled = true) =>

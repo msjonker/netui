@@ -627,3 +627,20 @@ export interface MwanStatus {
   interfaces: Record<string, MwanInterfaceStatus>;
   policies?: { ipv4?: Record<string, { interface: string; percent: number }[]> };
 }
+
+// --- netui.services ---------------------------------------------------------
+
+/** `netui.services adblock` (bench-v2/netui.services.adblock.*): adblock-fast's procd data. */
+export interface AdblockStatus {
+  installed: boolean;
+  /** netui's last apply (download and start, or stop) is still running. */
+  busy?: boolean;
+  /** statusSuccess, statusDownloading, statusError, ...; null when stopped. */
+  status?: string | null;
+  message?: string | null;
+  /** Domains blocked now. */
+  entries?: number | null;
+  errors?: { code: string; info?: string }[];
+  warnings?: { code: string; info?: string }[];
+  version?: string | null;
+}

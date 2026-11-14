@@ -1,0 +1,17 @@
+{
+	"installed": true,
+	"busy": false,
+	"status": "statusSuccess",
+	"message": "",
+	"entries": 227848,
+	"errors": [
+		
+	],
+	"warnings": [
+		{
+			"code": "warningMissingRecommendedPackages",
+			"info": "gawk, grep, sed, coreutils-sort"
+		}
+	],
+	"version": "1.2.4-r4"
+}

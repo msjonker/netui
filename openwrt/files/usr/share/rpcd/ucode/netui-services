@@ -1,0 +1,68 @@
+// netui.services: status and follow-up actions for optional services, so the
+// ACL can name exactly what netui does instead of granting `service list`
+// (every service's command line) or `file exec` on their init scripts.
+//
+//   adblock        adblock-fast's status (procd service data) and whether
+//                  netui's last apply is still running.
+//   adblock_apply  after a confirmed apply of adblock-fast's config: download
+//                  the chosen lists and start (enabled), or stop (disabled).
+//                  Downloading takes up to a minute, longer than rpcd lets a
+//                  call run, so it runs in the background; poll adblock.
+
+'use strict';
+
+import { readfile, writefile, mkdir, access, unlink } from 'fs';
+import { cursor } from 'uci';
+import { connect } from 'ubus';
+
+const RUN = '/tmp/netui-services';
+const ADBLOCK = '/etc/init.d/adblock-fast';
+
+function running(name) {
+	const pid = trim(readfile(`${RUN}/${name}.pid`) ?? '');
+	return !access(`${RUN}/${name}.exit`) && length(pid) > 0 && !!access(`/proc/${pid}`);
+}
+
+// Run a command in the background, recording its pid and exit code.
+function spawn(name, cmd) {
+	mkdir(RUN, 0700);
+	unlink(`${RUN}/${name}.exit`);
+	writefile(`${RUN}/${name}.sh`, `#!/bin/sh\necho $$ > ${RUN}/${name}.pid\n${cmd} > ${RUN}/${name}.log 2>&1\necho $? > ${RUN}/${name}.exit\n`);
+	system(`/bin/sh ${RUN}/${name}.sh </dev/null >/dev/null 2>&1 &`);
+}
+
+const methods = {
+	adblock: {
+		call: function() {
+			if (!access(ADBLOCK))
+				return { installed: false };
+			const d = connect()?.call('service', 'list', { name: 'adblock-fast' })?.['adblock-fast']?.data;
+			return {
+				installed: true,
+				busy: running('adblock'),
+				status: d?.status,
+				message: d?.message,
+				entries: d?.entries,
+				errors: d?.errors ?? [],
+				warnings: d?.warnings ?? [],
+				version: d?.version,
+			};
+		}
+	},
+
+	adblock_apply: {
+		call: function() {
+			if (!access(ADBLOCK))
+				return { error: 'adblock-fast is not installed' };
+			if (running('adblock'))
+				return { error: 'ad blocking is still being applied' };
+			const on = cursor().get('adblock-fast', 'config', 'enabled') == '1';
+			// `dl` downloads the chosen lists again (a restart reuses the cached
+			// ones, missing a change of lists) and starts blocking.
+			spawn('adblock', `${ADBLOCK} ${on ? 'dl' : 'stop'}`);
+			return { result: true };
+		}
+	},
+};
+
+return { 'netui.services': methods };

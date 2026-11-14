@@ -66,7 +66,7 @@ define Package/netui/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/usr/sbin/netui-passwd $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/ucode
-	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest $(1)/usr/share/rpcd/ucode/
+	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest ./files/usr/share/rpcd/ucode/netui-services $(1)/usr/share/rpcd/ucode/
 	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
 	$(INSTALL_DATA) ./files/lib/upgrade/keep.d/netui $(1)/lib/upgrade/keep.d/
 endef

@@ -3,6 +3,8 @@
 //   sqm           init script disabled by default, so no trigger is registered
 //   ddns          no reload trigger at all
 //   wifi_schedule timers live in crontab, rebuilt only by `wifi_schedule.sh cron`
+//   adblock-fast  ignores being switched off and reuses cached lists on reload;
+//                 netui.services adblock_apply downloads/starts or stops it
 // The ACL grants `file exec` on exactly these paths, nothing broader.
 
 import { call } from './ubus';
@@ -31,6 +33,14 @@ export const SERVICE_COMMANDS = [...new Set(Object.values(HOOKS).flatMap((h) => 
  */
 export async function runServiceHooks(packages: readonly string[]): Promise<string[]> {
   const failed: string[] = [];
+  if (packages.includes('adblock-fast')) {
+    try {
+      const r = await call<{ error?: string }>('netui.services', 'adblock_apply', {}, { permissionDeniedIsAuth: false });
+      if (r?.error) failed.push('ad blocking');
+    } catch {
+      failed.push('ad blocking');
+    }
+  }
   for (const pkg of packages) {
     for (const [command, params] of HOOKS[pkg] ?? []) {
       try {
