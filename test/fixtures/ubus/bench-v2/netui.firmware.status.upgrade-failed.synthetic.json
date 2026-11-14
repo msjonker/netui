@@ -1,0 +1,22 @@
+{
+	"available": true,
+	"installed": "25.12.6",
+	"job": {
+		"action": "upgrade",
+		"version": "25.12.6",
+		"started": 1794690000,
+		"running": false,
+		"exit": 1,
+		"log": "ASU-Server     https://sysupgrade.openwrt.org\nUpstream       https://downloads.openwrt.org\nTarget         qualcommax/ipq807x\nProfile        xiaomi_ax3600 (xiaomi,ax3600)\nPackage-arch   aarch64_cortex-a53\nVersion-from   25.12.6 r33311-981c978eff (kernel 6.12.112)\nVersion-to     25.12.6 r33311-981c978eff (kernel 6.12.112)\n35 packages are out-of-date\nThere are 1 missing and 1 modified default packages\nWARNING: There are 1 missing default packages, confirm this is expected before proceeding\nRequest hash:\n  6e0d2c1f4b6a9e8d7c5b3a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d\n--\nStatus:   queued - 2 ahead of you\nProgress:   4s total =   4s in queue +   0s in build\n--\nStatus:   started - building_image\nProgress:  52s total =  18s in queue +  34s in build\n\nBuild failed in  61s total =  18s in queue +  43s to build:\nERROR: Build failed with status 500 (--version-to 25.12.6 --device qualcommax/ipq807x:xiaomi_ax3600:squashfs)\n"
+	},
+	"branches": {
+		"current": "25.12",
+		"latest": {
+			"22.03": "22.03.7",
+			"23.05": "23.05.6",
+			"24.10": "24.10.8",
+			"25.12": "25.12.6",
+			"SNAPSHOT": "SNAPSHOT"
+		}
+	}
+}

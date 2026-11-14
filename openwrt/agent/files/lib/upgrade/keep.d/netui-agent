@@ -1,0 +1,9 @@
+# netui-agent is not in the OpenWrt feeds, so an attended sysupgrade builds an
+# image without it. Keep its files, and the adoption state, instead.
+/usr/share/rpcd/acl.d/netui-agent.json
+/usr/share/rpcd/ucode/netui-agent
+/usr/share/rpcd/ucode/netui-firmware
+/usr/sbin/netui-agent
+/usr/libexec/netui-agent/
+/etc/netui-agent/
+/lib/upgrade/keep.d/netui-agent

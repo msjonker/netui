@@ -34,7 +34,7 @@ define Package/netui
   # SQM, UPnP, DDNS, WireGuard and wifischedule stay optional: netui hides
   # what is not installed.
   # rpcd-mod-ucode and uclient-fetch run netui.devices, which adopts access
-  # points and relays calls to them.
+  # points and relays calls to them. owut (firmware upgrades) is optional.
   DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +rpcd-mod-ucode +uclient-fetch +uhttpd +uhttpd-mod-ubus +luci-base
   PKGARCH:=all
 endef
@@ -66,7 +66,9 @@ define Package/netui/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/usr/sbin/netui-passwd $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/ucode
-	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices $(1)/usr/share/rpcd/ucode/
+	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware $(1)/usr/share/rpcd/ucode/
+	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
+	$(INSTALL_DATA) ./files/lib/upgrade/keep.d/netui $(1)/lib/upgrade/keep.d/
 endef
 
 # rpcd reads ACLs at startup.
@@ -113,6 +115,10 @@ define Package/netui-agent/install
 	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/libexec/netui-agent
 	$(INSTALL_BIN) ./agent/files/usr/sbin/netui-agent $(1)/usr/sbin/
 	$(INSTALL_BIN) ./agent/files/usr/libexec/netui-agent/access-point $(1)/usr/libexec/netui-agent/
+	# Same firmware plugin as the gateway's; the gateway relays to it.
+	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-firmware $(1)/usr/share/rpcd/ucode/
+	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
+	$(INSTALL_DATA) ./agent/files/lib/upgrade/keep.d/netui-agent $(1)/lib/upgrade/keep.d/
 endef
 
 define Package/netui-agent/postinst

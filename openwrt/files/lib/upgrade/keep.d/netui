@@ -1,0 +1,9 @@
+# netui is not in the OpenWrt feeds, so an attended sysupgrade (owut, LuCI's
+# Attended Sysupgrade) builds an image without it. Keep its files instead.
+/www/netui/
+/usr/share/rpcd/acl.d/netui.json
+/usr/share/rpcd/ucode/netui-devices
+/usr/share/rpcd/ucode/netui-firmware
+/usr/sbin/netui-passwd
+/etc/netui/
+/lib/upgrade/keep.d/netui

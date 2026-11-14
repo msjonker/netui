@@ -1,0 +1,13 @@
+{
+	"available": true,
+	"installed": "25.12.6",
+	"job": {
+		"action": "check",
+		"version": null,
+		"started": 1794686052,
+		"running": true,
+		"exit": null,
+		"log": ""
+	},
+	"branches": null
+}

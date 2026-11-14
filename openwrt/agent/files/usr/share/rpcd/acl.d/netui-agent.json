@@ -26,6 +26,9 @@
 				"netui.agent": [
 					"info"
 				],
+				"netui.firmware": [
+					"status"
+				],
 				"system": [
 					"board",
 					"info"
@@ -71,6 +74,10 @@
 			"ubus": {
 				"netui.agent": [
 					"release"
+				],
+				"netui.firmware": [
+					"check",
+					"upgrade"
 				],
 				"uci": [
 					"set",

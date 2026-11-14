@@ -31,6 +31,7 @@ const ALLOWED = {
 	'log': ['read'],
 	'uci': ['get', 'state', 'changes', 'set', 'add', 'delete', 'rename', 'order', 'apply', 'confirm', 'rollback', 'revert'],
 	'netui.agent': ['info'],
+	'netui.firmware': ['status', 'check', 'upgrade'],
 };
 
 function shellquote(s) {

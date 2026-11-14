@@ -51,6 +51,18 @@ export async function rebootAndWait(deps: RebootDeps, onPhase: (p: RebootPhase) 
     // The connection may drop as the router goes down; anything else is real.
     if (!(err instanceof TransportError)) throw err;
   }
+  return waitForRestart(deps, onPhase);
+}
+
+/**
+ * Wait for the router to go down and come back. A firmware upgrade flashes
+ * before it reboots, so it passes a longer `upWaitMs`.
+ */
+export async function waitForRestart(
+  deps: Omit<RebootDeps, 'reboot'>,
+  onPhase: (p: RebootPhase) => void = () => {},
+  upWaitMs = UP_WAIT_MS,
+): Promise<RebootResult> {
   const start = deps.now();
   while (deps.now() - start < DOWN_WAIT_MS) {
     await deps.sleep(POLL_MS);
@@ -58,7 +70,7 @@ export async function rebootAndWait(deps: RebootDeps, onPhase: (p: RebootPhase) 
   }
   onPhase('starting');
   while (!(await deps.probe())) {
-    if (deps.now() - start > UP_WAIT_MS) return 'timeout';
+    if (deps.now() - start > upWaitMs) return 'timeout';
     await deps.sleep(POLL_MS);
   }
   onPhase('checking');

@@ -13,6 +13,9 @@ import { Drawer, Modal } from '../../components/overlay';
 import { IconAccessPoint, IconPower, IconRefresh, IconTrash } from '../../components/icons';
 import { Banner, Button, Detail, Dot, Empty, Field, FormSection, Pill, Spinner } from '../../components/ui';
 import { RadioSettings } from './RadioSettings';
+import { useFirmware } from '../../api/useFirmware';
+import { waitForAccessPoint } from '../../api/firmware';
+import { FirmwarePanel } from '../../components/FirmwarePanel';
 
 function message(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -49,6 +52,17 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
   const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
   const [creds, setCreds] = useState<DeviceCredentials | null>(null);
   const [confirm, setConfirm] = useState<'restart' | 'forget' | null>(null);
+  const firmware = useFirmware(
+    device.mac,
+    async () => {
+      const r = await waitForAccessPoint(device.mac);
+      void qc.invalidateQueries({ queryKey: deviceKeys.list });
+      void qc.invalidateQueries({ queryKey: deviceKeys.system(device.mac) });
+      return r;
+    },
+    device.online,
+  );
+  const upgrading = !!firmware.step || !!firmware.view?.upgrade;
 
   const run = async (label: string, fn: () => Promise<string | void>) => {
     setBusy(label);
@@ -80,10 +94,10 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
       onClose={onClose}
       footer={
         <>
-          <Button variant="danger" class="mr-auto" disabled={!!busy} onClick={() => setConfirm('forget')}>
+          <Button variant="danger" class="mr-auto" disabled={!!busy || upgrading} onClick={() => setConfirm('forget')}>
             <IconTrash size={14} /> Forget
           </Button>
-          <Button disabled={!!busy || !device.online} onClick={() => setConfirm('restart')}>
+          <Button disabled={!!busy || upgrading || !device.online} onClick={() => setConfirm('restart')}>
             <IconPower size={14} /> Restart
           </Button>
         </>
@@ -109,6 +123,10 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
               ['Memory', mem !== undefined ? formatPercent(mem) : '—'],
             ]}
           />
+        </FormSection>
+
+        <FormSection title="Firmware">
+          <FirmwarePanel fw={firmware} what="access point" />
         </FormSection>
 
         <FormSection title="Radios">

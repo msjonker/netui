@@ -3,6 +3,8 @@ import { onlineManager, useQueryClient } from '@tanstack/react-query';
 import { useLocaltime, useSystemBoard, useSystemInfo, useTimezones, useUci, firstError } from '../../api/queries';
 import { useApply } from '../../api/useApply';
 import { expireSession } from '../../api/ubus';
+import { useFirmware } from '../../api/useFirmware';
+import type { RestartResult } from '../../api/firmware';
 import { splitList } from '../../model/dns';
 import {
   clockSkew,
@@ -17,9 +19,10 @@ import {
 import { formatBytes, formatDuration } from '../../lib/format';
 import { useDraft } from '../../lib/useDraft';
 import { Modal } from '../../components/overlay';
+import { FirmwarePanel } from '../../components/FirmwarePanel';
 import { IconExternal, IconPower } from '../../components/icons';
 import { Banner, Button, Card, Detail, Field, LoadError, Meter, Page, Spinner, ToggleRow } from '../../components/ui';
-import { rebootAndWait, rebootDeps, type RebootPhase } from './reboot';
+import { rebootAndWait, rebootDeps, waitForRestart, type RebootPhase } from './reboot';
 
 const PLAN = { returnTo: '/settings/system' };
 
@@ -166,7 +169,7 @@ function DeviceCard() {
       title="Device"
       actions={
         <a class="inline-flex items-center gap-1 text-accent hover:underline" href="/cgi-bin/luci/admin/system/flash" target="_blank" rel="noreferrer">
-          Backup & firmware upgrade <IconExternal size={12} />
+          Backup & manual upgrade <IconExternal size={12} />
         </a>
       }
     >
@@ -187,6 +190,31 @@ function DeviceCard() {
           ]}
         />
       )}
+    </Card>
+  );
+}
+
+/** Flashing takes longer than a plain restart. */
+const FLASH_WAIT_MS = 15 * 60_000;
+
+function FirmwareCard() {
+  const qc = useQueryClient();
+  const restart = async (): Promise<RestartResult> => {
+    // As for a restart: pause queries while the router is away.
+    onlineManager.setOnline(false);
+    try {
+      const r = await waitForRestart(rebootDeps, undefined, FLASH_WAIT_MS);
+      if (r === 'signed-out') expireSession('The firmware was updated and the router restarted. Sign in again to continue.');
+      return r;
+    } finally {
+      onlineManager.setOnline(true);
+      void qc.invalidateQueries();
+    }
+  };
+  const fw = useFirmware(undefined, restart);
+  return (
+    <Card title="Firmware">
+      <FirmwarePanel fw={fw} what="router" fullscreen />
     </Card>
   );
 }
@@ -308,7 +336,10 @@ export function SystemPage() {
           <GeneralCard />
           <Restart />
         </div>
-        <DeviceCard />
+        <div class="space-y-4">
+          <DeviceCard />
+          <FirmwareCard />
+        </div>
       </div>
     </Page>
   );

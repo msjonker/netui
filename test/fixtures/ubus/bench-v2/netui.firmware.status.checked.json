@@ -1,0 +1,22 @@
+{
+	"available": true,
+	"installed": "25.12.6",
+	"job": {
+		"action": "check",
+		"version": null,
+		"started": 1794686052,
+		"running": false,
+		"exit": 0,
+		"log": "ASU-Server     https://sysupgrade.openwrt.org\nUpstream       https://downloads.openwrt.org\nTarget         qualcommax/ipq807x\nProfile        dynalink_dl-wrx36 (dynalink,dl-wrx36)\nPackage-arch   aarch64_cortex-a53\nVersion-from   25.12.6 r33311-981c978eff (kernel 6.12.112)\nVersion-to     25.12.6 r33311-981c978eff (kernel 6.12.112)\n35 packages are out-of-date\nThere are 1 missing and 1 modified default packages\nWARNING: There are 1 missing default packages, confirm this is expected before proceeding\nIt is safe to proceed with an upgrade (re-run with '--verbose' for details)\n"
+	},
+	"branches": {
+		"current": "25.12",
+		"latest": {
+			"22.03": "22.03.7",
+			"23.05": "23.05.6",
+			"24.10": "24.10.8",
+			"25.12": "25.12.6",
+			"SNAPSHOT": "SNAPSHOT"
+		}
+	}
+}

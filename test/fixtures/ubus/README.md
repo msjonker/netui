@@ -35,3 +35,9 @@ Naming: `<object>.<method>[.<arg>].json`, e.g. `iwinfo.assoclist.phy0-ap0.json`.
 
 Credential-like fields are redacted to `"REDACTED"` by the script. Client
 hostnames and MACs are not; check the diff before committing.
+
+`bench-v2/netui.firmware.status.*` are `netui.firmware status` on the gateway:
+`idle` before any job, `checking` while `owut check` runs, `checked` after it.
+The `upgrade-*.synthetic.json` files are HAND-WRITTEN from the message formats
+in owut 2026.08 (`/usr/bin/owut`), not recorded: replace them with recordings
+of a real upgrade.

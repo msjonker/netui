@@ -534,3 +534,31 @@ export interface DeviceCredentials extends DevicePluginError {
   username?: string;
   password?: string;
 }
+
+// --- netui.firmware ---------------------------------------------------------
+// The firmware plugin on the gateway and, through netui.devices call, on
+// access points. Recorded in test/fixtures/ubus/bench-v2/netui.firmware.*.
+
+/** The current or last owut run. `log` is the tail of owut's output. */
+export interface FirmwareJob {
+  action: 'check' | 'upgrade';
+  version: string | null;
+  started: number;
+  running: boolean;
+  exit: number | null;
+  log: string;
+}
+
+export interface FirmwareStatus extends DevicePluginError {
+  /** owut is installed. */
+  available: boolean;
+  /** DISTRIB_RELEASE, e.g. "25.12.6". */
+  installed?: string;
+  job: FirmwareJob | null;
+  /** From the last check: each release branch and its newest version. */
+  branches: { current: string; latest: Record<string, string> } | null;
+}
+
+export interface FirmwareStarted extends DevicePluginError {
+  result?: boolean;
+}

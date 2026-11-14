@@ -57,7 +57,7 @@ describe('System', () => {
   it('shows hardware and firmware', async () => {
     renderApp('#/settings/system');
     expect(await screen.findByText('Kernel')).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Backup & firmware upgrade/ }).getAttribute('href')).toBe('/cgi-bin/luci/admin/system/flash');
+    expect(screen.getByRole('link', { name: /Backup & manual upgrade/ }).getAttribute('href')).toBe('/cgi-bin/luci/admin/system/flash');
   });
 });
 

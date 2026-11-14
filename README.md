@@ -158,11 +158,25 @@ These pages appear when the matching OpenWrt packages are installed
 | Dynamic DNS | `luci-app-ddns` |
 | WireGuard VPN server | `luci-proto-wireguard` |
 | WiFi schedules | `wifischedule` |
+| Firmware updates | `owut` (included in standard 25.x images) |
 
 ### Updating
 
 Download the new package and run the same install command as in step 3. Your
 settings and the `netui` login are kept.
+
+### Firmware updates
+
+**Settings → System → Firmware** checks for a newer OpenWrt and upgrades the
+router with `owut` (attended sysupgrade). The OpenWrt build server makes an
+image with the packages you have installed, and the router installs it and
+restarts with its settings. Access points upgrade the same way from their
+panel on the Devices page. The device needs internet access.
+
+netui is not in the OpenWrt package feeds, so the new image is built without
+it. Its files are kept across the upgrade like settings are, so netui and the
+access point agent keep working. Afterwards `apk`/`opkg` no longer lists the
+package; installing it again (see Updating) puts it back on the list.
 
 ### Uninstalling
 

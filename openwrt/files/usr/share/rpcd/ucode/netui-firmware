@@ -1,0 +1,138 @@
+// netui.firmware: firmware upgrades with owut (attended sysupgrade).
+//
+// Installed on the gateway (netui) and on access points (netui-agent); the
+// gateway reaches an AP's copy through netui.devices call.
+//
+//   status   owut present, the installed release, and the current or last
+//            job: its log tail and exit code. The UI parses the log.
+//   check    start a background check against the newest release in the
+//            installed branch.
+//   upgrade  start a background build, download, verify and install of
+//            {version}. The device flashes and reboots when it finishes.
+//
+// owut takes seconds to minutes and rpcd runs ucode in-process, so both run
+// as a detached job in /tmp/netui-fw; /tmp is empty again after the reboot.
+//
+// netui itself is not in the ASU package feeds, so it is removed from the
+// build request (-r). /lib/upgrade/keep.d/<package> keeps its files.
+
+'use strict';
+
+import { readfile, writefile, mkdir, access, unlink, open } from 'fs';
+
+const DIR = '/tmp/netui-fw';
+const OWUT = '/usr/bin/owut';
+const LOG_TAIL = 6144;
+
+function shellquote(s) {
+	return `'${replace(s, "'", "'\\''")}'`;
+}
+
+function installed_release() {
+	return match(readfile('/etc/openwrt_release') ?? '', /DISTRIB_RELEASE='([^']*)'/)?.[1];
+}
+
+// The netui packages on this device, which the ASU feeds do not carry.
+function own_packages() {
+	return filter(['netui', 'netui-agent'], (p) =>
+		access(`/lib/apk/packages/${p}.list`) || access(`/usr/lib/opkg/info/${p}.list`));
+}
+
+function tail(path) {
+	const f = open(path);
+	if (!f)
+		return '';
+	f.seek(0, 2);
+	const size = f.tell();
+	f.seek(size > LOG_TAIL ? size - LOG_TAIL : 0);
+	const out = f.read('all');
+	f.close();
+	return out;
+}
+
+function job() {
+	const raw = readfile(`${DIR}/job.json`);
+	return raw ? json(raw) : null;
+}
+
+function running() {
+	const pid = trim(readfile(`${DIR}/pid`) ?? '');
+	return !access(`${DIR}/exit`) && length(pid) > 0 && !!access(`/proc/${pid}`);
+}
+
+// Branches and their newest release, from the last check's owut dump.
+function branches() {
+	const raw = readfile(`${DIR}/dump.json`);
+	const rel = raw ? json(raw)?.release : null;
+	if (!rel?.branches)
+		return null;
+	const out = {};
+	for (let name, b in rel.branches)
+		out[name] = b.latest;
+	return { current: rel.branch, latest: out };
+}
+
+function start(action, version, script) {
+	if (!access(OWUT))
+		return { error: 'owut is not installed' };
+	if (running())
+		return { error: 'a firmware job is already running' };
+	mkdir(DIR, 0700);
+	for (let f in ['exit', 'pid', 'log'])
+		unlink(`${DIR}/${f}`);
+	if (action == 'check')
+		unlink(`${DIR}/dump.json`);
+	writefile(`${DIR}/job.json`, sprintf('%J\n', { action, version, started: time() }));
+	writefile(`${DIR}/job.sh`, `#!/bin/sh\ncd ${DIR} || exit 1\necho $$ > pid\n${script}\necho $? > exit\n`);
+	system(`/bin/sh ${DIR}/job.sh </dev/null >/dev/null 2>&1 &`);
+	return { result: true };
+}
+
+function removals() {
+	return join(' ', map(own_packages(), (p) => `-r ${p}`));
+}
+
+const methods = {
+	status: {
+		call: function() {
+			const j = job();
+			const exit = readfile(`${DIR}/exit`);
+			return {
+				available: !!access(OWUT),
+				installed: installed_release(),
+				job: j ? {
+					...j,
+					running: running(),
+					exit: exit != null && length(trim(exit)) ? +trim(exit) : null,
+					log: tail(`${DIR}/log`),
+				} : null,
+				branches: branches(),
+			};
+		}
+	},
+
+	check: {
+		call: function() {
+			const rm = removals();
+			// Check against the newest release of the installed branch, so a
+			// point release shows up as well as package updates.
+			return start('check', null,
+				`${OWUT} dump ${rm} > dump.json 2>/dev/null\n` +
+				`b=$(jsonfilter -i dump.json -e '@.release.branch')\n` +
+				`v=$(jsonfilter -i dump.json -e "@.release.branches['$b'].latest")\n` +
+				`${OWUT} check ${rm} \${v:+-V "$v"} > log 2>&1`);
+		}
+	},
+
+	upgrade: {
+		args: { version: 'version' },
+		call: function(request) {
+			const v = request.args.version;
+			if (!match(v, /^[0-9A-Za-z.-]{1,32}$/))
+				return { error: 'invalid version' };
+			return start('upgrade', v, `${OWUT} upgrade ${removals()} -V ${shellquote(v)} > log 2>&1`);
+		}
+	},
+};
+
+return { 'netui.firmware': methods };
