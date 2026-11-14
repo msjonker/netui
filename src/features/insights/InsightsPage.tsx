@@ -19,7 +19,9 @@ import { BAND_LABEL, frequencyBand, type Band } from '../../model/wifi';
 import { IconRefresh, SignalBars } from '../../components/icons';
 import { Banner, Button, Card, Empty, Meter, Page, Pill, Segmented, Spinner, Stat, Tabs, cx } from '../../components/ui';
 
-type Tab = 'rf' | 'traffic';
+import { UsageInsights } from './Usage';
+
+type Tab = 'rf' | 'traffic' | 'usage';
 
 export function InsightsPage() {
   const [tab, setTab] = useState<Tab>('rf');
@@ -32,10 +34,11 @@ export function InsightsPage() {
           tabs={[
             { value: 'rf', label: 'WiFi Environment' },
             { value: 'traffic', label: 'Traffic' },
+            { value: 'usage', label: 'Usage history' },
           ]}
         />
       </div>
-      {tab === 'rf' ? <WifiEnvironment /> : <TrafficInsights />}
+      {tab === 'rf' ? <WifiEnvironment /> : tab === 'traffic' ? <TrafficInsights /> : <UsageInsights />}
     </Page>
   );
 }

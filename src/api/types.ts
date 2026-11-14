@@ -586,3 +586,18 @@ export interface SpeedTestStatus {
   /** Newest first. */
   history: SpeedTestResult[];
 }
+
+// --- nlbwmon (usage history) ------------------------------------------------
+
+/** `file exec` result: rpcd leaves out stdout/stderr when they are empty. */
+export interface FileExecResult {
+  code: number;
+  stdout?: string;
+  stderr?: string;
+}
+
+/** `nlbw -c json -g mac,layer7` (bench-v2/gateway.nlbw.json.mac-layer7.json). */
+export interface NlbwTable {
+  columns: string[];
+  data: (string | number | null)[][];
+}

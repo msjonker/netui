@@ -10,7 +10,18 @@ import type { UciChange, UciChangesAll, UciConfig, UciGet, UciSection, UciValue 
 export const APPLY_TIMEOUT_S = 30;
 
 /** Packages the netui ACL may write. */
-export type UciPackage = 'network' | 'wireless' | 'dhcp' | 'firewall' | 'system' | 'sqm' | 'upnpd' | 'ddns' | 'wifi_schedule' | 'usteer';
+export type UciPackage =
+  | 'network'
+  | 'wireless'
+  | 'dhcp'
+  | 'firewall'
+  | 'system'
+  | 'sqm'
+  | 'upnpd'
+  | 'ddns'
+  | 'wifi_schedule'
+  | 'usteer'
+  | 'nlbwmon';
 
 export async function getConfig(config: string): Promise<UciConfig> {
   const r = await read<UciGet>('uci', 'get', { config });

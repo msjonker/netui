@@ -1,7 +1,9 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import { useLocation, useParams } from 'wouter-preact';
-import { reconnectClient, stationRate } from '../../api/queries';
+import { reconnectClient, stationRate, useUci } from '../../api/queries';
+import { useUsage } from '../../api/usage';
+import { normalizeUsage } from '../../model/usage';
 import { useApply } from '../../api/useApply';
 import {
   clientAddresses,
@@ -232,8 +234,20 @@ function Reconnect({ c }: { c: Client }) {
   );
 }
 
+/** This period's bytes for one client from nlbwmon, when it is installed. */
+function usePeriodUsage(mac: string): string | undefined {
+  const installed = !!useUci('nlbwmon').data;
+  const usage = useUsage('', installed);
+  const host = useMemo(() => (usage.data ? normalizeUsage(usage.data) : undefined), [usage.data])?.hosts.find(
+    (h) => h.mac === mac.toLowerCase(),
+  );
+  if (!installed || !usage.data) return undefined;
+  return host ? `↓ ${formatBytes(host.rx)} / ↑ ${formatBytes(host.tx)}` : 'None counted';
+}
+
 function Overview({ c }: { c: Client }) {
   const w = c.wireless;
+  const period = usePeriodUsage(c.mac);
   const e = experienceOf(c);
   const vendor = vendorLabel(c.mac);
   return (
@@ -270,6 +284,7 @@ function Overview({ c }: { c: Client }) {
           ],
           ['DHCP lease', lease(c)],
           ['Activity', <Activity c={c} />],
+          ...(period ? ([['Usage this period', period]] as [string, ComponentChildren][]) : []),
           ...(w
             ? ([
                 [

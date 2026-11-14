@@ -35,8 +35,8 @@ async function choose(files: Record<string, string>) {
   const file = new File([await tarball(files)], 'backup-OpenWrt-2026-11-14.tar.gz');
   const input = screen.getByLabelText('Backup file');
   Object.defineProperty(input, 'files', { value: [file], configurable: true });
-  // What the browser's file picker does. (Testing Library's fireEvent.change
-  // runs inside preact's act(), where this handler is not reached.)
+  // What the browser's file picker does. (@testing-library/preact turns
+  // fireEvent.change into an input event; see pick() in test/dom.ts.)
   input.dispatchEvent(new Event('change', { bubbles: true }));
 }
 

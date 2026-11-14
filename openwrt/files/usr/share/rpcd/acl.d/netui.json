@@ -19,7 +19,10 @@
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon" ],
+			"file": {
+				"/usr/sbin/nlbw": [ "exec" ]
+			},
 			"cgi-io": [ "backup" ]
 		},
 		"write": {
@@ -42,7 +45,7 @@
 				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon" ]
 		}
 	}
 }
