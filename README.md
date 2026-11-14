@@ -151,14 +151,51 @@ are not copied yet (they need VLANs carried to the access point).
 These pages appear when the matching OpenWrt packages are installed
 (`apk add …` or `opkg install …`, then reload netui):
 
-| Feature | Packages |
-|---|---|
-| Smart Queues | `sqm-scripts` |
-| UPnP / NAT-PMP | `luci-app-upnp` |
-| Dynamic DNS | `luci-app-ddns` |
-| WireGuard VPN server | `luci-proto-wireguard` |
-| WiFi schedules | `wifischedule` |
-| Firmware updates | `owut` (included in standard 25.x images) |
+| Feature | Packages | Where |
+|---|---|---|
+| Smart Queues | `sqm-scripts` | Settings → Internet |
+| UPnP / NAT-PMP | `luci-app-upnp` | Settings → Internet |
+| Dynamic DNS | `luci-app-ddns` | Settings → Internet |
+| Multi-WAN (failover, load balancing) | `mwan3` | Settings → Internet |
+| Speed test | `librespeed-cli` (8 MB) or the much smaller `speedtestcpp` | Settings → Internet, Dashboard |
+| WireGuard VPN server | `luci-proto-wireguard` | Settings → VPN |
+| WiFi schedules | `wifischedule` | Settings → WiFi |
+| Ad blocking | `adblock-fast` | Settings → Firewall & Security |
+| Guest portal | `opennds` | Settings → Networks |
+| Usage history | `nlbwmon` | Insights → Usage history, client details |
+| Firmware updates | `owut` (included in standard 25.x images) | Settings → System, Devices |
+
+A few notes:
+
+- **Multi-WAN** turns a spare LAN port into a second internet port (WAN2)
+  and uses it for failover (WAN2 takes over when WAN1 stops answering) or
+  load balancing. A custom mwan3 setup made in LuCI is left alone.
+- **Ad blocking** blocks ads and trackers for every device through the
+  router's DNS, from block lists you pick. Networks that use Content
+  Filtering keep Cloudflare's filter instead.
+- **Guest portal** shows devices on one network (a guest network, not the
+  LAN) a sign-in page before they get internet, with an optional session
+  length and speed limit, and lists who is signed in. openNDS's
+  "dnsmasq-full" warning only matters for its walled garden, which netui does
+  not use.
+- **Usage history** keeps monthly usage per device and per application. By
+  default nlbwmon keeps it in memory; the switch on the Usage history page
+  moves it to flash so it survives a restart.
+
+### Backup and restore
+
+**Settings → System → Backup** downloads all settings (and netui with its
+access point list) as one file, and restores such a file: netui shows what
+it contains before anything is sent, and follows the router if the backup
+moves it to another address. A backup holds WiFi passwords and login hashes;
+keep it private.
+
+### Users and roles
+
+**Settings → System → Admins** adds people who can sign in to netui: an
+**Admin** changes settings; **Read only** sees everything netui shows but
+changes nothing and cannot download a backup. Each user is a login on the
+router, like the one `netui-passwd` creates.
 
 ### Updating
 
@@ -307,8 +344,9 @@ On the router: `apk add --allow-untrusted netui-*.apk` (or `opkg install` on
 ## Manual setup (without the package)
 
 
-1. Install the ACL: copy `openwrt/files/usr/share/rpcd/acl.d/netui.json` to
-   `/usr/share/rpcd/acl.d/` on the router.
+1. Install the ACL and the rpcd plugins: copy `openwrt/files/usr/share/rpcd/`
+   (`acl.d/netui.json` and the `ucode/netui-*` plugins) to `/usr/share/rpcd/`
+   on the router. The plugins need `rpcd-mod-ucode` and `uclient-fetch`.
 2. Create the dedicated rpcd login (never use root):
 
    ```sh
