@@ -18,18 +18,118 @@ Captured on a Dynalink DL-WRX36 test router running OpenWrt SNAPSHOT (no WAN con
 
 ## Install on a router
 
-Download the package for your OpenWrt release from
-[Releases](https://github.com/msjonker/netui/releases), copy it to the router, then:
+netui runs on OpenWrt **24.10** and **25.x / snapshots**, on any router hardware
+(the package contains no compiled code). LuCI stays installed and keeps working
+alongside it. The examples use version `0.1.0` and the router at `192.168.1.1`;
+substitute the latest version from [Releases](https://github.com/msjonker/netui/releases)
+and your router's address.
+
+### 1. Find out which package you need
+
+Log in to the router over SSH and check the release:
 
 ```sh
-apk add --allow-untrusted netui-<version>-r1.apk   # OpenWrt 25.x and snapshots
-opkg install netui_<version>-r1_all.ipk            # OpenWrt 24.10
-netui-passwd                                       # create the netui login (once)
+ssh root@192.168.1.1
+grep DISTRIB_RELEASE /etc/openwrt_release
 ```
 
-Open `http://<router>/netui/`. LuCI keeps working alongside it. Smart Queues,
-UPnP, Dynamic DNS, WireGuard and WiFi schedules show up when their OpenWrt
-packages are installed.
+| `DISTRIB_RELEASE` | Package manager | Download |
+|---|---|---|
+| `25.12.x` or `SNAPSHOT` | apk | `netui-0.1.0-r1.apk` |
+| `24.10.x` | opkg | `netui_0.1.0-r1_all.ipk` |
+
+Older releases (23.05 and before) are not supported.
+
+### 2. Download the package and copy it to the router
+
+Download the file from the [latest release](https://github.com/msjonker/netui/releases/latest)
+on your computer, then copy it to the router's `/tmp` (on Windows, use PowerShell):
+
+```sh
+scp -O netui-0.1.0-r1.apk root@192.168.1.1:/tmp/        # OpenWrt 25.x / snapshots
+scp -O netui_0.1.0-r1_all.ipk root@192.168.1.1:/tmp/    # OpenWrt 24.10
+```
+
+`-O` is needed because OpenWrt's SSH server (dropbear) does not support the newer
+SFTP-based copy. If your router already has internet access you can instead
+download on the router itself:
+
+```sh
+cd /tmp && wget https://github.com/msjonker/netui/releases/download/v0.1.0/netui-0.1.0-r1.apk
+```
+
+### 3. Install it
+
+On the router, refresh the package lists (so dependencies such as `rpcd-mod-file`
+can be installed) and install the file:
+
+```sh
+# OpenWrt 25.x / snapshots
+apk update
+apk add --allow-untrusted /tmp/netui-0.1.0-r1.apk
+
+# OpenWrt 24.10
+opkg update
+opkg install /tmp/netui_0.1.0-r1_all.ipk
+```
+
+The router needs internet access for this step unless LuCI is already installed
+(it then has every dependency). `--allow-untrusted` is required because the
+release packages are not signed with an OpenWrt key.
+
+### 4. Create the netui login
+
+netui signs in with its own account, never root. Create it once:
+
+```sh
+netui-passwd
+```
+
+It asks for a password twice (at least 8 characters) and creates the user
+`netui`, limited to what the UI needs. Run it again any time to change the password.
+
+### 5. Open netui
+
+Browse to **http://192.168.1.1/netui/** and sign in as `netui`. If LuCI is
+installed with HTTPS (`luci-ssl`), use **https://192.168.1.1/netui/** instead:
+the login session is a bearer token, so HTTPS is recommended.
+
+### Optional features
+
+These pages appear when the matching OpenWrt packages are installed
+(`apk add …` or `opkg install …`, then reload netui):
+
+| Feature | Packages |
+|---|---|
+| Smart Queues | `sqm-scripts` |
+| UPnP / NAT-PMP | `luci-app-upnp` |
+| Dynamic DNS | `luci-app-ddns` |
+| WireGuard VPN server | `luci-proto-wireguard` |
+| WiFi schedules | `wifischedule` |
+
+### Updating
+
+Download the new package and run the same install command as in step 3. Your
+settings and the `netui` login are kept.
+
+### Uninstalling
+
+```sh
+apk del netui        # OpenWrt 25.x / snapshots
+opkg remove netui    # OpenWrt 24.10
+```
+
+This removes the UI and its permissions file but keeps the `netui` login. To
+delete that as well: `uci delete rpcd.netui && uci commit rpcd && /etc/init.d/rpcd restart`.
+
+### Troubleshooting
+
+- **Cannot sign in right after installing:** restart rpcd so it loads the new
+  permissions: `/etc/init.d/rpcd restart`.
+- **`UNTRUSTED signature`** from apk: add `--allow-untrusted` (step 3).
+- **`unable to select packages` / dependency errors:** run `apk update` or
+  `opkg update` first; the router needs internet access to fetch dependencies.
+- **404 at `/netui/`:** check the files are there with `ls /www/netui`.
 
 ## Release
 

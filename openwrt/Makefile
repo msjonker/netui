@@ -77,6 +77,8 @@ endef
 
 define Package/netui/postrm
 #!/bin/sh
+# opkg leaves the emptied directories behind; apk removes them itself.
+rmdir "$${IPKG_INSTROOT}/www/netui/assets" "$${IPKG_INSTROOT}/www/netui" 2>/dev/null
 [ -n "$${IPKG_INSTROOT}" ] || /etc/init.d/rpcd restart
 exit 0
 endef
