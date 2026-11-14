@@ -21,6 +21,13 @@ import links from '../fixtures/ubus/bench-v2/netui.devices.call.network.device.s
 import iwDevicesMesh from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.devices.mesh.json';
 import infoMesh from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.info.phy1-mesh0.json';
 import assocMesh from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.assoclist.phy1-mesh0.json';
+import apWireless from '../fixtures/ubus/bench-v2/netui.devices.call.uci.get.wireless.json';
+import r1info from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.info.radio1.json';
+import r1freq from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.freqlist.radio1.json';
+import r1pow from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.txpowerlist.radio1.json';
+import r2info from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.info.radio2.json';
+import r2freq from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.freqlist.radio2.json';
+import r2pow from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.txpowerlist.radio2.json';
 
 const recordedList: ManagedDeviceList = listJson;
 const recordedPending: PendingDeviceList = discoverJson;
@@ -62,7 +69,16 @@ const RELAYED: Record<string, unknown> = {
   'iwinfo.info.phy1-mesh0': infoMesh,
   'iwinfo.assoclist.phy1-mesh0': assocMesh,
   'network.device.status': links,
+  'iwinfo.info.radio1': r1info,
+  'iwinfo.freqlist.radio1': r1freq,
+  'iwinfo.txpowerlist.radio1': r1pow,
+  'iwinfo.info.radio2': r2info,
+  'iwinfo.freqlist.radio2': r2freq,
+  'iwinfo.txpowerlist.radio2': r2pow,
 };
+
+/** Staging and applying on the AP itself (per-device radio settings) succeeds. */
+const AP_WRITES = new Set(['uci.set', 'uci.delete', 'uci.add', 'uci.apply', 'uci.confirm', 'uci.revert']);
 
 export const handle: FakeReadHandler = (object, method, args, router) => {
   if (object !== 'netui.devices') return undefined;
@@ -101,6 +117,8 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       const key = [args.object, args.method, a.device].filter(Boolean).join('.');
       if (key === 'system.reboot') return { status: 0 };
       if (key === 'iwinfo.devices' && s.mesh) return structuredClone(iwDevicesMesh);
+      if (key === 'uci.get' && a.config === 'wireless') return structuredClone(apWireless);
+      if (AP_WRITES.has(key)) return { status: 0 };
       if (key === 'iwinfo.assoclist.phy1-ap0' && s.stations) return { status: 0, data: { results: structuredClone(s.stations) } };
       return key in RELAYED ? structuredClone(RELAYED[key]) : structuredClone(denied);
     }

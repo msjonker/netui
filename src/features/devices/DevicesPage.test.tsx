@@ -4,6 +4,7 @@ import { resetRouter, router } from '../../../test/fakeRouter';
 import { recorded, seedDevices } from '../../../test/fakeReads/devices';
 import { renderApp } from '../../../test/renderApp';
 import { applyReviewed } from '../../../test/applyFlow';
+import { pick } from '../../../test/dom';
 import { wrxFixtures } from '../../../test/fixtures';
 import { runServiceHooks } from '../../api/services';
 import type { AssocStation } from '../../api/types';
@@ -32,9 +33,11 @@ describe('Devices', () => {
     fireEvent.click(row);
     const drawer = await screen.findByRole('complementary', { name: 'Office AP' });
     const radios = await within(drawer).findByRole('table', { name: 'Radios' });
-    expect(within(radios).getAllByText('netui-test')).toHaveLength(2);
-    expect(radios.textContent).toContain('5 GHz');
-    expect(radios.textContent).toContain('2.4 GHz');
+    const rows = within(radios).getAllByRole('row').map((r) => r.textContent);
+    // As recorded: client WiFi and the mesh share the WiFi 6 radio, the spare radio is off.
+    expect(rows).toContainEqual(expect.stringMatching(/^5 GHzWiFi \+ mesh3680 MHz/));
+    expect(rows).toContainEqual(expect.stringMatching(/^2\.4 GHzWiFi120 MHz/));
+    expect(rows).toContainEqual(expect.stringMatching(/^5 GHzOff/));
   });
 
   it('adopts a pending access point and copies the WiFi once it is back online', async () => {
@@ -128,9 +131,7 @@ describe('wireless mesh', () => {
     await waitFor(() => expect(row.textContent).toContain('Wired (lan1), mesh on standby'));
     fireEvent.click(row);
     const radios = await within(await screen.findByRole('complementary', { name: 'Office AP' })).findByRole('table', { name: 'Radios' });
-    await waitFor(() => expect(radios.textContent).toContain('Mesh backhaul'));
-    // The mesh peer is the gateway, not a WiFi client.
-    expect(within(radios).getAllByRole('row').map((r) => r.textContent)).toContainEqual(expect.stringMatching(/Mesh backhaul.*—$/));
+    await waitFor(() => expect(radios.textContent).toContain('WiFi + mesh'));
   });
 
   it('turns meshing on from the WiFi page: 802.11s on 5 GHz and spanning tree, in one review', async () => {
@@ -224,5 +225,34 @@ describe('clients on access points', () => {
     renderApp('#/topology');
     const ap = (await screen.findByRole('link', { name: 'Office AP details' })).closest('div.flex-col') as HTMLElement;
     expect(await within(ap).findByRole('link', { name: /laptop/ })).toBeTruthy();
+  });
+});
+
+describe('per-access-point radio settings', () => {
+  it('moves the 2.4 GHz radio to channel 6 on the access point, with rollback and confirm', async () => {
+    seedDevices(router, { managed: [recorded.device] });
+    renderApp(`#/devices/${recorded.device.mac}`);
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit 2.4 GHz radio' }));
+    const dialog = await screen.findByRole('dialog', { name: '2.4 GHz radio' });
+    await within(dialog).findByLabelText('Channel');
+    pick(dialog, 'Channel', '6');
+    fireEvent.click(within(dialog).getByRole('button', { name: /Apply/ }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '2.4 GHz radio' })).toBeNull(), { timeout: 5000 });
+    const relayed = calls('call').filter((c) => c.object === 'uci' && c.method !== 'get').map((c) => [c.method, c.args]);
+    expect(relayed).toEqual([
+      ['set', { config: 'wireless', section: 'radio2', values: { channel: '6' } }],
+      ['apply', { rollback: true, timeout: 30 }],
+      ['confirm', {}],
+    ]);
+  });
+
+  it('locks channel and width on the radio that carries the mesh', async () => {
+    seedDevices(router, { managed: [recorded.device] });
+    renderApp(`#/devices/${recorded.device.mac}`);
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit 5 GHz radio' }));
+    const dialog = await screen.findByRole('dialog', { name: '5 GHz radio' });
+    expect(await within(dialog).findByText(/follow the gateway/)).toBeTruthy();
+    expect(((await within(dialog).findByLabelText('Channel')) as HTMLSelectElement).disabled).toBe(true);
+    expect((within(dialog).getByLabelText('Transmit power') as HTMLSelectElement).disabled).toBe(false);
   });
 });

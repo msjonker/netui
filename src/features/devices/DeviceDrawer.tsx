@@ -12,13 +12,7 @@ import { formatDuration, formatPercent } from '../../lib/format';
 import { Drawer, Modal } from '../../components/overlay';
 import { IconAccessPoint, IconPower, IconRefresh, IconTrash } from '../../components/icons';
 import { Banner, Button, Detail, Dot, Empty, Field, FormSection, Pill, Spinner } from '../../components/ui';
-
-const BAND: Record<string, string> = { '2': '2.4 GHz', '5': '5 GHz', '6': '6 GHz' };
-
-function band(mhz: number | undefined): string {
-  if (!mhz) return '—';
-  return BAND[mhz < 3000 ? '2' : mhz < 5925 ? '5' : '6']!;
-}
+import { RadioSettings } from './RadioSettings';
 
 function message(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -118,29 +112,7 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
         </FormSection>
 
         <FormSection title="Radios">
-          {!device.online ? (
-            <Empty>The device is offline.</Empty>
-          ) : radios.isPending ? (
-            <div class="py-3"><Spinner /></div>
-          ) : !radios.data?.length ? (
-            <Empty>No radio is broadcasting. Copy the WiFi from this router below.</Empty>
-          ) : (
-            <table class="table" aria-label="Radios">
-              <thead>
-                <tr><th>Band</th><th>WiFi</th><th>Channel</th><th>Clients</th></tr>
-              </thead>
-              <tbody>
-                {radios.data.map((r) => (
-                  <tr key={r.ifname}>
-                    <td>{band(r.info.frequency)}</td>
-                    <td>{r.mesh ? <span>Mesh backhaul <span class="text-xs text-muted">({r.peers.length} linked)</span></span> : (r.info.ssid ?? r.ifname)}</td>
-                    <td>{r.info.channel ?? '—'}</td>
-                    <td>{r.mesh ? '—' : r.clients}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <RadioSettings mac={device.mac} online={device.online} />
         </FormSection>
 
         <FormSection title={`Clients (${served.length})`}>

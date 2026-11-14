@@ -202,6 +202,13 @@ function phy_rank(htmode) {
 	return match(htmode ?? '', /^EHT/) ? 4 : match(htmode ?? '', /^HE/) ? 3 : match(htmode ?? '', /^VHT/) ? 2 : 1;
 }
 
+// "HE80" on a radio currently at "VHT40" -> "VHT80".
+function same_width(want, current) {
+	const width = match(want ?? '', /[0-9]+$/)?.[0];
+	const family = match(current ?? '', /^[A-Z]+/)?.[0];
+	return width && family ? family + width : want;
+}
+
 function is_lan(net) {
 	return type(net) == 'array' ? index(net, 'lan') >= 0 : index(split(net ?? '', ' '), 'lan') >= 0;
 }
@@ -277,7 +284,10 @@ function sync_wifi(dev) {
 		return { error: got.error ?? `uci get failed (${got.status})` };
 	const ap = got.data.values;
 
-	// Best radio per band on the AP.
+	// Best radio per band, for client WiFi and the mesh alike. A second radio on
+	// the same band is not used as a dedicated mesh backhaul: phys can list
+	// "mesh point" without supporting it (ath10k-ct needs rawmode=1, which
+	// turns hardware crypto off), so the radio that is known to work is shared.
 	const radio_for = {};
 	for (let name, s in ap)
 		if (s['.type'] == 'wifi-device') {
@@ -317,12 +327,14 @@ function sync_wifi(dev) {
 		const radio_values = { disabled: '0' };
 		if (w.country)
 			radio_values.country = w.country;
-		// Mesh peers must share the channel: follow the gateway's.
+		// Mesh peers must share the channel: follow the gateway's, at the same
+		// width in this radio's own PHY family (a WiFi 5 backhaul radio cannot
+		// take the gateway's "HE80").
 		if (w.mesh) {
 			if (w.channel)
 				radio_values.channel = w.channel;
 			if (w.htmode)
-				radio_values.htmode = w.htmode;
+				radio_values.htmode = same_width(w.htmode, ap[radio].htmode);
 		}
 		set(radio, radio_values);
 	}

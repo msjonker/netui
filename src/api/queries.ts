@@ -15,6 +15,7 @@ import type {
   SystemBoard,
   SystemInfo,
   UciConfig,
+  UciGet,
 } from './types';
 import { POLL_INTERVAL_MS, ThroughputSeries } from '../lib/throughput';
 
@@ -542,4 +543,28 @@ export const useDeviceLinks = (mac: string | undefined, enabled = true) =>
     enabled: !!mac && enabled,
     refetchInterval: LIVE_MS,
     queryFn: () => relay<DeviceStatusMap>(mac!, 'network.device', 'status'),
+  });
+
+/** An access point's own wireless config, through the relay. */
+export const useDeviceWireless = (mac: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: [...deviceKeys.radios(mac ?? ''), 'uci'] as const,
+    enabled: !!mac && enabled,
+    queryFn: async () => (await relay<UciGet>(mac!, 'uci', 'get', { config: 'wireless' })).values,
+  });
+
+/** iwinfo info, freqlist and txpowerlist for one radio of an access point (by its UCI name). */
+export const useDeviceRadioCaps = (mac: string | undefined, radio: string | undefined) =>
+  useQuery({
+    queryKey: [...deviceKeys.radios(mac ?? ''), 'caps', radio ?? ''] as const,
+    enabled: !!mac && !!radio,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const [info, freqs, power] = await Promise.all([
+        relay<IwinfoInfo>(mac!, 'iwinfo', 'info', { device: radio }),
+        relay<import('./types').IwinfoFreqList>(mac!, 'iwinfo', 'freqlist', { device: radio }),
+        relay<import('./types').IwinfoTxPowerList>(mac!, 'iwinfo', 'txpowerlist', { device: radio }),
+      ]);
+      return { info, freqs: freqs.results, power: power.results };
+    },
   });

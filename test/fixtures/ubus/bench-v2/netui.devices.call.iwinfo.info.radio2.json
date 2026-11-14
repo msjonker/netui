@@ -1,0 +1,41 @@
+{
+  "data": {
+    "bssid": "8C:DE:F9:B6:F3:24",
+    "center_chan1": 1,
+    "channel": 1,
+    "country": "US",
+    "frequency": 2412,
+    "frequency_offset": 0,
+    "hardware": {
+      "id": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": "Qualcomm Atheros IPQ8074"
+    },
+    "htmode": "HE20",
+    "htmodes": [
+      "HT20",
+      "HT40",
+      "HE20",
+      "HE40"
+    ],
+    "hwmode": "ax",
+    "hwmodes": [
+      "b",
+      "g",
+      "n",
+      "ax"
+    ],
+    "hwmodes_text": "ax/b/g/n",
+    "mode": "Master",
+    "noise": 0,
+    "phy": "phy2",
+    "quality_max": 70,
+    "txpower": 30,
+    "txpower_offset": 0
+  },
+  "status": 0
+}

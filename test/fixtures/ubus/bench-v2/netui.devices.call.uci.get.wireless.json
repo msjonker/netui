@@ -1,0 +1,124 @@
+{
+  "data": {
+    "values": {
+      "default_radio0": {
+        ".anonymous": false,
+        ".index": 1,
+        ".name": "default_radio0",
+        ".type": "wifi-iface",
+        "device": "radio0",
+        "disabled": "1",
+        "encryption": "none",
+        "mode": "ap",
+        "network": "lan",
+        "ssid": "OpenWrt"
+      },
+      "default_radio1": {
+        ".anonymous": false,
+        ".index": 3,
+        ".name": "default_radio1",
+        ".type": "wifi-iface",
+        "device": "radio1",
+        "disabled": "1",
+        "encryption": "none",
+        "mode": "ap",
+        "network": "lan",
+        "ssid": "OpenWrt"
+      },
+      "default_radio2": {
+        ".anonymous": false,
+        ".index": 5,
+        ".name": "default_radio2",
+        ".type": "wifi-iface",
+        "device": "radio2",
+        "disabled": "1",
+        "encryption": "none",
+        "mode": "ap",
+        "network": "lan",
+        "ssid": "OpenWrt"
+      },
+      "netui_default_radio0": {
+        ".anonymous": false,
+        ".index": 6,
+        ".name": "netui_default_radio0",
+        ".type": "wifi-iface",
+        "device": "radio1",
+        "disabled": "0",
+        "encryption": "psk2",
+        "ieee80211k": "1",
+        "key": "REDACTED",
+        "mode": "ap",
+        "network": "lan",
+        "ssid": "netui-test"
+      },
+      "netui_default_radio1": {
+        ".anonymous": false,
+        ".index": 7,
+        ".name": "netui_default_radio1",
+        ".type": "wifi-iface",
+        "device": "radio2",
+        "disabled": "0",
+        "encryption": "psk2",
+        "ieee80211k": "1",
+        "key": "REDACTED",
+        "mode": "ap",
+        "network": "lan",
+        "ssid": "netui-test"
+      },
+      "netui_mesh": {
+        ".anonymous": false,
+        ".index": 8,
+        ".name": "netui_mesh",
+        ".type": "wifi-iface",
+        "device": "radio1",
+        "encryption": "sae",
+        "key": "REDACTED",
+        "mesh_fwding": "1",
+        "mesh_id": "netui-53cd0e67",
+        "mesh_rssi_threshold": "0",
+        "mode": "mesh",
+        "network": "lan"
+      },
+      "radio0": {
+        ".anonymous": false,
+        ".index": 0,
+        ".name": "radio0",
+        ".type": "wifi-device",
+        "band": "5g",
+        "channel": "36",
+        "country": "US",
+        "disabled": "1",
+        "htmode": "VHT80",
+        "path": "soc@0/20000000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0",
+        "type": "mac80211"
+      },
+      "radio1": {
+        ".anonymous": false,
+        ".index": 2,
+        ".name": "radio1",
+        ".type": "wifi-device",
+        "band": "5g",
+        "channel": "36",
+        "country": "US",
+        "disabled": "0",
+        "htmode": "HE80",
+        "path": "platform/soc@0/c000000.wifi",
+        "type": "mac80211"
+      },
+      "radio2": {
+        ".anonymous": false,
+        ".index": 4,
+        ".name": "radio2",
+        ".type": "wifi-device",
+        "band": "2g",
+        "channel": "1",
+        "country": "US",
+        "disabled": "0",
+        "htmode": "HE20",
+        "path": "platform/soc@0/c000000.wifi+1",
+        "type": "mac80211"
+      }
+    }
+  },
+  "status": 0
+}
