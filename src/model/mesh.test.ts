@@ -16,7 +16,7 @@ const apLinks: RelayResult<DeviceStatusMap> = apLinksJson;
 const apMeshInfo: RelayResult<IwinfoInfo> = apMeshInfoJson;
 const apMeshPeers: RelayResult<AssocList> = apMeshPeersJson;
 
-const meshRadioOfAp: DeviceRadio = { ifname: 'phy1-mesh0', info: apMeshInfo.data!, mesh: true, clients: 0, peers: apMeshPeers.data!.results };
+const meshRadioOfAp: DeviceRadio = { ifname: 'phy1-mesh0', info: apMeshInfo.data!, mesh: true, clients: 0, peers: apMeshPeers.data!.results, stations: [] };
 
 describe('mesh on the recorded bench', () => {
   it('reads the gateway mesh: 5 GHz radio, fixed channel, STP on', () => {

@@ -1,4 +1,6 @@
 import { useMemo } from 'preact/hooks';
+import { useQueries } from '@tanstack/react-query';
+import type { ManagedDevice } from '../api/types';
 import {
   firstError,
   useBoardJson,
@@ -7,6 +9,8 @@ import {
   useInterfaces,
   useLeases,
   useManagedDevices,
+  fetchDeviceRadios,
+  deviceKeys,
   useUci,
   useWifiState,
 } from '../api/queries';
@@ -74,6 +78,7 @@ export function useClients() {
   // Adopted access points take a DHCP lease like anything else; they are
   // infrastructure, not clients.
   const managed = useManagedDevices();
+  const apAssoc = useApAssoc(managed.data);
   const infra = useMemo(() => new Set((managed.data ?? []).map((d) => d.mac)), [managed.data]);
   const merged = useMemo(
     () =>
@@ -81,12 +86,12 @@ export function useClients() {
         leases: leases.data,
         hints: hints.data,
         dhcp: dhcp.data,
-        assoc: wifi?.assoc,
+        assoc: [...(wifi?.assoc ?? []), ...apAssoc],
         blocks,
         routerMacs: devices.data ? routerMacs(devices.data) : undefined,
         subnets,
       }),
-    [leases.data, hints.data, dhcp.data, wifi, blocks, devices.data, subnets],
+    [leases.data, hints.data, dhcp.data, wifi, blocks, devices.data, subnets, apAssoc],
   );
   const clients = useMemo(() => (infra.size ? merged.filter((c) => !infra.has(c.mac)) : merged), [merged, infra]);
   return {
@@ -187,4 +192,43 @@ export function useClientDetails(opts: { traffic?: boolean } = {}) {
   }, [base.clients, infoKey, traffic.version]);
 
   return { ...base, clients, live: live.devices, conntrack: ct, traffic };
+}
+
+const BAND_OF_MHZ = (mhz: number | undefined) =>
+  !mhz ? undefined : mhz < 3000 ? '2.4 GHz' : mhz < 5925 ? '5 GHz' : '6 GHz';
+
+/**
+ * Stations on adopted access points, as client-merge input: each entry names
+ * the access point and carries its radio's channel and width. Shares the
+ * Devices page's cache of each device's radios.
+ */
+export function useApAssoc(devices: ManagedDevice[] | undefined) {
+  const online = (devices ?? []).filter((d) => d.online);
+  const radios = useQueries({
+    queries: online.map((d) => ({
+      queryKey: deviceKeys.radios(d.mac),
+      queryFn: () => fetchDeviceRadios(d.mac),
+      refetchInterval: 10_000,
+    })),
+  });
+  const stamp = radios.map((q) => q.dataUpdatedAt).join();
+  return useMemo(
+    () =>
+      online.flatMap((d, i) =>
+        (radios[i]?.data ?? [])
+          .filter((r) => !r.mesh && r.stations.length)
+          .map((r) => ({
+            ifname: r.ifname,
+            ssid: r.info.ssid,
+            band: BAND_OF_MHZ(r.info.frequency),
+            stations: r.stations,
+            ap: { mac: d.mac, name: d.name },
+            channel: r.info.channel,
+            htmode: r.info.htmode,
+          })),
+      ),
+    // radios is rebuilt each render; the update stamps identify the data.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [stamp, online.map((d) => `${d.mac}:${d.name}`).join()],
+  );
 }

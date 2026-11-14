@@ -4,6 +4,9 @@ import { deviceCredentials, forgetDevice, relay, renameDevice, syncDevices } fro
 import { deviceKeys, useDeviceLinks, useDeviceRadios, useDeviceSystem } from '../../api/queries';
 import type { DeviceCredentials, ManagedDevice, SyncOutcome } from '../../api/types';
 import { firmwareVersion } from '../../model/devices';
+import { displayName } from '../../model/clients';
+import { useClients } from '../../model/hooks';
+import { Link } from 'wouter-preact';
 import { uplinkLabel, uplinkOf } from '../../model/mesh';
 import { formatDuration, formatPercent } from '../../lib/format';
 import { Drawer, Modal } from '../../components/overlay';
@@ -46,6 +49,7 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
   const system = useDeviceSystem(device.mac, device.online);
   const radios = useDeviceRadios(device.mac, device.online);
   const links = useDeviceLinks(device.mac, device.online);
+  const served = useClients().clients.filter((c) => c.wireless?.ap?.mac === device.mac);
   const [name, setName] = useState(device.name);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
@@ -136,6 +140,24 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
                 ))}
               </tbody>
             </table>
+          )}
+        </FormSection>
+
+        <FormSection title={`Clients (${served.length})`}>
+          {served.length === 0 ? (
+            <Empty>No WiFi clients on this access point.</Empty>
+          ) : (
+            <ul class="divide-y divide-line" aria-label="Clients on this access point">
+              {served.map((c) => (
+                <li key={c.mac}>
+                  <Link href={`/clients/${c.mac}`} class="flex h-9 items-center gap-2 hover:text-accent">
+                    <span class="min-w-0 flex-1 truncate">{displayName(c)}</span>
+                    <span class="text-xs text-muted">{c.wireless!.band}</span>
+                    <span class="w-16 text-right text-xs">{c.wireless!.signal} dBm</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </FormSection>
 

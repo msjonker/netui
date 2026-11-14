@@ -24,6 +24,8 @@ export interface WirelessLink {
   channel?: number;
   /** e.g. "HE80"; bounds the link rate the station can reach. */
   htmode?: string;
+  /** The adopted access point serving the station; absent for this router's own radios. */
+  ap?: { mac: string; name: string };
 }
 
 export interface Reservation {
@@ -62,8 +64,20 @@ export interface Client {
 export interface ClientSources {
   leases?: DhcpLeases;
   hints?: HostHints;
-  /** iwinfo assoclist results per device, with that device's SSID and band. */
-  assoc?: { ifname: string; ssid?: string; band?: string; stations: AssocStation[] }[];
+  /**
+   * iwinfo assoclist results per device, with that device's SSID and band.
+   * Entries from an adopted access point name it and carry its radio's
+   * channel and width (its interface names can repeat the gateway's).
+   */
+  assoc?: {
+    ifname: string;
+    ssid?: string;
+    band?: string;
+    stations: AssocStation[];
+    ap?: { mac: string; name: string };
+    channel?: number;
+    htmode?: string;
+  }[];
   dhcp?: UciConfig;
   blocks?: BlockRule[];
   /** MACs of the router's own interfaces. */
@@ -127,6 +141,7 @@ export function mergeClients(src: ClientSources): Client[] {
         rxBytes: st.rx.bytes,
         txBytes: st.tx.bytes,
         inactive: st.inactive,
+        ...(a.ap ? { ap: a.ap, channel: a.channel, htmode: a.htmode } : {}),
       };
     }
   }
@@ -280,7 +295,8 @@ export function withRadioInfo(
 ): Client[] {
   const by = new Map(devices.map((d) => [d.ifname, d.info]));
   return clients.map((c) => {
-    const info = c.wireless && by.get(c.wireless.ifname);
+    // A station on an access point already carries that radio's details.
+    const info = c.wireless && !c.wireless.ap && by.get(c.wireless.ifname);
     return info ? { ...c, wireless: { ...c.wireless!, channel: info.channel, htmode: info.htmode } } : c;
   });
 }

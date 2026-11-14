@@ -3,7 +3,7 @@
 // Each FakeRouter starts with no devices; seed them with seedDevices().
 
 import type { FakeReadHandler, FakeRouter } from '../fakeRouter';
-import type { ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList } from '../../src/api/types';
+import type { AssocStation, ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList } from '../../src/api/types';
 import listJson from '../fixtures/ubus/bench-v2/netui.devices.list.json';
 import discoverJson from '../fixtures/ubus/bench-v2/netui.devices.discover.json';
 import syncJson from '../fixtures/ubus/bench-v2/netui.devices.sync.json';
@@ -36,6 +36,8 @@ interface State {
   pending: PendingDevice[];
   /** The AP also runs the mesh backhaul (phy1-mesh0), as recorded with the cable in. */
   mesh?: boolean;
+  /** Stations associated to the AP's 5 GHz WiFi (phy1-ap0); none were recorded on the bench. */
+  stations?: AssocStation[];
 }
 
 const states = new WeakMap<FakeRouter, State>();
@@ -99,6 +101,7 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       const key = [args.object, args.method, a.device].filter(Boolean).join('.');
       if (key === 'system.reboot') return { status: 0 };
       if (key === 'iwinfo.devices' && s.mesh) return structuredClone(iwDevicesMesh);
+      if (key === 'iwinfo.assoclist.phy1-ap0' && s.stations) return { status: 0, data: { results: structuredClone(s.stations) } };
       return key in RELAYED ? structuredClone(RELAYED[key]) : structuredClone(denied);
     }
   }

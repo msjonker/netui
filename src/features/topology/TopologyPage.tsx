@@ -5,6 +5,7 @@ import { firstError, useDeviceLinks, useDeviceRadios, useInterfaces, useManagedD
 import { uplinkLabel, uplinkOf } from '../../model/mesh';
 import type { ManagedDevice } from '../../api/types';
 import { useClients, useSwitch } from '../../model/hooks';
+import { displayName } from '../../model/clients';
 import { findUplink, normalizeSystem } from '../../model/network';
 import { buildTopology, type TopoClient, type TopoRadio } from '../../model/topology';
 import { formatDuration } from '../../lib/format';
@@ -104,35 +105,40 @@ function ClientList({ clients, empty }: { clients: TopoClient[]; empty: string }
 }
 
 /** An adopted access point: its WiFi and client count, live through the gateway. */
-function AccessPointNode({ d }: { d: ManagedDevice }) {
+function AccessPointNode({ d, clients }: { d: ManagedDevice; clients: TopoClient[] }) {
   const radios = useDeviceRadios(d.mac, d.online);
   const links = useDeviceLinks(d.mac, d.online);
   const uplink = uplinkOf(links.data, radios.data);
   const ssids = [...new Set((radios.data ?? []).filter((r) => !r.mesh).map((r) => r.info.ssid).filter((s): s is string => !!s))];
-  const clients = (radios.data ?? []).reduce((n, r) => n + r.clients, 0);
   return (
-    <Node
-      icon={<IconAccessPoint size={18} class={d.online ? 'text-accent' : 'text-faint'} />}
-      title={d.name}
-      label={`${d.name} details`}
-      subtitle={d.online && uplink.kind !== 'unknown' ? uplinkLabel(uplink) : [d.model, d.ip].filter(Boolean).join(' · ')}
-      href={`/devices/${d.mac}`}
-      status={d.online ? <Pill>{clients}</Pill> : <Pill tone="bad">Offline</Pill>}
-    >
-      {!d.online ? (
-        <p class="text-xs text-faint">Not reachable.</p>
-      ) : ssids.length > 0 ? (
-        <div class="flex flex-wrap gap-1">
-          {ssids.map((s) => (
-            <Pill key={s} tone="accent">
-              {s}
-            </Pill>
-          ))}
-        </div>
-      ) : (
-        <p class="text-xs text-faint">No WiFi broadcasting.</p>
-      )}
-    </Node>
+    <div class="flex flex-col items-center">
+      <Node
+        icon={<IconAccessPoint size={18} class={d.online ? 'text-accent' : 'text-faint'} />}
+        title={d.name}
+        label={`${d.name} details`}
+        subtitle={d.online && uplink.kind !== 'unknown' ? uplinkLabel(uplink) : [d.model, d.ip].filter(Boolean).join(' · ')}
+        href={`/devices/${d.mac}`}
+        status={d.online ? <Pill>{clients.length}</Pill> : <Pill tone="bad">Offline</Pill>}
+      >
+        {!d.online ? (
+          <p class="text-xs text-faint">Not reachable.</p>
+        ) : ssids.length > 0 ? (
+          <div class="flex flex-wrap gap-1">
+            {ssids.map((s) => (
+              <Pill key={s} tone="accent">
+                {s}
+              </Pill>
+            ))}
+          </div>
+        ) : (
+          <p class="text-xs text-faint">No WiFi broadcasting.</p>
+        )}
+      </Node>
+      <Stem />
+      <div class="w-64">
+        <ClientList clients={clients} empty="No clients connected." />
+      </div>
+    </div>
   );
 }
 
@@ -264,7 +270,15 @@ export function TopologyPage() {
                   </div>
                 </div>,
                 ...topo.radios.map((r) => <RadioNode key={r.section} r={r} />),
-                ...(aps.data ?? []).map((d) => <AccessPointNode key={d.mac} d={d} />),
+                ...(aps.data ?? []).map((d) => (
+                  <AccessPointNode
+                    key={d.mac}
+                    d={d}
+                    clients={clients
+                      .filter((c) => c.wireless?.ap?.mac === d.mac)
+                      .map((c) => ({ mac: c.mac, name: displayName(c), ip: c.ip, signal: c.wireless!.signal, ssid: c.wireless!.ssid }))}
+                  />
+                )),
                 ...(topo.otherWireless.length
                   ? [
                       <div key="other" class="flex flex-col items-center">

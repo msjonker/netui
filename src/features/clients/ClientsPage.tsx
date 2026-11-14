@@ -74,7 +74,7 @@ function lease(c: Client): string | undefined {
 function connection(c: Client): string {
   if (c.block?.enabled) return 'Blocked';
   const w = c.wireless;
-  if (w) return [w.ssid ?? w.ifname, w.band, w.channel && `Ch ${w.channel}`].filter(Boolean).join(' · ');
+  if (w) return [w.ssid ?? w.ifname, w.band, w.channel && `Ch ${w.channel}`, w.ap?.name].filter(Boolean).join(' · ');
   return isOffline(c) ? 'Offline' : 'Wired';
 }
 
@@ -191,7 +191,7 @@ function Reconnect({ c }: { c: Client }) {
   const run = async () => {
     setState({ busy: true });
     try {
-      await reconnectClient(w.ifname, c.mac);
+      await reconnectClient(w.ifname, c.mac, w.ap?.mac);
       setState({ done: true });
       setConfirming(false);
     } catch (e) {
@@ -288,6 +288,7 @@ function Overview({ c }: { c: Client }) {
                 ],
                 ['Link rate', `↓ ${w.txRate.toFixed(0)} / ↑ ${w.rxRate.toFixed(0)} Mbps`],
                 ['Channel', w.channel && `${w.channel}${w.htmode ? ` · ${w.htmode}` : ''}`],
+                ['Access point', w.ap ? w.ap.name : 'This router'],
                 ['Connected for', w.connectedTime != null ? formatDuration(w.connectedTime) : undefined],
                 [
                   'Data this session',

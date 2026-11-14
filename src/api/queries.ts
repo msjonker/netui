@@ -146,10 +146,12 @@ export function useWifiState(opts: { assoc?: boolean; refetchInterval?: number }
       refetchInterval: interval,
     })),
   });
-  // A mesh interface's "stations" are other routers (the backhaul), not clients.
+  // Only an access point's stations are clients: a mesh interface lists other
+  // routers, a client-mode interface the access point it joined.
   const devices = names.map((ifname, i) => {
     const info = infos[i]?.data;
-    return { ifname, info, stations: info?.mode === 'Mesh Point' ? undefined : assocs[i]?.data };
+    const ap = !info?.mode || info.mode === 'Master';
+    return { ifname, info, stations: ap ? assocs[i]?.data : undefined };
   });
   // Shared queries give every caller the same timestamp, so several mounted
   // components sample each poll once.
@@ -443,8 +445,11 @@ export function useWifiScan(devices: string[]) {
  * Kick a WiFi client off so it reassociates (reason 5: AP busy; no ban).
  * Runtime action on hostapd, not config, so it bypasses the apply flow.
  */
-export const reconnectClient = (ifname: string, mac: string) =>
-  call(`hostapd.${ifname}`, 'del_client', { addr: mac, reason: 5, deauth: true, ban_time: 0 });
+export const reconnectClient = (ifname: string, mac: string, apMac?: string) => {
+  const args = { addr: mac, reason: 5, deauth: true, ban_time: 0 };
+  // A station on an adopted access point: ask that device's hostapd, through the gateway.
+  return apMac ? relay(apMac, `hostapd.${ifname}`, 'del_client', args, true) : call(`hostapd.${ifname}`, 'del_client', args);
+};
 
 // ---------------------------------------------------------------------------
 // --- Devices (adopted access points, via the gateway's netui.devices plugin)
@@ -493,27 +498,41 @@ export interface DeviceRadio {
   mesh: boolean;
   /** Mesh peers (other routers) with signal and rates; empty for access points. */
   peers: AssocList['results'];
+  /** WiFi clients with signal and rates; empty for the mesh interface. */
+  stations: AssocList['results'];
 }
 
-/** The device's radios: broadcasting WiFi and the mesh backhaul, with client counts. */
+/** iwinfo info and assoclist for every interface of an adopted device, through the relay. */
+export async function fetchDeviceRadios(mac: string): Promise<DeviceRadio[]> {
+  const { devices } = await relay<IwinfoDevices>(mac, 'iwinfo', 'devices');
+  return Promise.all(
+    devices.map(async (ifname) => {
+      const [info, assoc] = await Promise.all([
+        relay<IwinfoInfo>(mac, 'iwinfo', 'info', { device: ifname }),
+        relay<AssocList>(mac, 'iwinfo', 'assoclist', { device: ifname }),
+      ]);
+      const mesh = info.mode === 'Mesh Point';
+      // Only an access point's stations are clients (a client-mode interface lists the AP it joined).
+      const ap = !info.mode || info.mode === 'Master';
+      return {
+        ifname,
+        info,
+        mesh,
+        clients: ap ? assoc.results.length : 0,
+        peers: mesh ? assoc.results : [],
+        stations: ap ? assoc.results : [],
+      };
+    }),
+  );
+}
+
+/** The device's radios: broadcasting WiFi and the mesh backhaul, with their clients. */
 export const useDeviceRadios = (mac: string | undefined, enabled = true) =>
   useQuery({
     queryKey: deviceKeys.radios(mac ?? ''),
     enabled: !!mac && enabled,
     refetchInterval: LIVE_MS,
-    queryFn: async (): Promise<DeviceRadio[]> => {
-      const { devices } = await relay<IwinfoDevices>(mac!, 'iwinfo', 'devices');
-      return Promise.all(
-        devices.map(async (ifname) => {
-          const [info, assoc] = await Promise.all([
-            relay<IwinfoInfo>(mac!, 'iwinfo', 'info', { device: ifname }),
-            relay<AssocList>(mac!, 'iwinfo', 'assoclist', { device: ifname }),
-          ]);
-          const mesh = info.mode === 'Mesh Point';
-          return { ifname, info, mesh, clients: mesh ? 0 : assoc.results.length, peers: mesh ? assoc.results : [] };
-        }),
-      );
-    },
+    queryFn: () => fetchDeviceRadios(mac!),
   });
 
 /** Link state of the device's ports, to tell a wired uplink from a mesh one. */

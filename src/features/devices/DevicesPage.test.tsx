@@ -6,6 +6,7 @@ import { renderApp } from '../../../test/renderApp';
 import { applyReviewed } from '../../../test/applyFlow';
 import { wrxFixtures } from '../../../test/fixtures';
 import { runServiceHooks } from '../../api/services';
+import type { AssocStation } from '../../api/types';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 
@@ -177,5 +178,51 @@ describe('copying WiFi after a bridge change', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('clients on access points', () => {
+  // The dev container's "laptop" lease, associated to the AP's 5 GHz WiFi.
+  // Station shape as in iwinfo assoclist (see src/model/clients.test.ts).
+  const laptop: AssocStation = {
+    mac: '02:4E:55:00:01:10',
+    signal: -61,
+    noise: -105,
+    inactive: 200,
+    connected_time: 900,
+    rx: { rate: 288200, packets: 900, bytes: 120_000 },
+    tx: { rate: 576500, packets: 1200, bytes: 4_500_000 },
+  };
+
+  it('names the access point a client is on and reconnects it through that device', async () => {
+    seedDevices(router, { managed: [recorded.device], stations: [laptop] });
+    renderApp('#/clients');
+    const row = (await screen.findByText('laptop')).closest('tr')!;
+    await waitFor(() => expect(row.textContent).toContain('netui-test · 5 GHz · Ch 36 · Office AP'));
+
+    renderApp('#/clients/02:4e:55:00:01:10');
+    const drawer = await screen.findAllByRole('complementary').then((d) => d.at(-1)!);
+    expect(await within(drawer).findByText('Office AP')).toBeTruthy();
+    fireEvent.click(within(drawer).getByRole('button', { name: /Reconnect/ }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /Reconnect/ }));
+    await waitFor(() =>
+      expect(calls('call')).toContainEqual({
+        mac: recorded.device.mac,
+        object: 'hostapd.phy1-ap0',
+        method: 'del_client',
+        args: { addr: '02:4e:55:00:01:10', reason: 5, deauth: true, ban_time: 0 },
+      }),
+    );
+  });
+
+  it('lists the client under its access point in Topology and in the device drawer', async () => {
+    seedDevices(router, { managed: [recorded.device], stations: [laptop] });
+    renderApp(`#/devices/${recorded.device.mac}`);
+    const list = await screen.findByRole('list', { name: 'Clients on this access point' });
+    expect(within(list).getByText('laptop')).toBeTruthy();
+
+    renderApp('#/topology');
+    const ap = (await screen.findByRole('link', { name: 'Office AP details' })).closest('div.flex-col') as HTMLElement;
+    expect(await within(ap).findByRole('link', { name: /laptop/ })).toBeTruthy();
   });
 });

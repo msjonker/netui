@@ -94,13 +94,14 @@ export function buildTopology({ system, uplink, sw, wifi, clients }: TopologyInp
       channel: r.live?.channel != null ? String(r.live.channel) : r.channel === 'auto' ? 'Auto' : r.channel,
       width: channelWidth(r.htmode),
       ssids: [...new Set(members.filter((m) => m.member.enabled && r.enabled).map((m) => m.ssid))],
-      clients: present.filter((c) => c.wireless && ifnames.has(c.wireless.ifname)).map(topoClient).sort(byName),
+      clients: present.filter((c) => c.wireless && !c.wireless.ap && ifnames.has(c.wireless.ifname)).map(topoClient).sort(byName),
     };
   });
 
   const placed = new Set(radios.flatMap((r) => r.clients.map((c) => c.mac)));
   const otherWireless: TopoClient[] = [];
-  for (const c of present.filter((x) => x.wireless && !placed.has(x.mac))) {
+  // Stations on adopted access points hang off those devices, not this router's radios.
+  for (const c of present.filter((x) => x.wireless && !x.wireless.ap && !placed.has(x.mac))) {
     // Not matched by ifname (e.g. the radio is down in UCI but still serving):
     // fall back to the only radio on the same band.
     const sameBand = radios.filter((r) => r.band === c.wireless!.band);
