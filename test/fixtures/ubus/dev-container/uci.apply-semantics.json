@@ -1,5 +1,5 @@
 {
-  "_note": "Observed on OpenWrt 25.12.5 dev container. Values are the JSON-RPC result tuple [status, data?] or {error}. Recorded by hand.",
+  "_note": "Observed on OpenWrt 25.12.5 dev container. Values are the JSON-RPC result tuple [status, data?] or {error}. Recorded by hand; see apply/rollback contract.",
   "set_denied_package": [
     6
   ],

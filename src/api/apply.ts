@@ -1,4 +1,4 @@
-// The apply/rollback flow, as a plain async function with its
+// The apply/rollback flow (stage, review, apply with rollback, confirm), as a plain async function with its
 // side effects injected so every outcome can be tested without a router.
 //
 // Observed rpcd behaviour this relies on (test/fixtures/ubus/dev-container/
