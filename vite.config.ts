@@ -3,6 +3,13 @@ import { defineConfig, loadEnv } from 'vite';
 import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
 
+// Modules only the lazily loaded screens use (import() in App, SystemPage,
+// VpnPage). Everything else goes into the one entry chunk: left alone,
+// rolldown splits the modules the entry shares with lazy chunks into a
+// common chunk that loads up front anyway and compresses worse (+2 KB).
+// A module missing here still works; it just loads with the entry.
+const LAZY = /src\/(features\/(diagnostics\/|system\/FirmwareUpload|vpn\/VpnClient)|model\/(diagnostics|vpnClient)\.ts|api\/diagnostics\.ts)/;
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const routerUrl = env.ROUTER_URL || 'http://192.168.1.1';
@@ -20,6 +27,9 @@ export default defineConfig(({ mode }) => {
     build: {
       target: 'es2022',
       reportCompressedSize: true,
+      rolldownOptions: {
+        output: { codeSplitting: { groups: [{ name: 'index', test: (id: string) => !LAZY.test(id) }] } },
+      },
     },
     test: {
       environment: 'jsdom',
