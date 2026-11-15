@@ -177,3 +177,28 @@ describe('VPN', () => {
     expect(await screen.findByRole('button', { name: /Create VPN Server/ })).toBeDefined();
   });
 });
+
+describe('VPN service (the router as a client)', () => {
+  beforeEach(() => {
+    resetRouter();
+  });
+
+  const CONF = `[Interface]\nPrivateKey = ${fakeKey('CLIENT')}\nAddress = 10.66.0.2/32\nDNS = 10.66.0.1\n\n[Peer]\nPublicKey = ${fakeKey('PROVIDER')}\nAllowedIPs = 0.0.0.0/0\nEndpoint = vpn.example.net:51820\n`;
+
+  it('sets up from a pasted provider file and shows it', async () => {
+    renderApp('#/settings/vpn');
+    fireEvent.click(await screen.findByRole('button', { name: 'Set Up' }));
+    const drawer = await screen.findByRole('complementary');
+    fireEvent.input(within(drawer).getByLabelText('Configuration'), { target: { value: 'nonsense' } });
+    expect((await within(drawer).findByRole('alert')).textContent).toMatch(/Not a WireGuard/);
+    fireEvent.input(within(drawer).getByLabelText('Configuration'), { target: { value: CONF } });
+    await within(drawer).findByText('vpn.example.net:51820');
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Set Up' }));
+    await applyReviewed();
+    expect(router.configs.network!.vpnclient).toMatchObject({ proto: 'wireguard', addresses: ['10.66.0.2/32'], dns: ['10.66.0.1'] });
+    expect(router.configs.firewall!.netui_vpnclient_lan).toMatchObject({ src: 'lan', dest: 'vpnclient' });
+    expect(await screen.findByText('All devices')).toBeTruthy();
+    // The private key only went to the router: never into the page after setup.
+    expect(document.body.textContent).not.toContain(fakeKey('CLIENT'));
+  });
+});

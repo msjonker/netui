@@ -90,7 +90,12 @@ export function FirmwareUpload({ onClose }: { onClose: () => void }) {
         <p class="text-muted">
           For when the online update cannot help: the router has no internet, or you need a particular version. Download
           the <em>sysupgrade</em> image for this model from{' '}
-          <a class="text-accent hover:underline" href="https://firmware-selector.openwrt.org/" target="_blank" rel="noreferrer">
+          <a
+            class="text-accent hover:underline"
+            href="https://firmware-selector.openwrt.org/"
+            target="_blank"
+            rel="noreferrer"
+          >
             firmware-selector.openwrt.org
           </a>
           . Your settings are kept.

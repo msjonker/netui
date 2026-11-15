@@ -195,6 +195,8 @@ export function normalizeVpn(
   for (const s of sectionsOfType(network, 'interface')) {
     if (str(s.proto) !== 'wireguard') continue;
     const iface = s['.name'];
+    // The router as a client of a VPN service: model/vpnClient.
+    if (network[`netui_${iface}_peer`]) continue;
     const managed = !!firewall?.[fwSection.zone(iface)];
     const port = Number(str(s.listen_port));
     if (!str(s.listen_port) && !managed) {

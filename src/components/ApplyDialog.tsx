@@ -108,9 +108,12 @@ const TYPE_LABEL: Record<string, string> = {
   dhcp: 'DHCP pool',
 };
 
+/** Types that mean something else in the network package. */
+const NETWORK_TYPE_LABEL: Record<string, string> = { rule: 'Routing rule', route: 'Static route' };
+
 /** Friendly name for a UCI section type, e.g. host → "Fixed IP". */
-export function sectionTypeLabel(type: string): string {
-  return TYPE_LABEL[type] ?? type;
+export function sectionTypeLabel(type: string, pkg?: string): string {
+  return (pkg === 'network' ? NETWORK_TYPE_LABEL[type] : undefined) ?? TYPE_LABEL[type] ?? type;
 }
 
 const SECRET = /(^|_)(key|password|psk)$/;
@@ -146,7 +149,7 @@ function ChangeList({
                   <div class="flex gap-2">
                     <Marker kind="add" />
                     <span class="min-w-0 flex-1 font-sans font-medium break-all">
-                      New {sectionTypeLabel(l.value ?? '').toLowerCase()}
+                      New {sectionTypeLabel(l.value ?? '', pkg).toLowerCase()}
                       {(() => {
                         const name = l.fields?.find((f) => f.option === 'name' || f.option === 'ssid')?.value;
                         return name ? <span class="text-muted"> "{name}"</span> : null;

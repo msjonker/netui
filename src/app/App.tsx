@@ -42,7 +42,7 @@ function useSectionLabel() {
       const s = qc.getQueryData<UciConfig>(keys.uci(pkg))?.[section];
       if (!s) return section;
       const name = s.name ?? s.ssid;
-      const type = sectionTypeLabel(String(s['.type']));
+      const type = sectionTypeLabel(String(s['.type']), pkg);
       if (s['.type'] === 'bridge-vlan') return `VLAN ${s.vlan} on ${s.device}`;
       if (s['.anonymous']) return typeof name === 'string' ? `${type} "${name}"` : type;
       return section;

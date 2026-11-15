@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { lazy, Suspense } from 'preact/compat';
 import { firstError, useUci, useWgInstances } from '../../api/queries';
 import type { UciConfig } from '../../api/types';
 import { sectionsOfType } from '../../api/uci';
@@ -22,6 +23,9 @@ import { IconCopy, IconExternal, IconPlus, IconTrash, IconVpn } from '../../comp
 import { Banner, Button, Card, Detail, Dot, Empty, LoadError, Page, Spinner, Stat, Toggle } from '../../components/ui';
 import { AddClientDrawer, ClientConfigModal, type PendingClient } from './ClientForms';
 import { ConfirmModal, CreateServerDrawer, EditServerDrawer, PLAN } from './ServerForms';
+
+// The router as a VPN client: loaded on demand, few set one up.
+const VpnClientSection = lazy(() => import('./VpnClient').then((m) => ({ default: m.VpnClientSection })));
 
 type Panel = { kind: 'create' } | { kind: 'edit'; iface: string } | { kind: 'client'; iface: string } | null;
 
@@ -290,7 +294,7 @@ export function VpnPage() {
   return (
     <Page
       title="VPN"
-      subtitle="WireGuard server and its clients"
+      subtitle="Reach home from anywhere, or send your traffic through a VPN service"
       actions={
         model?.servers.length ? (
           <Button onClick={openCreate} disabled={!net || !fw || apply.busy}>
@@ -339,6 +343,18 @@ export function VpnPage() {
               />
             </div>
           ))}
+          {net && fw && (
+            <Suspense fallback={null}>
+              <VpnClientSection
+                network={net}
+                firewall={fw}
+                dump={ifaces.data}
+                wg={wg.data}
+                noWireguard={!!wg.error && /not found/i.test(wg.error.message)}
+                nowS={nowS}
+              />
+            </Suspense>
+          )}
           {model.others.length > 0 && (
             <Card title="Other WireGuard Interfaces">
               <p class="text-muted">
