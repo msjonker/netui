@@ -26,6 +26,7 @@ import { ConfirmModal, CreateServerDrawer, EditServerDrawer, PLAN } from './Serv
 
 // The router as a VPN client: loaded on demand, few set one up.
 const VpnClientSection = lazy(() => import('./VpnClient').then((m) => ({ default: m.VpnClientSection })));
+const TailscaleCard = lazy(() => import('./Tailscale').then((m) => ({ default: m.TailscaleCard })));
 
 type Panel = { kind: 'create' } | { kind: 'edit'; iface: string } | { kind: 'client'; iface: string } | null;
 
@@ -343,6 +344,11 @@ export function VpnPage() {
               />
             </div>
           ))}
+          {net && fw && (
+            <Suspense fallback={null}>
+              <TailscaleCard network={net} firewall={fw} subnets={subnets} />
+            </Suspense>
+          )}
           {net && fw && (
             <Suspense fallback={null}>
               <VpnClientSection

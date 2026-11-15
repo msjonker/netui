@@ -7,6 +7,7 @@
 /usr/share/rpcd/ucode/netui-speedtest
 /usr/share/rpcd/ucode/netui-services
 /usr/share/rpcd/ucode/netui-users
+/usr/share/rpcd/ucode/netui-tailscale
 /usr/sbin/netui-passwd
 /etc/netui/
 /lib/upgrade/keep.d/netui

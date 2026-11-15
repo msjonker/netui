@@ -17,6 +17,7 @@
 				"netui.firmware": [ "status" ],
 				"netui.speedtest": [ "status" ],
 				"netui.services": [ "adblock", "portal" ],
+				"netui.tailscale": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ],
@@ -41,6 +42,7 @@
 				"netui.firmware": [ "check", "upgrade" ],
 				"netui.speedtest": [ "start" ],
 				"netui.services": [ "adblock_apply", "portal_apply", "portal_auth", "portal_deauth" ],
+				"netui.tailscale": [ "login", "up", "down", "logout", "set" ],
 				"netui.users": [ "add", "remove", "password", "role" ]
 			},
 			"file": {
@@ -79,6 +81,7 @@
 				"netui.firmware": [ "status" ],
 				"netui.speedtest": [ "status" ],
 				"netui.services": [ "adblock", "portal" ],
+				"netui.tailscale": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ],

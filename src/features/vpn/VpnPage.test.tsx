@@ -7,6 +7,7 @@ import { type } from '../../../test/dom';
 import { applyReviewed, review } from '../../../test/applyFlow';
 import { fakeKey } from '../../../test/fakeReads/vpn';
 import { createServerOps, fwSection } from '../../model/vpn';
+import tsRec from '../../../test/fixtures/ubus/dl-wrx36/plain/tailscale.status.json';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 
@@ -200,5 +201,37 @@ describe('VPN service (the router as a client)', () => {
     expect(await screen.findByText('All devices')).toBeTruthy();
     // The private key only went to the router: never into the page after setup.
     expect(document.body.textContent).not.toContain(fakeKey('CLIENT'));
+  });
+});
+
+describe('Tailscale', () => {
+  beforeEach(() => {
+    resetRouter();
+  });
+
+  it('connects: sets up the zone through an apply, signs in, then links to the sign-in page', async () => {
+    let signingIn = false;
+    router.overrides.push((c) => {
+      if (c.object !== 'netui.tailscale') return undefined;
+      if (c.method === 'login') return (signingIn = true), { result: true };
+      return { installed: true, status: signingIn ? tsRec.authUrl : tsRec.needsLogin, prefs: tsRec.prefs, loggingIn: signingIn };
+    });
+    renderApp('#/settings/vpn');
+    const card = (await screen.findByRole('heading', { name: /^Tailscale/ })).closest('section')!;
+    fireEvent.click(await within(card).findByRole('button', { name: 'Connect' }));
+    await applyReviewed();
+    expect(router.configs.network!.tailscale).toMatchObject({ proto: 'none', device: 'tailscale0' });
+    expect(router.configs.firewall!.netui_tailscale_zone).toMatchObject({ name: 'tailscale' });
+    const link = await within(card).findByRole('link', { name: 'Sign in to Tailscale' }, { timeout: 8000 });
+    expect(link.getAttribute('href')).toBe(tsRec.authUrl.AuthURL);
+    expect(router.calls.filter((c) => c.object === 'netui.tailscale' && c.method === 'login')).toHaveLength(1);
+  });
+
+  it('explains the package when it is not installed', async () => {
+    router.overrides.push((c) => (c.object === 'netui.tailscale' ? { installed: false } : undefined));
+    renderApp('#/settings/vpn');
+    const card = (await screen.findByRole('heading', { name: /^Tailscale/ })).closest('section')!;
+    expect(await within(card).findByText(/Needs the/)).toBeTruthy();
+    expect(within(card).queryByRole('button', { name: 'Connect' })).toBeNull();
   });
 });

@@ -1,0 +1,114 @@
+// netui.tailscale: remote access through Tailscale (the optional `tailscale`
+// package), which works without a public address (carrier-grade NAT).
+//
+//   status   installed, the daemon's `status --json` and `debug prefs`
+//            (recorded in test/fixtures/ubus/dl-wrx36/plain/tailscale.status.json)
+//   login    start `tailscale login` as a detached job; it waits until the
+//            user signs in at the AuthURL that status then reports
+//   up/down  connect or disconnect, staying signed in
+//   logout   sign out (the router leaves the tailnet)
+//   set      share the router's networks (subnet routes) and offer it as an
+//            exit node
+//
+// Router DNS stays with dnsmasq (--accept-dns=false). The interface and
+// firewall zone for tailscale0 are ordinary UCI, staged by the UI through
+// apply/rollback. rpcd runs ucode in-process, so nothing here may block for
+// long: the CLI calls below return within seconds, and login runs detached.
+
+'use strict';
+
+import { popen, readfile, writefile, mkdir, access, unlink } from 'fs';
+
+const CLI = '/usr/sbin/tailscale';
+const DIR = '/tmp/netui-tailscale';
+
+function run(cmd) {
+	const p = popen(`${cmd} 2>&1`, 'r');
+	if (!p)
+		return { code: -1, out: '' };
+	const out = p.read('all') ?? '';
+	const code = p.close();
+	return { code, out: trim(out) };
+}
+
+function parse(s) {
+	try {
+		return length(s) ? json(s) : null;
+	}
+	catch (e) {
+		return null;
+	}
+}
+
+// Give a daemon that just started a few seconds to answer, then wait for
+// the user to sign in at the AuthURL.
+const LOGIN = `#!/bin/sh
+echo $$ > ${DIR}/pid
+i=0
+while [ "$i" -lt 10 ] && ! ${CLI} status --json >/dev/null 2>&1; do sleep 1; i=$((i + 1)); done
+exec ${CLI} login --accept-dns=false
+`;
+
+function loggingIn() {
+	const pid = trim(readfile(`${DIR}/pid`) ?? '');
+	return length(pid) > 0 && !!access(`/proc/${pid}`);
+}
+
+const isCidr = (r) => match(r, /^[0-9]{1,3}(\.[0-9]{1,3}){3}\/[0-9]{1,2}$/) || match(r, /^[0-9a-fA-F:]+\/[0-9]{1,3}$/);
+
+function cli(args) {
+	if (!access(CLI))
+		return { error: 'tailscale is not installed' };
+	const r = run(`${CLI} ${args}`);
+	return r.code == 0 ? { result: true } : { error: r.out || `tailscale exited with ${r.code}` };
+}
+
+const methods = {
+	status: {
+		call: function() {
+			if (!access(CLI))
+				return { installed: false };
+			const s = run(`${CLI} status --json`);
+			const p = run(`${CLI} debug prefs`);
+			return {
+				installed: true,
+				status: s.code == 0 ? parse(s.out) : null,
+				prefs: p.code == 0 ? parse(p.out) : null,
+				error: s.code == 0 ? null : s.out,
+				loggingIn: loggingIn(),
+			};
+		}
+	},
+
+	login: {
+		call: function() {
+			if (!access(CLI))
+				return { error: 'tailscale is not installed' };
+			if (loggingIn())
+				return { result: true };
+			mkdir(DIR, 0700);
+			unlink(`${DIR}/pid`);
+			// Start the daemon at boot from now on, and now if it is not running.
+			system('/etc/init.d/tailscale enable; /etc/init.d/tailscale start');
+			writefile(`${DIR}/login.sh`, LOGIN);
+			system(`/bin/sh ${DIR}/login.sh </dev/null >${DIR}/login.log 2>&1 &`);
+			return { result: true };
+		}
+	},
+
+	up: { call: () => cli('up --timeout=20s') },
+	down: { call: () => cli('down') },
+	logout: { call: () => cli('logout') },
+
+	set: {
+		args: { routes: [], exit_node: false },
+		call: function(req) {
+			const routes = req.args.routes ?? [];
+			if (type(routes) != 'array' || length(filter(routes, (r) => type(r) != 'string' || !isCidr(r))))
+				return { error: 'routes must be a list of subnets like 192.168.1.0/24' };
+			return cli(`set --advertise-routes=${join(',', routes)} --advertise-exit-node=${req.args.exit_node ? 'true' : 'false'}`);
+		}
+	},
+};
+
+return { 'netui.tailscale': methods };

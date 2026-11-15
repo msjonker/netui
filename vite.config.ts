@@ -8,7 +8,8 @@ import tailwindcss from '@tailwindcss/vite';
 // rolldown splits the modules the entry shares with lazy chunks into a
 // common chunk that loads up front anyway and compresses worse (+2 KB).
 // A module missing here still works; it just loads with the entry.
-const LAZY = /src\/(features\/(diagnostics\/|system\/FirmwareUpload|vpn\/VpnClient)|model\/(diagnostics|vpnClient)\.ts|api\/diagnostics\.ts)/;
+const LAZY =
+  /src\/(features\/(diagnostics\/|system\/FirmwareUpload|vpn\/(VpnClient|Tailscale))|model\/(diagnostics|vpnClient|tailscale)\.ts|api\/(diagnostics|tailscale)\.ts)/;
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');

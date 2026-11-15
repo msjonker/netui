@@ -675,3 +675,42 @@ export interface NetuiUser {
   username: string;
   role: NetuiRole;
 }
+
+// --- netui.tailscale -------------------------------------------------------
+// Recorded in test/fixtures/ubus/dl-wrx36/plain/tailscale.status.json
+// (tailscale 1.104.1). Only the fields netui reads are typed.
+
+export interface TailscalePeerRaw {
+  HostName?: string;
+  DNSName?: string;
+  OS?: string;
+  TailscaleIPs?: string[] | null;
+  Online?: boolean;
+  ExitNode?: boolean;
+}
+
+export interface TailscaleStatusRaw {
+  Version?: string;
+  /** NoState, NeedsLogin, NeedsMachineAuth, Stopped, Starting, Running. */
+  BackendState?: string;
+  AuthURL?: string;
+  TailscaleIPs?: string[] | null;
+  Self?: TailscalePeerRaw;
+  Health?: string[] | null;
+  CurrentTailnet?: { Name?: string } | null;
+  Peer?: Record<string, TailscalePeerRaw> | null;
+}
+
+export interface TailscalePrefsRaw {
+  AdvertiseRoutes?: string[] | null;
+  WantRunning?: boolean;
+  LoggedOut?: boolean;
+}
+
+export interface TailscaleStatus {
+  installed: boolean;
+  status?: TailscaleStatusRaw | null;
+  prefs?: TailscalePrefsRaw | null;
+  error?: string | null;
+  loggingIn?: boolean;
+}
