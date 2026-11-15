@@ -15,6 +15,7 @@ import {
   useWifiState,
 } from '../api/queries';
 import { mergeClients } from './clients';
+import { normalizeWan, wanExposure } from './internet';
 import { normalizeBlockRules } from './firewall';
 import { localSubnets, normalizeNetworks, routerMacs } from './network';
 import { normalizeSwitch } from './ports';
@@ -230,5 +231,16 @@ export function useApAssoc(devices: ManagedDevice[] | undefined) {
     // radios is rebuilt each render; the update stamps identify the data.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stamp, online.map((d) => `${d.mac}:${d.name}`).join()],
+  );
+}
+
+/** How the internet sees the primary WAN (public, carrier-grade NAT or behind another router). */
+export function useWanExposure() {
+  const network = useUci('network');
+  const firewall = useUci('firewall');
+  const ifaces = useInterfaces();
+  return useMemo(
+    () => wanExposure(network.data && normalizeWan(network.data, firewall.data), ifaces.data),
+    [network.data, firewall.data, ifaces.data],
   );
 }

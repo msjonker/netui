@@ -3,7 +3,8 @@ import { firstError, useUci, useWgInstances } from '../../api/queries';
 import type { UciConfig } from '../../api/types';
 import { sectionsOfType } from '../../api/uci';
 import { useApply } from '../../api/useApply';
-import { useNetworks } from '../../model/hooks';
+import { useNetworks, useWanExposure } from '../../model/hooks';
+import { NatNotice } from '../../components/NatNotice';
 import { attachedSubnets } from '../../model/network';
 import {
   addPeerOps,
@@ -264,6 +265,7 @@ export function VpnPage() {
   const [panel, setPanel] = useState<Panel>(null);
   const [removing, setRemoving] = useState<{ server: VpnServer; peer: VpnPeer } | null>(null);
   const client = usePendingClient(network, apply.busy);
+  const exposure = useWanExposure();
 
   const nowS = Math.floor(Date.now() / 1000);
   const model = useMemo(
@@ -303,6 +305,11 @@ export function VpnPage() {
           <Banner tone="warn" role="status">
             Live status unavailable: {wg.error.message}
           </Banner>
+        </div>
+      )}
+      {exposure && exposure.scope !== 'public' && (
+        <div class="mb-4">
+          <NatNotice exposure={exposure} />
         </div>
       )}
       {client.dropped && (

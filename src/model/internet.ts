@@ -1,6 +1,6 @@
 import type { InterfaceDump, UciConfig, UciSection, UciValue } from '../api/types';
 import { bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
-import { inSubnet, isIPv4, netmaskToPrefix, parseCidr } from '../lib/ip';
+import { inSubnet, ipv4Scope, isIPv4, netmaskToPrefix, parseCidr } from '../lib/ip';
 import { normalizeMac } from '../lib/mac';
 import { wanNetworks, writeAddress, type AddressForm } from './network';
 
@@ -105,6 +105,22 @@ export function wanL3Device(wan: Pick<Wan, 'section' | 'proto' | 'device'>, dump
   if (live?.up && live.l3_device) return live.l3_device;
   return wan.proto === 'pppoe' ? `pppoe-${wan.section}` : wan.device;
 }
+
+/**
+ * Whether the internet can reach this router: behind carrier-grade NAT
+ * ('cgnat') or another router ('private'), port forwards and the VPN server
+ * cannot work from outside. Undefined while the WAN has no IPv4 address.
+ */
+export function wanExposure(
+  wan: Pick<Wan, 'section'> | undefined,
+  dump?: InterfaceDump,
+): { scope: 'public' | 'private' | 'cgnat'; address: string } | undefined {
+  const address = dump?.interface.find((i) => i.interface === wan?.section)?.['ipv4-address']?.[0]?.address;
+  const scope = address ? ipv4Scope(address) : null;
+  return scope ? { scope, address: address! } : undefined;
+}
+
+export type WanExposure = ReturnType<typeof wanExposure>;
 
 // ---------------------------------------------------------------------------
 // Editing

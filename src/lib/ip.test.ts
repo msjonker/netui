@@ -4,6 +4,7 @@ import {
   hostAt,
   hostOffset,
   inSubnet,
+  ipv4Scope,
   isIPv4,
   netmaskToPrefix,
   networkAddress,
@@ -56,5 +57,20 @@ describe('subnet arithmetic', () => {
     expect(hostAt('192.168.0.1', 23, 300)).toBe('192.168.1.44');
     expect(hostOffset('192.168.1.150', '192.168.1.1', 24)).toBe(150);
     expect(hostOffset('192.168.2.1', '192.168.1.1', 24)).toBeNull();
+  });
+});
+
+describe('ipv4Scope', () => {
+  it('tells carrier-grade NAT, private and public addresses apart', () => {
+    expect(ipv4Scope('100.64.0.1')).toBe('cgnat');
+    expect(ipv4Scope('100.127.255.254')).toBe('cgnat');
+    expect(ipv4Scope('100.128.0.1')).toBe('public');
+    expect(ipv4Scope('192.168.0.127')).toBe('private');
+    expect(ipv4Scope('10.20.30.40')).toBe('private');
+    expect(ipv4Scope('172.31.0.1')).toBe('private');
+    expect(ipv4Scope('172.32.0.1')).toBe('public');
+    expect(ipv4Scope('169.254.1.1')).toBe('private');
+    expect(ipv4Scope('81.2.69.160')).toBe('public');
+    expect(ipv4Scope('fe80::1')).toBeNull();
   });
 });

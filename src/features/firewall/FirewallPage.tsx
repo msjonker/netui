@@ -12,7 +12,8 @@ import {
   type PortForward,
   type PortForwardDraft,
 } from '../../model/firewall';
-import { useClients, useNetworks } from '../../model/hooks';
+import { useClients, useNetworks, useWanExposure } from '../../model/hooks';
+import { NatNotice } from '../../components/NatNotice';
 import type { Subnet } from '../../model/network';
 import { zoneOfNetwork } from '../../model/policy';
 import { inSubnet } from '../../lib/ip';
@@ -246,10 +247,16 @@ function Loading() {
 
 function PortForwards({ fw, subnets, hosts }: { fw: UciConfig; subnets: Subnet[]; hosts: Host[] }) {
   const [sel, setSel] = useState<string | 'new' | null>(null);
+  const exposure = useWanExposure();
   const forwards = useMemo(() => normalizePortForwards(fw), [fw]);
   const current = forwards.find((p) => p.section === sel);
   return (
     <>
+      {exposure && exposure.scope !== 'public' && (
+        <div class="mb-4">
+          <NatNotice exposure={exposure} />
+        </div>
+      )}
       <Card
         title="Port Forwarding"
         actions={

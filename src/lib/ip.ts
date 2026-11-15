@@ -71,3 +71,15 @@ export function hostOffset(ip: string, net: string, prefix: number): number | nu
   if (!inSubnet(ip, net, prefix)) return null;
   return parseIPv4(ip)! - parseIPv4(networkAddress(net, prefix)!)!;
 }
+
+/**
+ * Who can reach an IPv4 address: 'cgnat' is the shared address space ISPs use
+ * behind carrier-grade NAT (100.64.0.0/10, RFC 6598); 'private' is RFC 1918 or
+ * link-local, usually another router in front of this one. Null if not IPv4.
+ */
+export function ipv4Scope(ip: string): 'public' | 'private' | 'cgnat' | null {
+  if (!isIPv4(ip)) return null;
+  if (inSubnet(ip, '100.64.0.0', 10)) return 'cgnat';
+  const priv = [['10.0.0.0', 8], ['172.16.0.0', 12], ['192.168.0.0', 16], ['169.254.0.0', 16]] as const;
+  return priv.some(([n, p]) => inSubnet(ip, n, p)) ? 'private' : 'public';
+}

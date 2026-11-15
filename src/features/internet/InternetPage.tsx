@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import { firstError, useDevices, useInterfaces, useUci } from '../../api/queries';
-import { normalizeWan, wanL3Device } from '../../model/internet';
+import { normalizeWan, wanExposure, wanL3Device } from '../../model/internet';
+import { NatNotice } from '../../components/NatNotice';
 import { IconExternal } from '../../components/icons';
 import { Card, LoadError, Page, Spinner } from '../../components/ui';
 import { DdnsCard, SqmCard, UpnpCard } from './Services';
@@ -52,6 +53,7 @@ export function InternetPage() {
         <Spinner />
       ) : (
         <div class="grid max-w-4xl grid-cols-1 gap-4">
+          <NatNotice exposure={wanExposure(wan, ifaces.data)} />
           {wan ? (
             <WanStatusCard wan={wan} live={live} live6={live6} port={port} onEdit={() => setEditing(true)} />
           ) : (

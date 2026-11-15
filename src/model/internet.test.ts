@@ -6,7 +6,7 @@ import netJson from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.network.jso
 import fwJson from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.firewall.json';
 import dumpJson from '../../test/fixtures/ubus/dl-wrx36/plain/network.interface.dump.json';
 import sqmJson from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.sqm.json';
-import { normalizeWan, splitVlan, validateWan, wanDraft, wanL3Device, wanOps, type WanDraft } from './internet';
+import { normalizeWan, splitVlan, validateWan, wanDraft, wanExposure, wanL3Device, wanOps, type WanDraft } from './internet';
 
 const recorded: { network: UciGet; firewall: UciGet; sqm: UciGet; dump: InterfaceDump } = {
   network: netJson,
@@ -168,5 +168,27 @@ describe('wanOps', () => {
     const s = fixtures.uci.network();
     const ws = normalizeWan(s, fixtures.uci.firewall())!;
     expect(wanOps(wanDraft(ws), ws, s)).toEqual([]);
+  });
+});
+
+describe('wanExposure', () => {
+  const withWan = (address?: string): InterfaceDump => {
+    const d = structuredClone(recorded.dump);
+    const wan = d.interface.find((i) => i.interface === 'wan')!;
+    wan['ipv4-address'] = address ? [{ address, mask: 24 }] : [];
+    return d;
+  };
+  const wan = () => normalizeWan(net(), fw());
+
+  it('flags carrier-grade NAT and a router in front, not a public address', () => {
+    expect(wanExposure(wan(), withWan('100.71.3.9'))).toEqual({ scope: 'cgnat', address: '100.71.3.9' });
+    // The bench gateway sits behind the home router.
+    expect(wanExposure(wan(), withWan('192.168.0.127'))?.scope).toBe('private');
+    expect(wanExposure(wan(), withWan('81.2.69.160'))?.scope).toBe('public');
+  });
+
+  it('says nothing while the WAN has no address', () => {
+    expect(wanExposure(wan(), recorded.dump)).toBeUndefined();
+    expect(wanExposure(undefined, withWan('100.71.3.9'))).toBeUndefined();
   });
 });
