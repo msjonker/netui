@@ -132,7 +132,9 @@ The bar on the left (along the bottom on a phone) has the main sections:
 | **Settings** | Everything you can change, in tabs: WiFi, Networks, Ports, Internet, Firewall & Security, VPN, Routing & DNS, System. |
 
 Your initial in the top right corner opens a small menu: who you are signed in
-as, a link to LuCI, and **Sign out**. The magnifying glass searches devices,
+as, the **theme** (*System* follows your computer's light or dark setting, or
+pick *Light* or *Dark*; the choice is remembered in this browser), a link to
+LuCI, and **Sign out**. The magnifying glass searches devices,
 networks and settings (or press `Ctrl K`).
 
 ## 4. How changes work

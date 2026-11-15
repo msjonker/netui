@@ -4,7 +4,11 @@ import { createQueryClient } from './api/queries';
 import { takeHandoff } from './api/apply';
 import { saveSession } from './api/ubus';
 import { App } from './app/App';
+import { applyTheme } from './lib/theme';
 import './index.css';
+
+// The saved light/dark choice, before the first render.
+applyTheme();
 
 // Arriving at a new router address mid-apply: adopt the session handed over
 // in the URL fragment (stripped from the address bar by takeHandoff) so this

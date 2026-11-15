@@ -112,3 +112,19 @@ describe('notifications', () => {
     expect(within(pop).getByText(/connected to/).textContent).toContain('3a:7c:12:9e:44:01');
   });
 });
+
+describe('theme', () => {
+  it('switches to dark and back from the account menu', async () => {
+    resetRouter();
+    renderApp('#/');
+    fireEvent.click(await screen.findByLabelText('Account'));
+    const theme = screen.getByRole('tablist', { name: 'Theme' });
+    expect(within(theme).getByRole('tab', { name: 'System' }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.click(within(theme).getByRole('tab', { name: 'Dark' }));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('netui.theme')).toBe('dark');
+    fireEvent.click(within(theme).getByRole('tab', { name: 'System' }));
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(localStorage.getItem('netui.theme')).toBeNull();
+  });
+});

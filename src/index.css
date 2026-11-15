@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Palette. Semantic tokens switch with the OS theme; use
+ * Palette. Semantic tokens switch with the theme (light, dark or the system's); use
  * the utilities (bg-surface, text-muted, border-line, bg-accent, ...) rather
  * than raw colors so both themes stay consistent.
  */
@@ -29,8 +29,33 @@
   --shadow: 0 8px 24px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.04);
 }
 
+/* Dark: chosen in the account menu (data-theme), or the system's choice. */
+:root[data-theme="dark"] {
+  --bg: #131416;
+  --surface: #1d1e21;
+  --subtle: #222327;
+  --hover: #26282c;
+  --line: #2e3034;
+  --line-strong: #3a3d42;
+  --fg: #f4f5f6;
+  --muted: #a1a6ae;
+  --faint: #5d626a;
+  --accent: #4797ff;
+  --accent-hover: #6aabff;
+  --accent-soft: #15253d;
+  --ok: #4ad677;
+  --ok-soft: #15301f;
+  --warn: #ffa046;
+  --warn-soft: #3a2812;
+  --bad: #ff5a5e;
+  --bad-soft: #3b1b1c;
+  --violet: #a67bff;
+  --rail: #1a1b1e;
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #131416;
     --surface: #1d1e21;
     --subtle: #222327;

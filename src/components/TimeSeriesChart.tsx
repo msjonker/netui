@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { isDark, onThemeChange } from '../lib/theme';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 
@@ -29,16 +30,19 @@ export function xRange(min: number | null, max: number | null, now = Date.now() 
   return [min, max];
 }
 
-/** Re-render when the OS switches between light and dark. */
+/**
+ * What to draw: nothing until there are two samples. With a single point uPlot
+ * does not consult the x range above and spans years; empty data takes the
+ * "last minute" path instead (the caller shows a "collecting" note meanwhile).
+ */
+export function drawable(data: uPlot.AlignedData): uPlot.AlignedData {
+  return data[0].length < 2 ? (data.map(() => []) as unknown as uPlot.AlignedData) : data;
+}
+
+/** Re-render when the theme changes: the account menu's choice or the system's. */
 function useColorScheme(): string {
-  const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
-  const [dark, setDark] = useState(mq?.matches ?? false);
-  useEffect(() => {
-    if (!mq) return;
-    const on = (e: MediaQueryListEvent) => setDark(e.matches);
-    mq.addEventListener('change', on);
-    return () => mq.removeEventListener('change', on);
-  }, []);
+  const [dark, setDark] = useState(isDark);
+  useEffect(() => onThemeChange(() => setDark(isDark())), []);
   return dark ? 'dark' : 'light';
 }
 
@@ -103,7 +107,7 @@ export function TimeSeriesChart({
         }),
       ],
     };
-    plot.current = new uPlot(opts, data, host);
+    plot.current = new uPlot(opts, drawable(data), host);
 
     const ro = new ResizeObserver(([entry]) => {
       if (entry && entry.contentRect.width > 0) plot.current?.setSize({ width: entry.contentRect.width, height });
@@ -118,7 +122,7 @@ export function TimeSeriesChart({
   }, [height, seriesKey, scheme]);
 
   useEffect(() => {
-    plot.current?.setData(data);
+    plot.current?.setData(drawable(data));
   }, [data]);
 
   return <div ref={el} class="w-full" />;

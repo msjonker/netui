@@ -1,7 +1,9 @@
+import { useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import { Link, useLocation } from 'wouter-preact';
 import { useDevices, useInterfaces, useSystemBoard } from '../api/queries';
 import { getSession } from '../api/ubus';
+import { getTheme, setTheme, type Theme } from '../lib/theme';
 import { findUplink, uplinkOnline } from '../model/network';
 import {
   IconAccessPoint,
@@ -15,7 +17,7 @@ import {
   IconTopology,
   Logo,
 } from '../components/icons';
-import { Dot, cx } from '../components/ui';
+import { Dot, Segmented, cx } from '../components/ui';
 import { Notifications } from './Notifications';
 import { Search } from './Search';
 
@@ -76,6 +78,7 @@ export function Shell({
   const [path] = useLocation();
   const board = useSystemBoard();
   const readOnly = !!getSession()?.readOnly;
+  const [theme, chooseTheme] = useState<Theme>(getTheme);
 
   return (
     <div class="flex h-screen overflow-hidden">
@@ -136,10 +139,25 @@ export function Shell({
             >
               {username.slice(0, 1)}
             </summary>
-            <div class="absolute right-0 z-40 mt-2 w-52 rounded-lg border border-line bg-surface p-1 shadow-pop">
+            <div class="absolute right-0 z-40 mt-2 w-60 rounded-lg border border-line bg-surface p-1 shadow-pop">
               <div class="px-3 py-2 text-xs text-muted">
                 Signed in as <span class="font-medium text-fg">{username}</span>
                 {readOnly && ' (read-only)'}
+              </div>
+              <div class="px-3 pt-1 pb-2">
+                <Segmented
+                  label="Theme"
+                  value={theme}
+                  onChange={(t) => {
+                    chooseTheme(t);
+                    setTheme(t);
+                  }}
+                  options={[
+                    { value: 'system', label: 'System' },
+                    { value: 'light', label: 'Light' },
+                    { value: 'dark', label: 'Dark' },
+                  ]}
+                />
               </div>
               <a href="/cgi-bin/luci/" target="_blank" rel="noopener" class="flex h-8 items-center gap-2 rounded-md px-3 hover:bg-hover">
                 <IconExternal size={14} /> Open LuCI
