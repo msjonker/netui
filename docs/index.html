@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>netui: a friendly web interface for OpenWrt</title>
+<meta name="description" content="netui gives an OpenWrt router a clean, friendly web interface: dashboard, WiFi, clients, access points and wireless mesh, ad blocking, VPN and more. Every change has a safety timer. Runs alongside LuCI.">
+<link rel="canonical" href="https://msjonker.github.io/netui/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#06090f">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://msjonker.github.io/netui/">
+<meta property="og:title" content="netui: your whole network, one friendly page">
+<meta property="og:description" content="A friendly web interface for OpenWrt routers, access points and mesh WiFi. Free, open source, no cloud.">
+<meta property="og:image" content="https://msjonker.github.io/netui/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://msjonker.github.io/netui/assets/og.png">
+<style>
+  :root{
+    --bg:#06090f; --bg2:#0b111c; --card:#101826; --line:#1d2a3d; --ink:#eef3fa; --ink-dim:#b3c0d1; --muted:#7d8ca1;
+    --accent:#2f8bff; --cyan:#19e0ff; --good:#4ad677; --code:#03060b; --grad:linear-gradient(100deg,#006fff,#19e0ff);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--cyan)} img{max-width:100%;height:auto;display:block}
+  code{white-space:nowrap;font:.92em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:.05em .35em}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 1.25rem}
+
+  nav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px;gap:1rem}
+  .brand{display:flex;align-items:center;gap:.55rem;color:var(--ink);text-decoration:none;font-weight:800;font-size:1.2rem;letter-spacing:-.01em}
+  .brand img{width:28px;height:28px}
+  nav ul{list-style:none;display:flex;gap:1.3rem;margin:0;padding:0;align-items:center}
+  nav ul a{text-decoration:none;color:var(--ink-dim);font-weight:600} nav ul a:hover{color:var(--ink)}
+
+  .btn{display:inline-block;padding:.72rem 1.2rem;border-radius:10px;font-weight:700;text-decoration:none;border:1px solid transparent;white-space:nowrap}
+  .btn-primary{background:var(--grad);color:#fff;box-shadow:0 6px 24px rgb(0 140 255 / .35)} .btn-primary:hover{filter:brightness(1.1)}
+  .btn-ghost{border-color:var(--line);color:var(--ink);background:var(--card)} .btn-ghost:hover{border-color:var(--accent)}
+  .btn-sm{padding:.42rem .85rem;border-radius:8px;font-size:.92rem}
+
+  .hero{position:relative;overflow:hidden;padding:4.5rem 0 3.5rem}
+  .hero::before{content:"";position:absolute;inset:-30% -10% auto;height:120%;background:radial-gradient(closest-side,rgb(0 111 255 / .28),transparent),radial-gradient(closest-side at 75% 40%,rgb(25 224 255 / .14),transparent);pointer-events:none}
+  .hero .wrap{position:relative;display:grid;grid-template-columns:1fr 1.25fr;gap:3rem;align-items:center}
+  .eyebrow{color:var(--cyan);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;margin:0}
+  h1{font-size:clamp(2.3rem,4.8vw,3.6rem);line-height:1.06;letter-spacing:-.025em;margin:.5rem 0 1.1rem}
+  h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:1.17rem;color:var(--ink-dim);margin:0 0 1.7rem}
+  .cta{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+  .facts{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin-top:1.6rem;color:var(--muted);font-size:.93rem}
+  .facts span::before{content:"✓ ";color:var(--good);font-weight:800}
+  .shot{border-radius:14px;border:1px solid var(--line);overflow:hidden;box-shadow:0 30px 80px rgb(0 0 0 / .6),0 0 0 1px rgb(25 224 255 / .06),0 0 60px rgb(0 111 255 / .18)}
+
+  section{padding:4.5rem 0;scroll-margin-top:62px}
+  section.alt{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  h2{font-size:clamp(1.7rem,3.2vw,2.3rem);letter-spacing:-.02em;line-height:1.15;margin:0 0 .6rem}
+  .sub{color:var(--ink-dim);margin:0 0 2.2rem;font-size:1.08rem;max-width:740px}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.45rem}
+  .card h3{margin:.25rem 0 .4rem;font-size:1.1rem} .card p{margin:0;color:var(--ink-dim)}
+  .ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(140deg,rgb(0 111 255 / .25),rgb(25 224 255 / .12));border:1px solid rgb(47 139 255 / .3);margin-bottom:.7rem}
+  .ic svg{width:22px;height:22px;stroke:var(--cyan);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  .steps{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+  .steps>*,.hero .wrap>*,.two>*{min-width:0}
+  .term{background:var(--code);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .term header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding:.75rem 1.1rem;border-bottom:1px solid var(--line);background:var(--card)}
+  .cmd{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.1rem 0}
+  .lbl{color:var(--muted);font-size:.85rem;font-weight:600}
+  .term h3{margin:0;font-size:1rem} .term small{color:var(--muted)}
+  .copy{font:inherit;font-size:.82rem;font-weight:700;color:var(--ink-dim);background:transparent;border:1px solid var(--line);border-radius:7px;padding:.25rem .65rem;cursor:pointer}
+  .copy:hover{color:var(--ink);border-color:var(--accent)}
+  pre{margin:0;padding:1rem 1.1rem;overflow-x:auto;font:.9rem/1.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#dbe7f5}
+  pre .p{color:var(--cyan);user-select:none}
+  .after{margin-top:1.5rem;display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+  .after .card b{color:var(--cyan)}
+  .note{color:var(--muted);font-size:.95rem;margin-top:1.4rem}
+
+  .gal{display:grid;grid-template-columns:1fr 1fr;gap:2rem 1.75rem}
+  .gal figure{margin:0}
+  .gal img{border-radius:12px;border:1px solid var(--line);box-shadow:0 14px 40px rgb(0 0 0 / .5);cursor:zoom-in}
+  .gal figcaption{margin-top:.7rem;color:var(--ink-dim)} .gal figcaption b{color:var(--ink)}
+  .gal .phone{display:grid;grid-template-columns:auto 1fr;gap:1.4rem;align-items:center}
+  .gal .phone img{max-width:200px}
+
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  th,td{padding:.8rem 1.05rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:rgb(47 139 255 / .1);font-size:.92rem} td{color:var(--ink-dim)} td:first-child{color:var(--ink);font-weight:600}
+  tr:last-child td{border-bottom:0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start}
+  .two ul{margin:0;padding-left:1.2rem;color:var(--ink-dim)} .two li{margin:.35rem 0} .two li b{color:var(--ink)}
+
+  .band{text-align:center}
+  .band .mark{width:min(380px,80%);margin:-1.5rem auto .5rem;mix-blend-mode:lighten}
+  .band .cta{justify-content:center;margin-top:1.6rem}
+
+  footer{padding:2.5rem 0 3rem;color:var(--muted);font-size:.92rem;border-top:1px solid var(--line)}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1.5rem}
+  footer p{margin:.25rem 0;max-width:620px} footer a{color:var(--ink-dim)}
+  footer ul{list-style:none;margin:0;padding:0;display:flex;gap:1.2rem;flex-wrap:wrap}
+
+  dialog{padding:0;border:0;background:transparent;max-width:96vw;max-height:94vh}
+  dialog::backdrop{background:rgb(0 0 0 / .85)}
+  dialog img{max-width:96vw;max-height:94vh;width:auto;border-radius:10px;cursor:zoom-out}
+
+  @media (max-width:900px){
+    .hero{padding-top:3rem} .hero .wrap,.steps,.two{grid-template-columns:1fr}
+    .grid3,.after{grid-template-columns:1fr 1fr}
+    nav ul li.opt{display:none}
+  }
+  @media (max-width:620px){
+    .grid3,.after,.gal{grid-template-columns:1fr}
+    .gal .phone{grid-template-columns:1fr} .gal .phone img{max-width:240px}
+    nav ul{gap:.9rem}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/favicon.svg" alt="">netui</a>
+    <ul>
+      <li class="opt"><a href="#features">Features</a></li>
+      <li class="opt"><a href="#tour">Tour</a></li>
+      <li><a href="#install">Install</a></li>
+      <li class="opt"><a href="https://github.com/msjonker/netui/blob/main/docs/user-guide.md">Guide</a></li>
+      <li><a class="btn btn-ghost btn-sm" href="https://github.com/msjonker/netui">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">For OpenWrt 24.10 and 25.x</p>
+      <h1>Your whole network, <em>one friendly page</em></h1>
+      <p class="lead">netui is a modern web interface for OpenWrt. Manage the router, WiFi, guests, extra access points and wireless mesh from one place, in plain language. No cloud, no account, and every change can be undone.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install">Install in a few minutes</a>
+        <a class="btn btn-ghost" href="https://github.com/msjonker/netui/releases/latest">Download <span class="ver">v0.2.0</span></a>
+      </div>
+      <div class="facts">
+        <span>Free and open source (MIT)</span>
+        <span>Under 190 KB</span>
+        <span>Runs alongside LuCI</span>
+        <span>Any router hardware</span>
+      </div>
+    </div>
+    <img class="shot" src="screenshots/dashboard.png" width="1440" height="900" alt="The netui dashboard: gateway health, internet throughput, ports, WiFi, clients and recent events">
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Why netui</h2>
+    <p class="sub">OpenWrt can do almost anything, but its settings are built for people who already know networking. netui puts the everyday jobs in front, explains them, and leaves the expert pages one click away.</p>
+    <div class="grid3">
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div>
+        <h3>You cannot lock yourself out</h3>
+        <p>Every change is shown for review first, then applied with a 30-second safety timer. If it cuts netui off from the router, the router undoes it by itself.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0114 0M8 15.5a5.5 5.5 0 018 0"/><circle cx="12" cy="19" r="1"/><path d="M2 9.5a14.5 14.5 0 0120 0"/></svg></div>
+        <h3>Access points and mesh, made easy</h3>
+        <p>Turn any other OpenWrt router into an access point with one click. Connect it by cable or by wireless mesh, with automatic failover between the two. WiFi settings are copied to every access point.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M7 13l3-3 3 2 4-4M8 21h8M12 17v4"/></svg></div>
+        <h3>See what is going on</h3>
+        <p>A live dashboard, a map of your network, every device with its activity and open connections, monthly usage history and a WiFi channel advisor.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+        <h3>Small, fast and private</h3>
+        <p>Plain web files served by the router's own web server. Nothing to run in the background, nothing phoning home, no cloud account. It even works on a phone.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18.5 20a6.5 6.5 0 00-2.5-5.1"/></svg></div>
+        <h3>Safe for the whole household</h3>
+        <p>netui signs in with its own limited login, never root. Add other admins, or read-only users who can look at everything but change nothing.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 14v6.5M14 17.25h6.5"/></svg></div>
+        <h3>Grows with you</h3>
+        <p>Ad blocking, a guest sign-in page, a VPN server, a second internet line for failover, smart queues, speed tests and firmware updates appear as soon as their package is installed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="install">
+  <div class="wrap">
+    <h2>Install in a few minutes</h2>
+    <p class="sub">Download the package for your OpenWrt version from the <a href="https://github.com/msjonker/netui/releases/latest">latest release</a>, copy it to the router and install it. Not sure which version you have? Run <code>grep DISTRIB_RELEASE /etc/openwrt_release</code> on the router.</p>
+    <div class="steps">
+      <div class="term">
+        <header><h3>OpenWrt 25.x and snapshots</h3><small>apk package</small></header>
+        <div class="cmd"><span class="lbl">On your computer</span><button class="copy" type="button">Copy</button></div>
+<pre><span class="p">$ </span>scp -O netui-<span class="v">0.2.0</span>-r1.apk root@192.168.1.1:/tmp/
+<span class="p">$ </span>ssh root@192.168.1.1</pre>
+        <div class="cmd"><span class="lbl">Then, on the router</span><button class="copy" type="button">Copy</button></div>
+<pre><span class="p"># </span>apk update
+<span class="p"># </span>apk add --allow-untrusted /tmp/netui-<span class="v">0.2.0</span>-r1.apk
+<span class="p"># </span>netui-passwd</pre>
+      </div>
+      <div class="term">
+        <header><h3>OpenWrt 24.10</h3><small>ipk package</small></header>
+        <div class="cmd"><span class="lbl">On your computer</span><button class="copy" type="button">Copy</button></div>
+<pre><span class="p">$ </span>scp -O netui_<span class="v">0.2.0</span>-r1_all.ipk root@192.168.1.1:/tmp/
+<span class="p">$ </span>ssh root@192.168.1.1</pre>
+        <div class="cmd"><span class="lbl">Then, on the router</span><button class="copy" type="button">Copy</button></div>
+<pre><span class="p"># </span>opkg update
+<span class="p"># </span>opkg install /tmp/netui_<span class="v">0.2.0</span>-r1_all.ipk
+<span class="p"># </span>netui-passwd</pre>
+      </div>
+    </div>
+    <div class="after">
+      <div class="card"><p><b>1.</b> <code>netui-passwd</code> creates the <code>netui</code> login, limited to what the interface needs. Pick a password of at least 8 characters.</p></div>
+      <div class="card"><p><b>2.</b> Open <a href="http://192.168.1.1/netui/">http://192.168.1.1/netui/</a> (or <code>https://</code> if your router has a certificate) and sign in as <code>netui</code>.</p></div>
+      <div class="card"><p><b>3.</b> Adding an access point? Install <code>netui-agent</code> on it, run <code>netui-agent prepare</code>, plug it in and click <b>Adopt</b>.</p></div>
+    </div>
+    <p class="note">Never used a terminal? The <a href="https://github.com/msjonker/netui/blob/main/docs/user-guide.md#2-install-netui">user guide</a> walks through every step on Windows, macOS and Linux. Upgrading works the same way and keeps your settings.</p>
+  </div>
+</section>
+
+<section id="tour">
+  <div class="wrap">
+    <h2>Take the tour</h2>
+    <p class="sub">Real screenshots from a gateway and an adopted access point running OpenWrt 25.12. Click any picture to enlarge it.</p>
+    <div class="gal">
+      <figure><img src="screenshots/topology.png" width="1440" height="900" loading="lazy" alt="Topology view"><figcaption><b>Topology.</b> The internet, the gateway, its ports and radios, the access points and the devices on each.</figcaption></figure>
+      <figure><img src="screenshots/devices.png" width="1440" height="900" loading="lazy" alt="Devices page"><figcaption><b>Devices.</b> The gateway and adopted access points, with how each one is connected: cable or mesh.</figcaption></figure>
+      <figure><img src="screenshots/wifi.png" width="1440" height="900" loading="lazy" alt="WiFi settings"><figcaption><b>WiFi.</b> Networks, radios with live utilisation and noise, wireless mesh and client steering.</figcaption></figure>
+      <figure><img src="screenshots/client-connections.png" width="1440" height="900" loading="lazy" alt="Client details"><figcaption><b>Client devices.</b> Live activity, usage and open connections for every device.</figcaption></figure>
+      <figure><img src="screenshots/insights.png" width="1440" height="588" loading="lazy" alt="Insights"><figcaption><b>Insights.</b> Channel utilisation, nearby networks per channel and a channel suggestion.</figcaption></figure>
+      <figure><img src="screenshots/usage.png" width="1440" height="900" loading="lazy" alt="Usage history"><figcaption><b>Usage history.</b> Download and upload per device and per application, month by month.</figcaption></figure>
+      <figure><img src="screenshots/internet.png" width="1440" height="900" loading="lazy" alt="Internet settings"><figcaption><b>Internet.</b> Your connection, a second line for failover, and speed tests.</figcaption></figure>
+      <figure><img src="screenshots/ad-blocking.png" width="1440" height="900" loading="lazy" alt="Ad blocking"><figcaption><b>Ad blocking and content filtering</b> for every device on the network.</figcaption></figure>
+      <figure><img src="screenshots/system.png" width="1440" height="900" loading="lazy" alt="System settings"><figcaption><b>System.</b> Firmware updates, backup and restore, admins and read-only users.</figcaption></figure>
+      <figure><img src="screenshots/apply-review.png" width="1440" height="900" loading="lazy" alt="Review changes dialog"><figcaption><b>Every change is reviewed</b> and applied with a safety timer. If it cuts you off, the router undoes it.</figcaption></figure>
+      <figure class="phone"><img src="screenshots/mobile.png" width="780" height="1688" loading="lazy" alt="netui on a phone"><figcaption><b>On a phone.</b> The same interface with a bottom tab bar, for a quick look from the sofa.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="extras">
+  <div class="wrap two">
+    <div>
+      <h2>Optional extras</h2>
+      <p class="sub">netui shows these pages as soon as the matching OpenWrt package is installed. Without them, it stays out of the way.</p>
+      <table>
+        <tr><th>Feature</th><th>Package</th></tr>
+        <tr><td>Ad blocking</td><td><code>adblock-fast</code></td></tr>
+        <tr><td>Guest sign-in page</td><td><code>opennds</code></td></tr>
+        <tr><td>VPN server</td><td><code>luci-proto-wireguard</code></td></tr>
+        <tr><td>Second internet line</td><td><code>mwan3</code></td></tr>
+        <tr><td>Smart queues</td><td><code>sqm-scripts</code></td></tr>
+        <tr><td>Speed test</td><td><code>speedtestcpp</code> or <code>librespeed-cli</code></td></tr>
+        <tr><td>Usage history</td><td><code>nlbwmon</code></td></tr>
+        <tr><td>Client steering</td><td><code>usteer</code></td></tr>
+        <tr><td>Firmware updates</td><td><code>owut</code> (standard on 25.x)</td></tr>
+      </table>
+    </div>
+    <div>
+      <h2>Alongside LuCI</h2>
+      <p class="sub">netui does not replace OpenWrt's own settings pages. Both edit the same configuration, so you can use either at any time.</p>
+      <ul>
+        <li><b>netui</b> covers the everyday jobs: WiFi, guests, devices, the internet connection, firewall rules, port forwards, VLANs, access points and mesh.</li>
+        <li><b>LuCI</b> stays installed and keeps working for everything else. netui links to the matching page.</li>
+        <li><b>Nothing is cached:</b> netui reads the settings from the router every time, so changes made in LuCI or over ssh show up straight away.</li>
+        <li><b>Easy to remove:</b> <code>apk del netui</code> or <code>opkg remove netui</code> takes it off again; LuCI and your settings are untouched.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <img class="mark" src="assets/logo.jpg" width="960" height="640" loading="lazy" alt="netui">
+    <h2>Give your router a friendlier face</h2>
+    <p class="sub" style="margin:0 auto">Free, open source and built on OpenWrt. Bug reports and ideas are welcome.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/msjonker/netui/releases/latest">Download <span class="ver">v0.2.0</span></a>
+      <a class="btn btn-ghost" href="https://github.com/msjonker/netui/blob/main/docs/user-guide.md">Read the user guide</a>
+      <a class="btn btn-ghost" href="https://github.com/msjonker/netui/issues">Report an issue</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <p><b style="color:var(--ink)">netui</b> is released under the MIT license.</p>
+      <p>netui is an independent open-source project. It is not affiliated with, endorsed by or sponsored by any router or network equipment maker. OpenWrt and all other product names are trademarks of their respective owners and are used only to describe compatibility.</p>
+    </div>
+    <ul>
+      <li><a href="https://github.com/msjonker/netui">Source</a></li>
+      <li><a href="https://github.com/msjonker/netui/releases">Releases</a></li>
+      <li><a href="https://github.com/msjonker/netui/blob/main/docs/user-guide.md">User guide</a></li>
+      <li><a href="https://openwrt.org/">OpenWrt</a></li>
+    </ul>
+  </div>
+</footer>
+
+<dialog id="zoom"><img alt=""></dialog>
+
+<script>
+  // Show the latest release in the download buttons and install commands.
+  fetch('https://api.github.com/repos/msjonker/netui/releases/latest')
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(rel => {
+      const v = String(rel.tag_name || '').replace(/^v/, '');
+      if (!/^\d+(\.\d+)*$/.test(v)) return;
+      document.querySelectorAll('.ver').forEach(e => { e.textContent = 'v' + v; });
+      document.querySelectorAll('pre .v').forEach(e => { e.textContent = v; });
+    })
+    .catch(() => {});
+
+  document.querySelectorAll('.copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.parentElement.nextElementSibling;
+      const text = [...pre.childNodes].filter(n => !(n.classList && n.classList.contains('p')))
+        .map(n => n.textContent).join('').split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+      navigator.clipboard.writeText(text + '\n').then(() => {
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+      });
+    });
+  });
+
+  const zoom = document.getElementById('zoom');
+  document.querySelectorAll('.gal img, .hero .shot').forEach(img => {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', () => {
+      zoom.querySelector('img').src = img.src;
+      zoom.querySelector('img').alt = img.alt;
+      zoom.showModal();
+    });
+  });
+  zoom.addEventListener('click', () => zoom.close());
+</script>
+</body>
+</html>
