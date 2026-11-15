@@ -1,0 +1,207 @@
+// netui.packages: install and remove the optional packages behind netui's
+// features ("add-ons"), from a fixed list. Nothing outside the list can be
+// installed through this.
+//
+//   status                which add-ons are installed, free space, and the
+//                         current or last job (log tail, exit code).
+//   install {addon}       refresh the package lists, check there is room,
+//                         install, then the add-on's own follow-up.
+//   remove {addon}        uninstall (not the mesh WiFi package: that would
+//                         leave WiFi without hostapd's full build).
+//
+// Installs take up to a few minutes and rpcd runs ucode in-process, so they
+// run as a detached job in /tmp/netui-packages. Packages come from the
+// router's configured feeds with their usual signature checks (apk on 25.x,
+// opkg on 24.10).
+//
+// Nothing switches on by surprise: openNDS gets a disabled config before it
+// is installed (it would otherwise put a sign-in page on the LAN), and
+// https-dns-proxy, which starts on install and takes over DNS, is stopped and
+// disabled until switched on in netui. Packages that add rpcd objects (UPnP,
+// Dynamic DNS, WireGuard) are followed by an rpcd reload, which keeps sessions.
+
+'use strict';
+
+import { readfile, writefile, mkdir, access, unlink, popen, open } from 'fs';
+
+const DIR = '/tmp/netui-packages';
+const LOG_TAIL = 4096;
+
+const FULL_WPAD = ['wpad', 'wpad-mbedtls', 'wpad-openssl', 'wpad-wolfssl'];
+const BASIC_WPAD = ['wpad-basic', 'wpad-basic-mbedtls', 'wpad-basic-openssl', 'wpad-basic-wolfssl', 'wpad-mini'];
+
+// addon: packages to install; `check` overrides which packages mean
+// "installed" (any of them); `after` is a shell snippet run once installed.
+const ADDONS = {
+	adblock: { packages: ['adblock-fast'] },
+	portal: { packages: ['opennds'], before: 'portal-off', after: 'rm -f /etc/config/opennds-opkg /etc/config/opennds.apk-new' },
+	multiwan: { packages: ['mwan3'] },
+	usage: { packages: ['nlbwmon'] },
+	sqm: { packages: ['sqm-scripts'] },
+	upnp: { packages: ['luci-app-upnp'], after: '/etc/init.d/rpcd reload' },
+	ddns: { packages: ['luci-app-ddns'], after: '/etc/init.d/rpcd reload' },
+	wireguard: { packages: ['luci-proto-wireguard', 'wireguard-tools', 'kmod-wireguard'], after: '/etc/init.d/rpcd reload' },
+	schedule: { packages: ['wifischedule'] },
+	steering: { packages: ['usteer'] },
+	speedtest: { packages: ['librespeed-cli'], small: ['speedtestcpp'], check: ['librespeed-cli', 'speedtestcpp'] },
+	firmware: { packages: ['owut'] },
+	wol: { packages: ['etherwake'] },
+	doh: { packages: ['https-dns-proxy'], after: '/etc/init.d/https-dns-proxy stop; /etc/init.d/https-dns-proxy disable' },
+	tailscale: { packages: ['tailscale'] },
+	// Removing the basic build stops the wpad service and installing the full one
+	// does not start it again: restart it, then bring the radios back.
+	mesh: { packages: ['wpad-mbedtls'], check: FULL_WPAD, replaces: BASIC_WPAD, after: '/etc/init.d/wpad restart; sleep 2; wifi', keep: true },
+};
+
+// librespeed-cli is 8 MB; below this much free space take speedtestcpp.
+const SMALL_BELOW_KIB = 30 * 1024;
+
+function sh(cmd) {
+	const p = popen(cmd);
+	if (!p)
+		return '';
+	const out = p.read('all');
+	p.close();
+	return trim(out ?? '');
+}
+
+function manager() {
+	return access('/usr/bin/apk') || access('/sbin/apk') ? 'apk' : access('/bin/opkg') ? 'opkg' : null;
+}
+
+function installed(p) {
+	return !!(access(`/lib/apk/packages/${p}.list`) || access(`/usr/lib/opkg/info/${p}.control`));
+}
+
+function free_kib() {
+	const out = sh("df -k /overlay 2>/dev/null | awk 'NR==2{print $4}'") || sh("df -k / | awk 'NR==2{print $4}'");
+	return +out || null;
+}
+
+function tail(path) {
+	const f = open(path);
+	if (!f)
+		return '';
+	f.seek(0, 2);
+	const size = f.tell();
+	f.seek(size > LOG_TAIL ? size - LOG_TAIL : 0);
+	const out = f.read('all');
+	f.close();
+	return out;
+}
+
+function job() {
+	const raw = readfile(`${DIR}/job.json`);
+	try {
+		return raw ? json(raw) : null;
+	}
+	catch (e) {
+		return null;
+	}
+}
+
+function running() {
+	const pid = trim(readfile(`${DIR}/pid`) ?? '');
+	return !access(`${DIR}/exit`) && length(pid) > 0 && !!access(`/proc/${pid}`);
+}
+
+function quote_all(list) {
+	return join(' ', map(list, (p) => `'${p}'`));
+}
+
+// The job script. Each step prints a line for the UI; `set -e` is avoided so
+// the exit code of the failing step reaches the exit file.
+function script(mgr, action, addon, a, pkgs) {
+	let s = `#!/bin/sh\ncd ${DIR} || exit 1\necho $$ > pid\nrun() {\n`;
+	if (action == 'install') {
+		s += `echo "Refreshing the package lists"\n`;
+		s += mgr == 'apk' ? `apk update >/dev/null || return 1\n` : `opkg update >/dev/null || return 1\n`;
+		if (mgr == 'apk') {
+			// Room check from apk's own projection; opkg checks space itself.
+			const want = join(' ', [...map(pkgs, (p) => `'${p}'`), ...map(filter(a.replaces ?? [], installed), (p) => `'!${p}'`)]);
+			s += `mib() { sed -n 's/^OK: \\([0-9.]*\\) MiB.*/\\1/p'; }\n`;
+			s += `b=$(apk add --simulate 2>/dev/null | mib); n=$(apk add --simulate ${want} 2>/dev/null | mib)\n`;
+			s += `need=$(awk "BEGIN{d=($n-$b)*1024+1024; printf \\"%d\\", d<0?0:d}")\n`;
+			s += `have=$(df -k /overlay 2>/dev/null | awk 'NR==2{print $4}'); [ -n "$have" ] || have=$(df -k / | awk 'NR==2{print $4}')\n`;
+			s += `if [ "$need" -gt "$have" ]; then echo "Not enough space: needs about $((need / 1024)) MB, $((have / 1024)) MB free."; return 3; fi\n`;
+		}
+		if (a.before == 'portal-off')
+			s += `[ -s /etc/config/opennds ] || printf "config opennds 'setup'\\n\\toption enabled '0'\\n" > /etc/config/opennds\n`;
+		s += `echo "Installing ${join(', ', pkgs)}"\n`;
+		if (mgr == 'apk') {
+			const swap = join(' ', map(filter(a.replaces ?? [], installed), (p) => `'!${p}'`));
+			s += `apk add ${quote_all(pkgs)} ${swap} || return 1\n`;
+		}
+		else {
+			const old = filter(a.replaces ?? [], installed);
+			if (length(old))
+				s += `opkg remove ${quote_all(old)} || return 1\n`;
+			s += `opkg install ${quote_all(pkgs)} || return 1\n`;
+		}
+		if (a.after)
+			s += `echo "Finishing"\n${a.after}\n`;
+	}
+	else {
+		s += `echo "Removing ${join(', ', pkgs)}"\n`;
+		s += mgr == 'apk' ? `apk del ${quote_all(pkgs)} || return 1\n` : `opkg remove --autoremove ${quote_all(pkgs)} || return 1\n`;
+		if (a.after && match(a.after, /rpcd reload/))
+			s += `/etc/init.d/rpcd reload\n`;
+	}
+	s += `echo "Done"\n}\nrun > log 2>&1\necho $? > exit\n`;
+	return s;
+}
+
+function start(action, addon) {
+	const a = ADDONS[addon];
+	if (!a)
+		return { error: 'unknown add-on' };
+	const mgr = manager();
+	if (!mgr)
+		return { error: 'no package manager on this router' };
+	if (running())
+		return { error: 'another add-on is being installed or removed' };
+	if (action == 'remove' && a.keep)
+		return { error: 'this add-on cannot be removed from netui' };
+	let pkgs = a.packages;
+	if (action == 'install' && a.small && (free_kib() ?? 0) < SMALL_BELOW_KIB)
+		pkgs = a.small;
+	if (action == 'remove')
+		pkgs = filter([...(a.check ?? []), ...a.packages], (p) => installed(p) && !(a.replaces && index(a.replaces, p) >= 0));
+	mkdir(DIR, 0700);
+	for (let f in ['exit', 'pid', 'log'])
+		unlink(`${DIR}/${f}`);
+	writefile(`${DIR}/job.json`, sprintf('%J\n', { action, addon, packages: pkgs, started: time() }));
+	writefile(`${DIR}/job.sh`, script(mgr, action, addon, a, pkgs));
+	system(`/bin/sh ${DIR}/job.sh </dev/null >/dev/null 2>&1 &`);
+	return { result: true };
+}
+
+const methods = {
+	status: {
+		call: function() {
+			const addons = {};
+			for (let name, a in ADDONS)
+				addons[name] = { installed: length(filter(a.check ?? a.packages, installed)) > 0 && (a.check ? true : length(filter(a.packages, installed)) == length(a.packages)) };
+			const j = job();
+			const exit = trim(readfile(`${DIR}/exit`) ?? '');
+			return {
+				manager: manager(),
+				free: free_kib(),
+				addons,
+				job: j ? { ...j, running: running(), exit: length(exit) ? +exit : null, log: tail(`${DIR}/log`) } : null,
+			};
+		}
+	},
+
+	install: {
+		args: { addon: 'addon' },
+		call: (request) => start('install', request.args.addon),
+	},
+
+	remove: {
+		args: { addon: 'addon' },
+		call: (request) => start('remove', request.args.addon),
+	},
+};
+
+return { 'netui.packages': methods };

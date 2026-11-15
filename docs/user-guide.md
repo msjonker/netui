@@ -184,10 +184,10 @@ try again more carefully, or ask for help.
   without one.
 - **Speed test.** Click **Run speed test** to measure your internet speed from
   the router itself, without WiFi getting in the way. It takes about 30
-  seconds. (Needs the `librespeed-cli` or `speedtestcpp` package.)
+  seconds. (An add-on.)
 - **Smart Queues** keep video calls and games smooth while someone downloads
   something big. Enter your connection's real speeds (run a speed test first)
-  and turn it on. (Needs `sqm-scripts`.)
+  and turn it on. (An add-on.)
 - **A second internet connection (Multi-WAN).** If you have a second
   connection (say a 4G/5G router as a backup), plug it into a free port on
   your router and click **Add WAN2** under **Multi-WAN**. Choose:
@@ -196,11 +196,15 @@ try again more carefully, or ask for help.
     recovers.
   - **Load balance**: both connections are used at once.
 
-  (Needs `mwan3`.)
+  (An add-on.)
 
-Packages like `sqm-scripts` are add-ons. To install one, sign in to the
-router (`ssh root@192.168.1.1`) and type `apk add sqm-scripts` (or
-`opkg update && opkg install sqm-scripts` on 24.10). Reload netui afterwards.
+**Add-ons.** Some features need an extra piece of software on the router.
+Where one is missing, its card says what the feature does and shows an
+**Install** button: click it, check the size, and click **Install** again.
+The router downloads it (it needs to be online) and the feature appears when
+it is done, usually within a minute. **Settings → System → Add-ons** lists
+every add-on, installed or not, and can remove one again; its settings stay
+on the router. Nothing switches on by itself just because it was installed.
 
 ## 6. WiFi
 
@@ -227,8 +231,8 @@ password, and choose which network its devices join (normally *LAN*).
 works well; if your WiFi is slow, **Insights → WiFi Environment** suggests a
 less crowded channel.
 
-**WiFi schedule** turns WiFi off at night, for example. (Needs
-`wifischedule`.)
+**WiFi schedule** turns WiFi off at night, for example. (An
+add-on.)
 
 **Client steering** (needs `usteer`) moves devices to the best band and the
 nearest access point.
@@ -249,7 +253,7 @@ printers and cameras. That takes two steps, and an optional third.
    **Show guests a sign-in page**, choose the `guest` network, give the page a
    name, and choose how long a sign-in lasts and how fast each guest may go.
    The **Guests** list shows who is signed in; you can let someone in or sign
-   them out. (Needs `opennds`.)
+   them out. (An add-on.)
 
 > **Do not put a sign-in page on your main (LAN) network.** Everyone,
 > including you, would have to sign in.
@@ -269,7 +273,7 @@ Click a device to:
   month, with usage history turned on), and its open connections.
 - **Reconnect** it (WiFi devices), which helps when it is stuck.
 - **Wake** it: switch on a sleeping or powered-off computer that supports
-  *Wake-on-LAN*, usually over a cable. (Needs `etherwake`.)
+  *Wake-on-LAN*, usually over a cable. (An add-on.)
 - **Block** it: it can no longer reach the internet or your network until you
   unblock it (under **Firewall & Security → Blocked Devices**).
 
@@ -282,7 +286,7 @@ known bad sites for every device in the house, including smart TVs and
 phones, without installing anything on them. Turn on **Block ads and
 trackers**, keep the suggested list, and apply; the lists download in about a
 minute. If a website stops working, put its name under **Never block**.
-(Needs `adblock-fast`.)
+(An add-on.)
 
 ![Ad blocking](screenshots/ad-blocking.png)
 
@@ -303,7 +307,7 @@ use it only for something that needs it, and give it a fixed address first.
 **DNS over HTTPS** (**Settings → Routing & DNS → DNS**) encrypts the router's
 name lookups ("where is example.com?"), so your internet provider can no
 longer see or change them. Turn on **Encrypt DNS** and pick a provider; some
-also block malware or adult sites. (Needs `https-dns-proxy`.)
+also block malware or adult sites. (An add-on.)
 
 **Policies** and **Traffic Rules** decide which networks may talk to which.
 The defaults are safe: leave them unless you know why you want a change.
@@ -332,8 +336,9 @@ connect to the main router over WiFi. Turn on **Settings → WiFi → Wireless
 mesh**. Then you can move the access point somewhere without a cable: it
 finds the main router through the air. With the cable plugged in it uses the
 cable, and falls back to the mesh if the cable is pulled. Mesh needs the full
-version of the WiFi software on every router: `apk add wpad-mbedtls
-'!wpad-basic-mbedtls'`.
+version of the WiFi software on every router: the mesh card offers to install
+it on the main router, and each access point's panel in **Devices** has it
+under **Add-ons**. WiFi restarts once while it installs.
 
 **Where to place it:** halfway between the main router and the area with poor
 WiFi, not in the dead zone itself. In **Devices**, the access point's signal
@@ -351,11 +356,11 @@ reach a home server, or to browse safely on hotel WiFi.
    the **WireGuard** app on the phone. For a laptop, download the
    configuration file and import it in the WireGuard app.
 
-(Needs `luci-proto-wireguard`.)
+(An add-on: **WireGuard VPN**. Restart the router once after installing it.)
 
 **Tailscale** is the easier way in when the VPN server cannot work: if your
 provider uses carrier-grade NAT (netui warns you), or you cannot or do not
-want to open a port. Install the `tailscale` package (about 26 MB), then
+want to open a port. Install the Tailscale add-on on its card (about 26 MB), then
 **Settings → VPN → Tailscale → Connect** and sign in with a Tailscale
 account (free for personal use). Install the Tailscale app on your phone and
 laptop with the same account. With **Share my home network** on, they reach
@@ -370,7 +375,7 @@ configuration file from your provider (choose a server location there) and
 load it. Choose **All devices** or only **Chosen devices** (give them fixed
 addresses first), and turn on **Block the internet if the VPN is down** if
 nothing should ever go out without it. After installing WireGuard for the
-first time, restart the router once. (Needs `luci-proto-wireguard`.)
+first time, restart the router once.
 
 ## 12. Keeping an eye on things
 
@@ -383,7 +388,7 @@ first time, restart the router once. (Needs `luci-proto-wireguard`.)
 - **Insights → Traffic:** what is using your connection right now.
 - **Insights → Usage history:** how much each device and each application
   used this month and in earlier months. Turn on **Keep history across
-  restarts** so a restart does not erase it. (Needs `nlbwmon`.)
+  restarts** so a restart does not erase it. (An add-on.)
 
 ![Usage history](screenshots/usage.png)
 
@@ -396,7 +401,7 @@ first time, restart the router once. (Needs `luci-proto-wireguard`.)
 If there is one, click **Update**: the router has an image built with your
 add-ons, installs it and restarts. Allow about five minutes; your settings and
 netui are kept. Access points update the same way from their panel in
-**Devices**. (Needs `owut`, which standard OpenWrt 25.12 includes.)
+**Devices**. (Standard OpenWrt 25.12 includes this; otherwise it is an add-on.)
 
 **Installing a firmware file yourself.** If the router has no internet, or
 you need a particular version, download the *sysupgrade* file for your model

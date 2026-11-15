@@ -67,9 +67,10 @@ describe('guest portal', () => {
 });
 
 describe('without opennds', () => {
-  it('says what to install', async () => {
+  it('offers the add-on', async () => {
     resetRouter();
     const c = await card();
-    expect(c.textContent).toMatch(/Install opennds/);
+    expect(c.textContent).toMatch(/sign-in page before they get internet/);
+    expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });

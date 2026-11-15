@@ -2,6 +2,7 @@ import { useState } from 'preact/hooks';
 import type { FirmwareControl } from '../api/useFirmware';
 import { PHASE_LABEL } from '../model/firmware';
 import { Modal } from './overlay';
+import { AddonMissing } from './InstallAddon';
 import { IconExternal } from './icons';
 import { Banner, Button, Spinner } from './ui';
 
@@ -14,7 +15,20 @@ const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
  * in the copy ("router", "access point"). `fullscreen` covers the page while
  * the device restarts, for the gateway the UI itself runs on.
  */
-export function FirmwarePanel({ fw, what, fullscreen }: { fw: FirmwareControl; what: string; fullscreen?: boolean }) {
+export function FirmwarePanel({
+  fw,
+  what,
+  fullscreen,
+  mac,
+  where,
+}: {
+  fw: FirmwareControl;
+  what: string;
+  fullscreen?: boolean;
+  /** An access point (its MAC and name), to install the update tool there. */
+  mac?: string;
+  where?: string;
+}) {
   const [confirm, setConfirm] = useState<string | null>(null);
   const v = fw.view;
 
@@ -24,9 +38,9 @@ export function FirmwarePanel({ fw, what, fullscreen }: { fw: FirmwareControl; w
   if (!v) return <Spinner />;
   if (!v.available) {
     return (
-      <p class="text-muted">
-        Install the <span class="font-mono">owut</span> package on this {what} to update its firmware from here.
-      </p>
+      <AddonMissing addon="firmware" mac={mac} where={where}>
+        Update this {what}'s firmware from here, keeping its settings and add-ons.
+      </AddonMissing>
     );
   }
 

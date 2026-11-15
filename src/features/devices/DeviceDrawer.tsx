@@ -16,6 +16,9 @@ import { RadioSettings } from './RadioSettings';
 import { useFirmware } from '../../api/useFirmware';
 import { waitForAccessPoint } from '../../api/firmware';
 import { FirmwarePanel } from '../../components/FirmwarePanel';
+import { lazy, Suspense } from 'preact/compat';
+
+const AddonsList = lazy(() => import('../../components/AddonsList').then((m) => ({ default: m.AddonsList })));
 
 function message(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -126,7 +129,13 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
         </FormSection>
 
         <FormSection title="Firmware">
-          <FirmwarePanel fw={firmware} what="access point" />
+          <FirmwarePanel fw={firmware} what="access point" mac={device.mac} where={device.name} />
+        </FormSection>
+
+        <FormSection title="Add-ons">
+          <Suspense fallback={<Spinner />}>
+            <AddonsList mac={device.mac} where={device.name} only={['mesh', 'steering', 'firmware']} />
+          </Suspense>
         </FormSection>
 
         <FormSection title="Radios">

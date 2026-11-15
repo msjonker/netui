@@ -3,6 +3,8 @@ import { useMemo, useState } from 'preact/hooks';
 import { useLocation, useParams } from 'wouter-preact';
 import { reconnectClient, stationRate, useInterfaces, useUci, wakeClient } from '../../api/queries';
 import { useUsage } from '../../api/usage';
+import { AddonMissingError } from '../../api/packages';
+import { AddonMissing } from '../../components/InstallAddon';
 import { normalizeUsage } from '../../model/usage';
 import { useApply } from '../../api/useApply';
 import {
@@ -237,7 +239,7 @@ function Reconnect({ c }: { c: Client }) {
 /** Wake-on-LAN, for a device that is not on WiFi right now (most wake only over a cable). */
 function Wake({ c }: { c: Client }) {
   const ifaces = useInterfaces(false);
-  const [state, setState] = useState<{ busy?: boolean; done?: boolean; error?: string }>({});
+  const [state, setState] = useState<{ busy?: boolean; done?: boolean; error?: string; missing?: boolean }>({});
   const live = ifaces.data?.interface.find((i) => i.interface === (c.network ?? 'lan'));
   const device = live?.l3_device ?? live?.device;
   const run = async () => {
@@ -246,9 +248,16 @@ function Wake({ c }: { c: Client }) {
       await wakeClient(device!, c.mac);
       setState({ done: true });
     } catch (e) {
-      setState({ error: (e as Error).message });
+      setState({ error: (e as Error).message, missing: e instanceof AddonMissingError });
     }
   };
+  if (state.missing) {
+    return (
+      <div class="py-2.5">
+        <AddonMissing addon="wol">{state.error}</AddonMissing>
+      </div>
+    );
+  }
   return (
     <div class="flex items-center justify-between gap-4 py-2.5">
       <p class={state.error ? 'text-bad' : 'text-muted'} role={state.error ? 'alert' : undefined}>

@@ -3,6 +3,7 @@
 /usr/share/rpcd/acl.d/netui-agent.json
 /usr/share/rpcd/ucode/netui-agent
 /usr/share/rpcd/ucode/netui-firmware
+/usr/share/rpcd/ucode/netui-packages
 /usr/sbin/netui-agent
 /usr/libexec/netui-agent/
 /etc/netui-agent/

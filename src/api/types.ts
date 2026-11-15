@@ -714,3 +714,43 @@ export interface TailscaleStatus {
   error?: string | null;
   loggingIn?: boolean;
 }
+
+// --- netui.packages ---------------------------------------------------------
+// Optional packages ("add-ons") netui installs from a fixed list
+// (bench-v2/netui.packages.status.*).
+
+export type AddonKey =
+  | 'adblock'
+  | 'portal'
+  | 'multiwan'
+  | 'usage'
+  | 'sqm'
+  | 'upnp'
+  | 'ddns'
+  | 'wireguard'
+  | 'schedule'
+  | 'steering'
+  | 'speedtest'
+  | 'firmware'
+  | 'wol'
+  | 'doh'
+  | 'tailscale'
+  | 'mesh';
+
+export interface PackagesJob {
+  action: 'install' | 'remove';
+  addon: AddonKey;
+  packages: string[];
+  started: number;
+  running: boolean;
+  exit: number | null;
+  log: string;
+}
+
+export interface PackagesStatus {
+  manager: 'apk' | 'opkg' | null;
+  /** Free storage in KiB. */
+  free: number | null;
+  addons: Partial<Record<AddonKey, { installed: boolean }>>;
+  job: PackagesJob | null;
+}

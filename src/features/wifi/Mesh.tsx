@@ -5,6 +5,8 @@ import { useApply } from '../../api/useApply';
 import type { ManagedDevice } from '../../api/types';
 import { meshOps, readMesh, uplinkLabel, uplinkOf } from '../../model/mesh';
 import { Banner, Card, Dot, ToggleRow } from '../../components/ui';
+import { AddonMissing } from '../../components/InstallAddon';
+import { usePackages } from '../../api/packages';
 
 /** Spanning tree can take most of a minute to settle after the bridge changes. */
 const MESH_APPLY_TIMEOUT_S = 90;
@@ -43,6 +45,8 @@ export function MeshCard() {
   );
   // The live 5 GHz channel replaces "auto" when the mesh pins it.
   const wifi = useWifiState();
+  // Encrypted mesh needs hostapd's full build; stock images ship the basic one.
+  const basicWifi = usePackages().data?.addons.mesh?.installed === false;
   const liveChannel = wifi.devices.find((d) => (d.info?.frequency ?? 0) > 5000 && d.info?.mode !== 'Mesh Point')?.info?.channel;
 
   if (!mesh || !wireless.data || !network.data) return null;
@@ -66,6 +70,14 @@ export function MeshCard() {
         disabled={apply.busy}
         onChange={toggle}
       />
+      {basicWifi && (
+        <div class="pb-3">
+          <AddonMissing addon="mesh">
+            Mesh needs the full WiFi package; this router has the basic one. Access points need it too: install it from
+            each one's panel on the Devices page.
+          </AddonMissing>
+        </div>
+      )}
       {mesh.enabled && (
         <div class="space-y-3 pb-2">
           <p class="text-xs text-muted">

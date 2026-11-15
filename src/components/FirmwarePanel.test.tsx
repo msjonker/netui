@@ -71,7 +71,9 @@ describe('router firmware', () => {
   it('points to owut when it is not installed', async () => {
     seedFirmware(router, '', { available: false, installed: '25.12.6', job: null, branches: null });
     renderApp('#/settings/system');
-    expect(await screen.findByText(/Install the/)).toBeTruthy();
+    expect(await screen.findByText(/Update this router's firmware from here/)).toBeTruthy();
+    const row = screen.getByText(/Update this router's firmware/).parentElement!;
+    expect(within(row).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });
 

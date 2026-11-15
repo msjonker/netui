@@ -19,6 +19,7 @@ import { useDraft } from '../../lib/useDraft';
 import { Drawer, Modal } from '../../components/overlay';
 import { IconExternal, IconGlobe } from '../../components/icons';
 import { Banner, Button, Card, Detail, Dot, Field, FormSection, Pill } from '../../components/ui';
+import { AddonMissing } from '../../components/InstallAddon';
 
 const PLAN = { returnTo: '/settings/internet', disruptive: true };
 
@@ -162,9 +163,7 @@ export function MultiWanCard({ network, firewall }: { network: UciConfig; firewa
   if (!mwan3.data || !firewall) {
     return (
       <Card title="Multi-WAN">
-        <p class="text-muted">
-          Install <span class="font-mono">mwan3</span> to add a second internet connection for failover or load balancing.
-        </p>
+        <AddonMissing addon="multiwan">Add a second internet connection for failover or load balancing.</AddonMissing>
       </Card>
     );
   }

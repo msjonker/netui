@@ -33,6 +33,7 @@ const ALLOWED = {
 	'uci': ['get', 'state', 'changes', 'set', 'add', 'delete', 'rename', 'order', 'apply', 'confirm', 'rollback', 'revert'],
 	'netui.agent': ['info'],
 	'netui.firmware': ['status', 'check', 'upgrade'],
+	'netui.packages': ['status', 'install', 'remove'],
 };
 
 function shellquote(s) {

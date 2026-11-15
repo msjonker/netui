@@ -1,0 +1,65 @@
+{
+	"manager": "apk",
+	"free": 52536,
+	"addons": {
+		"adblock": {
+			"installed": false
+		},
+		"portal": {
+			"installed": false
+		},
+		"multiwan": {
+			"installed": false
+		},
+		"usage": {
+			"installed": false
+		},
+		"sqm": {
+			"installed": false
+		},
+		"upnp": {
+			"installed": false
+		},
+		"ddns": {
+			"installed": false
+		},
+		"wireguard": {
+			"installed": true
+		},
+		"schedule": {
+			"installed": false
+		},
+		"steering": {
+			"installed": false
+		},
+		"speedtest": {
+			"installed": false
+		},
+		"firmware": {
+			"installed": true
+		},
+		"wol": {
+			"installed": true
+		},
+		"doh": {
+			"installed": false
+		},
+		"tailscale": {
+			"installed": true
+		},
+		"mesh": {
+			"installed": false
+		}
+	},
+	"job": {
+		"action": "install",
+		"addon": "wol",
+		"packages": [
+			"etherwake"
+		],
+		"started": 1794754526,
+		"running": false,
+		"exit": 0,
+		"log": "Refreshing the package lists\nInstalling etherwake\n(1/1) Installing etherwake (1.09-r5)\n  Executing etherwake-1.09-r5.post-install\nOK: 50.6 MiB in 195 packages\nDone\n"
+	}
+}

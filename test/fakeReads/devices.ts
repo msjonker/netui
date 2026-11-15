@@ -4,6 +4,7 @@
 
 import type { FakeReadHandler, FakeRouter } from '../fakeRouter';
 import { firmwareCall } from './firmware';
+import { packagesCall } from './packages';
 import type { AssocStation, ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList } from '../../src/api/types';
 import listJson from '../fixtures/ubus/bench-v2/netui.devices.list.json';
 import discoverJson from '../fixtures/ubus/bench-v2/netui.devices.discover.json';
@@ -118,6 +119,7 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       const key = [args.object, args.method, a.device].filter(Boolean).join('.');
       if (key === 'system.reboot') return { status: 0 };
       if (args.object === 'netui.firmware') return { status: 0, data: firmwareCall(router, known.mac, args.method as string, a) };
+      if (args.object === 'netui.packages') return { status: 0, data: packagesCall(router, known.mac, args.method as string, a) };
       if (key === 'iwinfo.devices' && s.mesh) return structuredClone(iwDevicesMesh);
       if (key === 'uci.get' && a.config === 'wireless') return structuredClone(apWireless);
       if (AP_WRITES.has(key)) return { status: 0 };

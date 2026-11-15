@@ -40,7 +40,8 @@ describe('speed test', () => {
   it('says what to install when no speed test tool is there', async () => {
     seedSpeedTest(router, { available: false, tool: null, running: false, started: null, error: null, history: [] });
     const c = await card();
-    expect(c.textContent).toMatch(/Install librespeed-cli/);
+    expect(c.textContent).toMatch(/Test the internet speed from the router/);
+    expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 
   it('shows why the last run failed', async () => {

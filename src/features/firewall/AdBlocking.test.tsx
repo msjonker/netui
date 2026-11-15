@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/preact';
+import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { resetRouter, router } from '../../../test/fakeRouter';
 import { renderApp } from '../../../test/renderApp';
 import { applyReviewed } from '../../../test/applyFlow';
@@ -11,8 +11,8 @@ vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRoute
 
 const adblock = () => structuredClone((recorded as UciGet).values);
 
-async function card() {
-  renderApp('#/settings/security');
+async function card(session?: { readOnly: boolean }) {
+  renderApp('#/settings/security', undefined, session);
   fireEvent.click(await screen.findByRole('tab', { name: 'Ad Blocking & Filtering' }));
   return (await screen.findByRole('heading', { name: 'Ad blocking' })).closest('section') as HTMLElement;
 }
@@ -48,9 +48,25 @@ describe('ad blocking', () => {
 });
 
 describe('without adblock-fast', () => {
-  it('says what to install', async () => {
+  it('installs it from the card, then shows the settings', async () => {
     resetRouter();
     const c = await card();
-    expect(c.textContent).toMatch(/Install adblock-fast/);
+    expect(c.textContent).toMatch(/Block ads and trackers for every device/);
+    fireEvent.click(within(c).getByRole('button', { name: 'Install' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Install Ad blocking?' });
+    await waitFor(() => expect(dialog.textContent).toMatch(/Needs about 1 MB of storage; 51 MB free/));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Install' }));
+    expect(await within(dialog).findByText('Ad blocking is installed.', {}, { timeout: 8000 })).toBeTruthy();
+    expect(router.calls).toContainEqual(expect.objectContaining({ object: 'netui.packages', method: 'install', args: { addon: 'adblock' } }));
+    fireEvent.click(within(dialog).getAllByRole('button', { name: 'Close' }).at(-1)!);
+    const after = (await screen.findByRole('heading', { name: 'Ad blocking' })).closest('section') as HTMLElement;
+    expect(await within(after).findByRole('switch', { name: 'Block ads and trackers' })).toBeTruthy();
+  }, 12_000);
+
+  it('offers no install to a read-only user', async () => {
+    resetRouter();
+    const c = await card({ readOnly: true });
+    expect(c.textContent).toMatch(/Block ads and trackers for every device/);
+    expect(within(c).queryByRole('button', { name: 'Install' })).toBeNull();
   });
 });

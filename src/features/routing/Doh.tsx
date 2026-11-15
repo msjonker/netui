@@ -6,8 +6,8 @@ import { useApply } from '../../api/useApply';
 import { switchDoh } from '../../api/services';
 import { DOH_PROVIDERS, dohDraft, dohOps, dohSwitch, normalizeDoh, validateDoh, type DohDraft } from '../../model/doh';
 import { useDraft } from '../../lib/useDraft';
-import { IconExternal } from '../../components/icons';
 import { Banner, Button, Card, Dot, Field, Pill, Spinner, ToggleRow } from '../../components/ui';
+import { AddonMissing } from '../../components/InstallAddon';
 
 const PLAN = { returnTo: '/settings/routing' };
 
@@ -26,19 +26,7 @@ export function DohCard({ dhcp }: { dhcp: UciConfig }) {
   if (!doh || !draft || !cfg.data) {
     return (
       <Card title="DNS over HTTPS">
-        <p class="text-muted">
-          Encrypts the router’s DNS lookups so your internet provider cannot see or change them. Needs the{' '}
-          <span class="font-mono text-xs">https-dns-proxy</span> package:{' '}
-          <a
-            class="inline-flex items-center gap-1 text-accent hover:underline"
-            href="/cgi-bin/luci/admin/system/package-manager"
-            target="_blank"
-            rel="noreferrer"
-          >
-            install it in LuCI <IconExternal size={12} />
-          </a>
-          .
-        </p>
+        <AddonMissing addon="doh">Encrypts the router’s DNS lookups so your internet provider cannot see or change them.</AddonMissing>
       </Card>
     );
   }

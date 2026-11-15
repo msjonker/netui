@@ -1,0 +1,65 @@
+{
+	"manager": "apk",
+	"free": 1660,
+	"addons": {
+		"adblock": {
+			"installed": false
+		},
+		"portal": {
+			"installed": false
+		},
+		"multiwan": {
+			"installed": false
+		},
+		"usage": {
+			"installed": false
+		},
+		"sqm": {
+			"installed": false
+		},
+		"upnp": {
+			"installed": false
+		},
+		"ddns": {
+			"installed": false
+		},
+		"wireguard": {
+			"installed": true
+		},
+		"schedule": {
+			"installed": false
+		},
+		"steering": {
+			"installed": false
+		},
+		"speedtest": {
+			"installed": true
+		},
+		"firmware": {
+			"installed": true
+		},
+		"wol": {
+			"installed": true
+		},
+		"doh": {
+			"installed": false
+		},
+		"tailscale": {
+			"installed": true
+		},
+		"mesh": {
+			"installed": false
+		}
+	},
+	"job": {
+		"action": "install",
+		"addon": "speedtest",
+		"packages": [
+			"speedtestcpp"
+		],
+		"started": 1794754598,
+		"running": false,
+		"exit": 3,
+		"log": "Refreshing the package lists\nNot enough space: needs about 3 MB, 1 MB free.\n"
+	}
+}

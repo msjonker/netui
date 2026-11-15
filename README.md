@@ -160,8 +160,13 @@ are not copied yet (they need VLANs carried to the access point).
 
 ### Optional features
 
-These pages appear when the matching OpenWrt packages are installed
-(`apk add …` or `opkg install …`, then reload netui):
+These features need an extra OpenWrt package (an add-on). Each one's card has
+an **Install** button, and **Settings → System → Add-ons** lists them all with
+Install and Remove; an access point's panel in **Devices** has the ones that
+matter there (mesh, client steering, firmware updates). The router downloads
+the package from its configured OpenWrt feeds, so it needs to be online, and
+checks there is room first. `apk add …` or `opkg install …` over ssh works
+too.
 
 | Feature | Packages | Where |
 |---|---|---|
@@ -193,6 +198,11 @@ A few notes:
   length and speed limit, and lists who is signed in. openNDS's
   "dnsmasq-full" warning only matters for its walled garden, which netui does
   not use.
+- **Installing never switches anything on.** The guest portal and DNS over
+  HTTPS are installed switched off (both would otherwise change the network
+  at once); turn them on in netui. Mesh replaces the basic WiFi package with
+  the full one, which restarts WiFi once, and cannot be removed from netui.
+  Removing an add-on keeps its settings.
 - **WireGuard**: after installing it for the first time, restart the router
   (or the network) once; until then new WireGuard interfaces stay down.
 - **VPN service** sends all devices, or chosen ones, through a VPN provider
@@ -202,8 +212,7 @@ A few notes:
   open: sign in with a Tailscale account, then optionally share the home
   networks and offer the router as an exit node (approve both in the
   Tailscale admin console).
-- **DNS over HTTPS**: https-dns-proxy starts as soon as it is installed;
-  netui switches it on and off and picks the provider. LAN devices that use
+- **DNS over HTTPS**: netui switches https-dns-proxy on and off and picks the provider. LAN devices that use
   their own DNS server are redirected to the router while it is on.
 - **Usage history** keeps monthly usage per device and per application. By
   default nlbwmon keeps it in memory; the switch on the Usage history page

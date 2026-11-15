@@ -171,7 +171,7 @@ describe('Client Devices: deep links and WiFi actions', () => {
     expect(router.writes()).toHaveLength(0);
   });
 
-  it('wakes a wired device on its network bridge, and explains a missing etherwake', async () => {
+  it('wakes a wired device on its network bridge, and offers etherwake when it is missing', async () => {
     const drawer = await openClient('laptop');
     fireEvent.click(await within(drawer).findByRole('button', { name: 'Wake' }));
     await within(drawer).findByText(/Wake-up sent/);
@@ -182,8 +182,10 @@ describe('Client Devices: deep links and WiFi actions', () => {
     // Without the package rpcd answers NOT_FOUND (recorded on the DL-WRX36).
     router.overrides.push((c) => (c.object === 'file' ? new UbusError(UbusStatus.NOT_FOUND, 'file', 'exec') : undefined));
     fireEvent.click(within(drawer).getByRole('button', { name: 'Wake' }));
-    expect((await within(drawer).findByRole('alert')).textContent).toMatch(/apk add etherwake/);
+    expect(await within(drawer).findByText(/Wake-on-LAN needs a small add-on/)).toBeTruthy();
     expect(router.writes()).toHaveLength(0);
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Install' }));
+    expect(await screen.findByRole('dialog', { name: 'Install Wake-on-LAN?' })).toBeTruthy();
   });
 
   it('filters offline clients', async () => {

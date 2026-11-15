@@ -8,6 +8,7 @@ import { DdnsCard, SqmCard, UpnpCard } from './Services';
 import { WanDrawer, WanStatusCard } from './Wan';
 import { SpeedTestCard } from './SpeedTest';
 import { MultiWanCard } from './MultiWan';
+import { AddonMissing } from '../../components/InstallAddon';
 
 const LUCI = '/cgi-bin/luci/admin';
 
@@ -40,11 +41,14 @@ export function InternetPage() {
   const live6 = ifaces.data?.interface.find((i) => i.interface === wan?.v6?.section || i.interface === `${wan?.section}_6`);
   const port = wan ? devices.data?.[wan.port] : undefined;
   const l3 = wan ? wanL3Device(wan, ifaces.data) : undefined;
-  const missing = [
-    !sqm.data && !sqm.isPending && <LuciLink href="network/sqm">Smart Queues (SQM)</LuciLink>,
-    !upnpd.data && !upnpd.isPending && <LuciLink href="services/upnp">UPnP</LuciLink>,
-    !ddns.data && !ddns.isPending && <LuciLink href="services/ddns">Dynamic DNS</LuciLink>,
-  ].filter(Boolean);
+  // Optional features whose package is missing: offered for install below.
+  const missing = (
+    [
+      [!sqm.data && !sqm.isPending, 'sqm', 'Smart Queues keep calls and games smooth while the connection is busy.'],
+      [!upnpd.data && !upnpd.isPending, 'upnp', 'UPnP lets game consoles and apps open the ports they need.'],
+      [!ddns.data && !ddns.isPending, 'ddns', 'Dynamic DNS gives your home a name that follows its changing address.'],
+    ] as const
+  ).filter(([gone]) => gone);
 
   return (
     <Page title="Internet" subtitle="WAN connections, speed test, Smart Queues, UPnP and Dynamic DNS">
@@ -69,20 +73,16 @@ export function InternetPage() {
           {upnpd.data && <UpnpCard cfg={upnpd.data} />}
           {ddns.data && wan && <DdnsCard cfg={ddns.data} wan={wan.section} wan6={wan.v6?.section} />}
           <Card title="Advanced">
-            <p class="text-muted">
-              More WAN interfaces and tunnels are managed in LuCI: <LuciLink href="network/network">Interfaces</LuciLink>
-              {missing.length > 0 && (
-                <>
-                  . Not installed here (install the package, then configure it in LuCI):{' '}
-                  {missing.map((m, i) => (
-                    <span key={i}>
-                      {i > 0 && ', '}
-                      {m}
-                    </span>
-                  ))}
-                </>
-              )}
-            </p>
+            <div class="space-y-3">
+              {missing.map(([, addon, text]) => (
+                <AddonMissing key={addon} addon={addon}>
+                  {text}
+                </AddonMissing>
+              ))}
+              <p class="text-muted">
+                More WAN interfaces and tunnels are managed in LuCI: <LuciLink href="network/network">Interfaces</LuciLink>
+              </p>
+            </div>
           </Card>
         </div>
       )}

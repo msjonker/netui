@@ -22,6 +22,7 @@ import {
 import { IconExternal } from '../../components/icons';
 import { Banner, Button, Card, Detail, Dot, Pill, Spinner, Stat, ToggleRow } from '../../components/ui';
 import { PLAN } from './ServerForms';
+import { AddonMissing } from '../../components/InstallAddon';
 
 const ADMIN = 'https://login.tailscale.com/admin/machines';
 
@@ -143,12 +144,10 @@ export function TailscaleCard({
       }
     >
       {ts.state === 'not-installed' ? (
-        <p class="text-muted">
+        <AddonMissing addon="tailscale">
           Reach your home network from anywhere, even when your internet provider shares its public address
-          (carrier-grade NAT), with no port to open. Needs the <span class="font-mono text-xs">tailscale</span> package
-          (about 26 MB of storage) and a Tailscale account.{' '}
-          <Ext href="/cgi-bin/luci/admin/system/package-manager">Install it in LuCI</Ext>
-        </p>
+          (carrier-grade NAT), with no port to open. Needs about 26 MB of storage and a Tailscale account.
+        </AddonMissing>
       ) : ts.state === 'needs-login' || ts.state === 'daemon-down' ? (
         <div class="space-y-3">
           <p class="text-muted">

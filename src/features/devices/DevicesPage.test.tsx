@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { resetRouter, router } from '../../../test/fakeRouter';
 import { recorded, seedDevices } from '../../../test/fakeReads/devices';
+import { seedPackages } from '../../../test/fakeReads/packages';
 import { renderApp } from '../../../test/renderApp';
 import { applyReviewed } from '../../../test/applyFlow';
 import { pick } from '../../../test/dom';
@@ -146,6 +147,17 @@ describe('wireless mesh', () => {
     expect(router.configs.wireless!.netui_mesh).toMatchObject({ mode: 'mesh', device: 'radio0', encryption: 'sae', network: 'lan' });
     const bridge = Object.values(router.configs.network!).find((x) => x.name === 'br-lan');
     expect(bridge).toMatchObject({ stp: '1', forward_delay: '4' });
+  });
+
+  it('offers the full WiFi package when the router has the basic one', async () => {
+    resetRouter({ wireless: wrxFixtures('plain').uci.wireless() });
+    seedPackages(router, '', { mesh: false });
+    renderApp('#/settings/wifi');
+    const card = (await screen.findByText('Wireless mesh')).closest('section, div.rounded-lg') as HTMLElement;
+    expect((await within(card).findByText(/Mesh needs the full WiFi package/)).textContent).toMatch(/basic one/);
+    fireEvent.click(within(card).getByRole('button', { name: 'Install' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Install Full WiFi package (mesh)?' });
+    expect(dialog.textContent).toMatch(/WiFi restarts once/);
   });
 });
 

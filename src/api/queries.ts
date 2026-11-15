@@ -3,6 +3,7 @@ import { QueryClient, useQueries, useQuery, type UseQueryResult } from '@tanstac
 import { read, SessionExpiredError, TransportError, UbusError, UbusStatus } from './ubus';
 import { getChanges, getConfig } from './uci';
 import { discoverDevices, listDevices, relay } from './devices';
+import { AddonMissingError } from './packages';
 import type {
   AssocList,
   BoardJson,
@@ -509,7 +510,7 @@ export async function wakeClient(device: string, mac: string): Promise<void> {
     if (r?.code) throw new Error(r.stderr?.trim() || `etherwake exited with ${r.code}`);
   } catch (e) {
     if (e instanceof UbusError && e.status === UbusStatus.NOT_FOUND) {
-      throw new Error('Wake-on-LAN needs the etherwake package on the router (apk add etherwake).');
+      throw new AddonMissingError('wol', 'Wake-on-LAN needs a small add-on on the router.');
     }
     throw e;
   }

@@ -4,6 +4,7 @@
 /usr/share/rpcd/acl.d/netui.json
 /usr/share/rpcd/ucode/netui-devices
 /usr/share/rpcd/ucode/netui-firmware
+/usr/share/rpcd/ucode/netui-packages
 /usr/share/rpcd/ucode/netui-speedtest
 /usr/share/rpcd/ucode/netui-services
 /usr/share/rpcd/ucode/netui-users

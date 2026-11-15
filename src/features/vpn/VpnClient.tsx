@@ -21,6 +21,7 @@ import { Drawer } from '../../components/overlay';
 import { IconGlobe, IconTrash } from '../../components/icons';
 import { Banner, Button, Card, Detail, Dot, Pill, Segmented, Stat, Toggle, ToggleRow } from '../../components/ui';
 import { ConfirmModal, PLAN } from './ServerForms';
+import { InstallAddon } from '../../components/InstallAddon';
 
 interface Props {
   network: UciConfig;
@@ -60,15 +61,9 @@ export function VpnClientSection({ network, firewall, dump, wg, noWireguard, now
             <p class="min-w-0 flex-1 text-muted">
               Send your network’s internet traffic through a VPN provider, for privacy or to appear in another country.
               Your provider gives you a WireGuard configuration file.
-              {noWireguard && (
-                <>
-                  {' '}
-                  WireGuard is not installed: add the <span class="font-mono text-xs">wireguard-tools</span>,{' '}
-                  <span class="font-mono text-xs">kmod-wireguard</span> and{' '}
-                  <span class="font-mono text-xs">luci-proto-wireguard</span> packages, then restart the router.
-                </>
-              )}
+              {noWireguard && ' WireGuard is not installed yet: install it, then restart the router.'}
             </p>
+            {noWireguard && <InstallAddon addon="wireguard" />}
             <Button variant="primary" onClick={() => setOpen(true)} disabled={apply.busy || noWireguard}>
               Set Up
             </Button>

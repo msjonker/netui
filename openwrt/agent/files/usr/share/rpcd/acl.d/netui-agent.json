@@ -60,6 +60,9 @@
 					"get",
 					"state",
 					"changes"
+				],
+				"netui.packages": [
+					"status"
 				]
 			},
 			"uci": [
@@ -95,6 +98,10 @@
 				],
 				"system": [
 					"reboot"
+				],
+				"netui.packages": [
+					"install",
+					"remove"
 				]
 			},
 			"uci": [

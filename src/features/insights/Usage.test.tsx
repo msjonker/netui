@@ -69,10 +69,10 @@ describe('usage history', () => {
 });
 
 describe('without nlbwmon', () => {
-  it('says what to install', async () => {
+  it('offers the add-on', async () => {
     resetRouter();
     await usageTab();
-    expect(await screen.findByText(/Install/)).toBeTruthy();
-    expect(screen.getByText('nlbwmon')).toBeTruthy();
+    expect(await screen.findByText(/per-application usage by month/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });

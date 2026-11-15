@@ -11,6 +11,7 @@ import { portalDraft, portalOps, readPortal, sessionLabel, validatePortal, SESSI
 import { formatBytes, formatDuration } from '../../lib/format';
 import { useDraft } from '../../lib/useDraft';
 import { Banner, Button, Card, Dot, Empty, Field, Spinner, ToggleRow } from '../../components/ui';
+import { AddonMissing } from '../../components/InstallAddon';
 
 const PLAN = { returnTo: '/settings/networks' };
 
@@ -103,9 +104,7 @@ export function GuestPortalCard({ networks }: { networks: Network[] }) {
   if (!cfg.data || !draft || !portal) {
     return (
       <Card title="Guest portal">
-        <p class="text-muted">
-          Install <span class="font-mono">opennds</span> to show guests a sign-in page before they get internet.
-        </p>
+        <AddonMissing addon="portal">Show guests a sign-in page before they get internet.</AddonMissing>
       </Card>
     );
   }

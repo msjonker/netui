@@ -227,11 +227,12 @@ describe('Tailscale', () => {
     expect(router.calls.filter((c) => c.object === 'netui.tailscale' && c.method === 'login')).toHaveLength(1);
   });
 
-  it('explains the package when it is not installed', async () => {
+  it('offers the add-on when it is not installed', async () => {
     router.overrides.push((c) => (c.object === 'netui.tailscale' ? { installed: false } : undefined));
     renderApp('#/settings/vpn');
     const card = (await screen.findByRole('heading', { name: /^Tailscale/ })).closest('section')!;
-    expect(await within(card).findByText(/Needs the/)).toBeTruthy();
+    expect(await within(card).findByText(/Needs about 26 MB of storage/)).toBeTruthy();
+    expect(within(card).getByRole('button', { name: 'Install' })).toBeTruthy();
     expect(within(card).queryByRole('button', { name: 'Connect' })).toBeNull();
   });
 });

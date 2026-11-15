@@ -61,9 +61,10 @@ describe('multi-WAN', () => {
 });
 
 describe('without mwan3', () => {
-  it('says what to install', async () => {
+  it('offers the add-on', async () => {
     resetRouter({}, 'plain');
     const c = await card();
-    expect(c.textContent).toMatch(/Install mwan3/);
+    expect(c.textContent).toMatch(/second internet connection/);
+    expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });

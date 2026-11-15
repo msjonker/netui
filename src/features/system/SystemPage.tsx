@@ -31,6 +31,22 @@ import { RootPasswordCard } from './RootPassword';
 
 // Loaded on demand: few people install firmware by hand.
 const FirmwareUpload = lazy(() => import('./FirmwareUpload').then((m) => ({ default: m.FirmwareUpload })));
+const AddonsList = lazy(() => import('../../components/AddonsList').then((m) => ({ default: m.AddonsList })));
+
+/** Optional features and their packages, installed and removed from here. */
+function AddonsCard() {
+  return (
+    <Card title="Add-ons">
+      <p class="pb-2 text-xs text-muted">
+        Optional features that need an extra package on the router. Installing downloads it from the OpenWrt package
+        servers; a feature that changes how the network works is installed switched off.
+      </p>
+      <Suspense fallback={<Spinner />}>
+        <AddonsList />
+      </Suspense>
+    </Card>
+  );
+}
 
 const PLAN = { returnTo: '/settings/system' };
 
@@ -335,6 +351,7 @@ export function SystemPage() {
         <div class="space-y-4">
           <DeviceCard />
           <FirmwareCard />
+          <AddonsCard />
         </div>
       </div>
     </Page>

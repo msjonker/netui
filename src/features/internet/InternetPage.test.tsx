@@ -143,11 +143,12 @@ describe('Internet', () => {
     });
   });
 
-  it('hides the SQM, UPnP and DDNS cards when those packages are missing', async () => {
+  it('offers SQM, UPnP and DDNS as add-ons when those packages are missing', async () => {
     resetRouter();
     renderApp('#/settings/internet');
     await card('Primary (WAN1)');
-    await screen.findByRole('link', { name: /Smart Queues \(SQM\)/ });
+    const adv = (await screen.findByRole('heading', { name: 'Advanced' })).closest('section') as HTMLElement;
+    expect(within(adv).getAllByRole('button', { name: 'Install' })).toHaveLength(3);
     expect(screen.queryByRole('heading', { name: 'Smart Queues' })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'UPnP' })).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Dynamic DNS' })).toBeNull();

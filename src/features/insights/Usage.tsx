@@ -9,6 +9,7 @@ import { useClients } from '../../model/hooks';
 import { mergeHosts, normalizeUsage, periodLabel } from '../../model/usage';
 import { formatBytes } from '../../lib/format';
 import { Banner, Card, Empty, Meter, Spinner, Stat, ToggleRow } from '../../components/ui';
+import { AddonMissing } from '../../components/InstallAddon';
 
 /** Where nlbwmon keeps its database: RAM (the default) or flash. */
 const RAM_DIR = '/var/lib/nlbwmon';
@@ -62,9 +63,7 @@ export function UsageInsights() {
   if (!config.data) {
     return (
       <Card title="Usage history">
-        <p class="text-muted">
-          Install <span class="font-mono">nlbwmon</span> to keep per-device and per-application usage by month.
-        </p>
+        <AddonMissing addon="usage">Keep per-device and per-application usage by month.</AddonMissing>
       </Card>
     );
   }

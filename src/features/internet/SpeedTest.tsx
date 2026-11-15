@@ -5,6 +5,7 @@ import { formatBitrate } from '../../lib/format';
 import { relativeTime } from '../../model/events';
 import { IconArrowDown, IconArrowUp } from '../../components/icons';
 import { Banner, Button, Card, Spinner, Stat } from '../../components/ui';
+import { AddonMissing } from '../../components/InstallAddon';
 
 /** Bits per second in (what the plugin stores). */
 export const mbps = (bits: number) => formatBitrate(bits / 8, 0);
@@ -24,10 +25,7 @@ export function SpeedTestCard() {
   if (!s.available) {
     return (
       <Card title="Speed test">
-        <p class="text-muted">
-          Install <span class="font-mono">librespeed-cli</span>, or the much smaller <span class="font-mono">speedtestcpp</span>,
-          to test the internet speed from the router.
-        </p>
+        <AddonMissing addon="speedtest">Test the internet speed from the router, without WiFi in the way.</AddonMissing>
       </Card>
     );
   }

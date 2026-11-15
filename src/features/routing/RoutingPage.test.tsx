@@ -109,8 +109,10 @@ describe('DNS over HTTPS', () => {
   };
   const execs = () => router.calls.filter((c) => c.object === 'file').map((c) => (c.args.params as string[])[0]);
 
-  it('explains the package when it is not installed', async () => {
-    expect((await card()).textContent).toMatch(/https-dns-proxy package/);
+  it('offers the add-on when it is not installed', async () => {
+    const c = await card();
+    expect(c.textContent).toMatch(/Encrypts the router’s DNS lookups/);
+    expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 
   it('switches off: cleans up dnsmasq through the apply, then stops the proxy', async () => {
