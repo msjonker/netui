@@ -404,7 +404,11 @@ export async function cgiBackup(): Promise<Blob> {
 }
 
 /** Write `file` to `path` on the router; the session's ACL must allow writing there. */
-export async function cgiUpload(path: string, file: Blob, mode = '0600'): Promise<{ size: number; checksum: string }> {
+export async function cgiUpload(
+  path: string,
+  file: Blob,
+  mode = '0600',
+): Promise<{ size: number; checksum: string; sha256sum?: string }> {
   const form = new FormData();
   // cgi-io reads the fields in order: the session must come before the data.
   form.append('sessionid', requireSession().id);

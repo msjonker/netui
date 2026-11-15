@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
+import { lazy, Suspense } from 'preact/compat';
 import { onlineManager, useQueryClient } from '@tanstack/react-query';
 import { useLocaltime, useSystemBoard, useSystemInfo, useTimezones, useUci, firstError } from '../../api/queries';
 import { useApply } from '../../api/useApply';
@@ -20,12 +21,15 @@ import { formatBytes, formatDuration } from '../../lib/format';
 import { useDraft } from '../../lib/useDraft';
 import { Modal } from '../../components/overlay';
 import { FirmwarePanel } from '../../components/FirmwarePanel';
-import { IconExternal, IconPower } from '../../components/icons';
+import { IconPower } from '../../components/icons';
 import { Banner, Button, Card, Detail, Field, LoadError, Meter, Page, Spinner, ToggleRow } from '../../components/ui';
 import { rebootAndWait, rebootDeps, waitForRestart, type RebootPhase } from './reboot';
 import { BusyOverlay, PHASE_TEXT } from './BusyOverlay';
 import { BackupCard } from './Backup';
 import { AdminsCard } from './Admins';
+
+// Loaded on demand: few people install firmware by hand.
+const FirmwareUpload = lazy(() => import('./FirmwareUpload').then((m) => ({ default: m.FirmwareUpload })));
 
 const PLAN = { returnTo: '/settings/system' };
 
@@ -170,11 +174,6 @@ function DeviceCard() {
   return (
     <Card
       title="Device"
-      actions={
-        <a class="inline-flex items-center gap-1 text-accent hover:underline" href="/cgi-bin/luci/admin/system/flash" target="_blank" rel="noreferrer">
-          Backup & manual upgrade <IconExternal size={12} />
-        </a>
-      }
     >
       {!d ? (
         <Spinner />
@@ -215,9 +214,23 @@ function FirmwareCard() {
     }
   };
   const fw = useFirmware(undefined, restart);
+  const [uploading, setUploading] = useState(false);
   return (
     <Card title="Firmware">
       <FirmwarePanel fw={fw} what="router" fullscreen />
+      {!getSession()?.readOnly && (
+        <p class="mt-3 border-t border-line pt-3 text-xs text-muted">
+          Have an image file?{' '}
+          <button type="button" class="text-accent hover:underline" onClick={() => setUploading(true)}>
+            Install it by hand
+          </button>
+        </p>
+      )}
+      {uploading && (
+        <Suspense fallback={null}>
+          <FirmwareUpload onClose={() => setUploading(false)} />
+        </Suspense>
+      )}
     </Card>
   );
 }

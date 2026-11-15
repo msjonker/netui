@@ -11,7 +11,7 @@
 //                 trigger handles resolver changes.
 // The ACL grants `file exec` on exactly these paths, nothing broader.
 
-import { call } from './ubus';
+import { call, UbusError, UbusStatus } from './ubus';
 import { syncDevices } from './devices';
 
 const DOH = '/etc/init.d/https-dns-proxy';
@@ -93,7 +93,13 @@ export async function switchDoh(on: boolean): Promise<void> {
       'exec',
       { command: DOH, params: [action] },
       { permissionDeniedIsAuth: false, timeoutMs: 30_000 },
-    );
+    ).catch((e: unknown) => {
+      // Its settings outlive the package (e.g. after a firmware upgrade).
+      if (e instanceof UbusError && e.status === UbusStatus.NOT_FOUND) {
+        throw new Error('https-dns-proxy is not installed any more; only its settings are left. Install the package again.');
+      }
+      throw e;
+    });
     if (r?.code) throw new Error(`Could not ${action} DNS over HTTPS: ${r.stderr?.trim() || `exit ${r.code}`}`);
   }
 }

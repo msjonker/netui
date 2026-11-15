@@ -1,0 +1,26 @@
+{
+  "_comment": "ubus system validate_firmware_image on the DL-WRX36 (25.12.6): the 25.12.6 sysupgrade image, then a 300 KB truncation of it; cgi-upload answers with the size and both checksums (here for the truncated file)",
+  "valid": {
+    "tests": {
+      "fwtool_signature": true,
+      "fwtool_device_match": true
+    },
+    "valid": true,
+    "forceable": true,
+    "allow_backup": true
+  },
+  "truncated": {
+    "tests": {
+      "fwtool_signature": true,
+      "fwtool_device_match": false
+    },
+    "valid": false,
+    "forceable": true,
+    "allow_backup": true
+  },
+  "upload": {
+    "size": 300000,
+    "checksum": "0823223e294a11a831bff158f201c0a3",
+    "sha256sum": "527f3409ba960125700bd5e02384ad02ae80ff2fda3959e379ab773f9e02eda7"
+  }
+}

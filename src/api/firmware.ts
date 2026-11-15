@@ -2,7 +2,7 @@
 // access points through the gateway's relay. Both run as a background job on
 // the device; the UI polls its status and parses owut's log.
 
-import { call, SessionExpiredError } from './ubus';
+import { call, cgiUpload, SessionExpiredError, TransportError, UbusError, UbusStatus } from './ubus';
 import { DeviceError, relay } from './devices';
 import type { FirmwareStarted, FirmwareStatus } from './types';
 import { upgradeProgress, type UpgradeProgress } from '../model/firmware';
@@ -102,4 +102,49 @@ export async function waitForAccessPoint(mac: string): Promise<RestartResult> {
     }
   }
   return 'timeout';
+}
+
+// ---------------------------------------------------------------------------
+// An image file from the user, as LuCI's flash page does it: cgi-io uploads it
+// to the one path the ACL allows, procd checks it, and the one sysupgrade
+// command line the ACL allows flashes it, keeping the settings. Responses
+// recorded in test/fixtures/ubus/dl-wrx36/plain/system.validate_firmware_image.json.
+
+export const IMAGE_PATH = '/tmp/firmware.bin';
+
+export interface ImageCheck {
+  valid: boolean;
+  /** The image's metadata names this board. */
+  deviceMatch: boolean;
+  sha256?: string;
+  size: number;
+}
+
+export async function uploadImage(file: Blob): Promise<ImageCheck> {
+  const up = await cgiUpload(IMAGE_PATH, file);
+  const r = await call<{ valid?: boolean; tests?: { fwtool_device_match?: boolean } }>(
+    'system',
+    'validate_firmware_image',
+    { path: IMAGE_PATH },
+    { permissionDeniedIsAuth: false, timeoutMs: 30_000 },
+  );
+  return { valid: !!r.valid, deviceMatch: r.tests?.fwtool_device_match !== false, sha256: up.sha256sum, size: up.size };
+}
+
+/**
+ * Start flashing. sysupgrade does not return before the system goes down:
+ * rpcd answers TIMEOUT (seen on the DL-WRX36) or the connection drops.
+ */
+export async function flashImage(): Promise<void> {
+  try {
+    const r = await call<{ code?: number; stderr?: string }>(
+      'file',
+      'exec',
+      { command: '/sbin/sysupgrade', params: [IMAGE_PATH] },
+      { permissionDeniedIsAuth: false, timeoutMs: 20_000, deferExpiry: true },
+    );
+    if (r?.code) throw new Error(`The router refused the image: ${r.stderr?.trim() || `exit ${r.code}`}`);
+  } catch (e) {
+    if (!(e instanceof TransportError) && !(e instanceof UbusError && e.status === UbusStatus.TIMEOUT)) throw e;
+  }
 }

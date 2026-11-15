@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/preact';
+import { fireEvent as dispatch } from '@testing-library/dom';
+import { act } from 'preact/test-utils';
 import type { UciGet } from '../../api/types';
-import { SessionExpiredError } from '../../api/ubus';
+import { SessionExpiredError, UbusError, UbusStatus } from '../../api/ubus';
 import { resetRouter, router } from '../../../test/fakeRouter';
 import { renderApp } from '../../../test/renderApp';
 import { type } from '../../../test/dom';
 import { applyReviewed } from '../../../test/applyFlow';
 import uciSystem from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.system.json';
 import { rebootDeps } from './reboot';
+import fwRecorded from '../../../test/fixtures/ubus/dl-wrx36/plain/system.validate_firmware_image.json';
 import unixtime from '../../../test/fixtures/ubus/bench-v2/gateway.luci.getUnixtime.json';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
@@ -65,7 +68,48 @@ describe('System', () => {
   it('shows hardware and firmware', async () => {
     renderApp('#/settings/system');
     expect(await screen.findByText('Kernel')).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Backup & manual upgrade/ }).getAttribute('href')).toBe('/cgi-bin/luci/admin/system/flash');
+    // Backup and a manual upgrade are netui's own now, not a LuCI link.
+    expect(screen.queryByRole('link', { name: /manual upgrade/ })).toBeNull();
+  });
+});
+
+describe('firmware file', () => {
+  const image = new File([new Uint8Array(1024)], 'openwrt-25.12.6-qualcommax-ipq807x-dynalink_dl-wrx36-squashfs-sysupgrade.bin');
+
+  async function upload(answer: unknown) {
+    router.overrides.push((c) => (c.object === 'system' && c.method === 'validate_firmware_image' ? answer : undefined));
+    renderApp('#/settings/system');
+    fireEvent.click(await screen.findByRole('button', { name: 'Install it by hand' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Install a firmware file' });
+    const input = within(dialog).getByLabelText('Firmware file');
+    Object.defineProperty(input, 'files', { value: [image], configurable: true });
+    await act(async () => {
+      dispatch.change(input);
+    });
+    return dialog;
+  }
+
+  it('uploads, checks and flashes an image for this model, keeping settings', async () => {
+    vi.spyOn(rebootDeps, 'sleep').mockResolvedValue(undefined);
+    vi.spyOn(rebootDeps, 'probe').mockResolvedValueOnce(false).mockResolvedValue(true);
+    vi.spyOn(rebootDeps, 'check').mockRejectedValue(new SessionExpiredError());
+    // rpcd gives up waiting for sysupgrade (recorded: status 7).
+    router.overrides.push((c) => (c.object === 'file' ? new UbusError(UbusStatus.TIMEOUT, 'file', 'exec') : undefined));
+    const dialog = await upload(fwRecorded.valid);
+    await within(dialog).findByText(/made for this model/);
+    expect(router.uploads.get('/tmp/firmware.bin')).toBe(image);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Install and Restart' }));
+    expect(await screen.findByText('The firmware was installed and the router restarted. Sign in again to continue.')).toBeTruthy();
+    expect(router.calls.filter((c) => c.object === 'file')).toEqual([
+      { object: 'file', method: 'exec', args: { command: '/sbin/sysupgrade', params: ['/tmp/firmware.bin'] } },
+    ]);
+    expect(router.writes()).toHaveLength(0);
+  });
+
+  it('will not install an image for another model', async () => {
+    const dialog = await upload(fwRecorded.truncated);
+    expect((await within(dialog).findByRole('alert')).textContent).toMatch(/different model/);
+    expect((within(dialog).getByRole('button', { name: 'Install and Restart' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
 
