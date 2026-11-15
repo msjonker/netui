@@ -20,7 +20,7 @@ Captured on a Dynalink DL-WRX36 test router running OpenWrt SNAPSHOT (no WAN con
 
 netui runs on OpenWrt **24.10** and **25.x / snapshots**, on any router hardware
 (the package contains no compiled code). LuCI stays installed and keeps working
-alongside it. The examples use version `0.1.0` and the router at `192.168.1.1`;
+alongside it. The examples use version `0.2.0` and the router at `192.168.1.1`;
 substitute the latest version from [Releases](https://github.com/msjonker/netui/releases)
 and your router's address.
 
@@ -35,8 +35,8 @@ grep DISTRIB_RELEASE /etc/openwrt_release
 
 | `DISTRIB_RELEASE` | Package manager | Download |
 |---|---|---|
-| `25.12.x` or `SNAPSHOT` | apk | `netui-0.1.0-r1.apk` |
-| `24.10.x` | opkg | `netui_0.1.0-r1_all.ipk` |
+| `25.12.x` or `SNAPSHOT` | apk | `netui-0.2.0-r1.apk` |
+| `24.10.x` | opkg | `netui_0.2.0-r1_all.ipk` |
 
 Older releases (23.05 and before) are not supported.
 
@@ -46,8 +46,8 @@ Download the file from the [latest release](https://github.com/msjonker/netui/re
 on your computer, then copy it to the router's `/tmp` (on Windows, use PowerShell):
 
 ```sh
-scp -O netui-0.1.0-r1.apk root@192.168.1.1:/tmp/        # OpenWrt 25.x / snapshots
-scp -O netui_0.1.0-r1_all.ipk root@192.168.1.1:/tmp/    # OpenWrt 24.10
+scp -O netui-0.2.0-r1.apk root@192.168.1.1:/tmp/        # OpenWrt 25.x / snapshots
+scp -O netui_0.2.0-r1_all.ipk root@192.168.1.1:/tmp/    # OpenWrt 24.10
 ```
 
 `-O` is needed because OpenWrt's SSH server (dropbear) does not support the newer
@@ -55,7 +55,7 @@ SFTP-based copy. If your router already has internet access you can instead
 download on the router itself:
 
 ```sh
-cd /tmp && wget https://github.com/msjonker/netui/releases/download/v0.1.0/netui-0.1.0-r1.apk
+cd /tmp && wget https://github.com/msjonker/netui/releases/download/v0.2.0/netui-0.2.0-r1.apk
 ```
 
 ### 3. Install it
@@ -66,11 +66,11 @@ can be installed) and install the file:
 ```sh
 # OpenWrt 25.x / snapshots
 apk update
-apk add --allow-untrusted /tmp/netui-0.1.0-r1.apk
+apk add --allow-untrusted /tmp/netui-0.2.0-r1.apk
 
 # OpenWrt 24.10
 opkg update
-opkg install /tmp/netui_0.1.0-r1_all.ipk
+opkg install /tmp/netui_0.2.0-r1_all.ipk
 ```
 
 The router needs internet access for this step unless LuCI is already installed

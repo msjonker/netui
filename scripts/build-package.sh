@@ -11,7 +11,7 @@
 set -euo pipefail
 
 sdk="${1:?usage: build-package.sh <sdk-image-tag> [version]}"
-version="${2:-0.1.0}"
+version="${2:-0.2.0}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [[ ! -f "$root/dist/index.html" ]]; then

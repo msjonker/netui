@@ -14,7 +14,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=netui
 # CI passes the release tag without its "v" (scripts/build-package.sh).
-NETUI_VERSION ?= 0.1.0
+NETUI_VERSION ?= 0.2.0
 PKG_VERSION:=$(NETUI_VERSION)
 PKG_RELEASE:=1
 PKG_LICENSE:=MIT
