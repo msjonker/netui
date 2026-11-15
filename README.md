@@ -4,7 +4,8 @@
 
 # netui
 
-A friendly web UI for OpenWrt routers, access points and mesh WiFi.
+A friendly web UI for OpenWrt: manage your router, WiFi, extra access points
+and mesh from one place.
 
 New to this? The **[user guide](docs/user-guide.md)** walks through
 installing netui and setting up WiFi, a guest network, ad blocking, extra
@@ -370,3 +371,12 @@ On the router: `apk add --allow-untrusted netui-*.apk` (or `opkg install` on
    then open `http(s)://<router>/netui/`.
 
 Serve over HTTPS where possible; the session id is a bearer token.
+
+## License and trademarks
+
+netui is released under the MIT license (see [LICENSE](LICENSE)).
+
+netui is an independent open-source project. It is not affiliated with,
+endorsed by or sponsored by any router or network equipment maker. OpenWrt
+and all other product names are trademarks of their respective owners and
+are used only to describe compatibility.
