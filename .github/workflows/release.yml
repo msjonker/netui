@@ -100,5 +100,11 @@ jobs:
           run \`netui-agent prepare\`, plug it into the gateway's LAN and adopt it from Devices.
           The packages are unsigned, hence \`--allow-untrusted\` for apk.
           EOF
-          gh release create "$GITHUB_REF_NAME" packages/* \
-            --repo "$GITHUB_REPOSITORY" --title "netui $VERSION" --notes-file notes.md
+          # A re-pushed tag (e.g. after a history rewrite) replaces the packages
+          # on the existing release and keeps its notes.
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" packages/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" packages/* \
+              --repo "$GITHUB_REPOSITORY" --title "netui $VERSION" --notes-file notes.md
+          fi
