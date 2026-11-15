@@ -56,9 +56,15 @@ export function compactRate(bytesPerSecond: number | null | undefined): string {
 // ---------------------------------------------------------------------------
 // Gateway health strip
 
-function Tile({ icon, tone, children }: { icon: ComponentChildren; tone: string; children: ComponentChildren }) {
+// Icon above the text until the tiles are wide enough to put it beside.
+function Tile({ icon, tone, wide, children }: { icon: ComponentChildren; tone: string; wide?: boolean; children: ComponentChildren }) {
   return (
-    <div class="flex min-w-0 items-center gap-3 rounded-2xl border border-line bg-surface p-4 shadow-card">
+    <div
+      class={cx(
+        'flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-4 shadow-card lg:flex-row lg:items-center',
+        wide && 'col-span-2 sm:col-span-1',
+      )}
+    >
       <span class={cx('grid size-10 shrink-0 place-items-center rounded-xl', tone)}>{icon}</span>
       {children}
     </div>
@@ -73,7 +79,7 @@ function HealthStrip() {
   const root = info.data?.root;
 
   return (
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:col-span-3 lg:grid-cols-5" aria-label={sys ? 'Gateway health' : undefined}>
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:col-span-3 xl:grid-cols-5" aria-label={sys ? 'Gateway health' : undefined}>
       {!sys ? (
         <Card class="col-span-full">
           <Spinner />
@@ -98,7 +104,7 @@ function HealthStrip() {
           <Tile icon={<IconPower />} tone="bg-warn-soft text-warn">
             <Stat label="Uptime" value={formatDuration(sys.uptime)} />
           </Tile>
-          <Tile icon={<IconDownload />} tone="bg-accent-soft text-accent">
+          <Tile icon={<IconDownload />} tone="bg-accent-soft text-accent" wide>
             <Stat
               label="Firmware"
               value={<span class="text-base">OpenWrt {sys.version}</span>}
