@@ -7,7 +7,11 @@ describe('busybox output (recorded)', () => {
     expect(parsePing(rec.pingOk)).toMatchObject({ sent: 3, received: 3, error: undefined });
     expect(parsePing(rec.pingOk).avgMs).toBeGreaterThan(0);
     expect(parsePing(rec.pingLost)).toEqual({ sent: 3, received: 0, avgMs: undefined, error: undefined });
-    expect(parsePing(rec.pingBadAddress)).toMatchObject({ sent: 0, received: 0, error: "bad address 'no-such-host.invalid'" });
+    expect(parsePing(rec.pingBadAddress)).toMatchObject({
+      sent: 0,
+      received: 0,
+      error: "bad address 'no-such-host.invalid'",
+    });
   });
 
   it('lists the addresses a lookup found, not the server', () => {
@@ -18,8 +22,10 @@ describe('busybox output (recorded)', () => {
 
 describe('isTarget', () => {
   it('takes host names and addresses, nothing that reads as an option', () => {
-    for (const ok of ['openwrt.org', '1.1.1.1', 'router.lan', '2606:4700:4700::1111', 'nas', 'a_b.example.']) expect(isTarget(ok)).toBe(true);
-    for (const bad of ['-f', '--help', 'a b', '', 'host;reboot', '-c 1000 x', 'exa$mple.com']) expect(isTarget(bad)).toBe(false);
+    for (const ok of ['openwrt.org', '1.1.1.1', 'router.lan', '2606:4700:4700::1111', 'nas', 'a_b.example.'])
+      expect(isTarget(ok)).toBe(true);
+    for (const bad of ['-f', '--help', 'a b', '', 'host;reboot', '-c 1000 x', 'exa$mple.com'])
+      expect(isTarget(bad)).toBe(false);
   });
 });
 
@@ -29,7 +35,15 @@ describe('connection check', () => {
   const states = (s: ReturnType<typeof checkSteps>) => s.map((x) => x.state);
 
   it('passes every step on a working connection', () => {
-    const s = checkSteps({ carrier: true, address: '192.168.0.127', gateway: '192.168.0.1', gatewayPing: ok, internetPing: ok, internetTarget: '1.1.1.1', lookup: ['64.226.122.113'] });
+    const s = checkSteps({
+      carrier: true,
+      address: '192.168.0.127',
+      gateway: '192.168.0.1',
+      gatewayPing: ok,
+      internetPing: ok,
+      internetTarget: '1.1.1.1',
+      lookup: ['64.226.122.113'],
+    });
     expect(states(s)).toEqual(['ok', 'ok', 'ok', 'ok', 'ok']);
     expect(s[2]!.detail).toMatch(/^192\.168\.0\.1, 1 ms$/);
   });
@@ -44,8 +58,20 @@ describe('connection check', () => {
   it('only warns about a silent gateway when the internet answers', () => {
     const base = { carrier: true, address: '100.71.3.9', gateway: '100.64.0.1', gatewayPing: lost };
     expect(states(checkSteps(base))).toEqual(['ok', 'ok', 'skip', 'skip', 'skip']);
-    expect(states(checkSteps({ ...base, internetPing: ok, lookup: ['1.2.3.4'] }))).toEqual(['ok', 'ok', 'warn', 'ok', 'ok']);
-    expect(states(checkSteps({ ...base, internetPing: lost, lookup: [] }))).toEqual(['ok', 'ok', 'fail', 'fail', 'fail']);
+    expect(states(checkSteps({ ...base, internetPing: ok, lookup: ['1.2.3.4'] }))).toEqual([
+      'ok',
+      'ok',
+      'warn',
+      'ok',
+      'ok',
+    ]);
+    expect(states(checkSteps({ ...base, internetPing: lost, lookup: [] }))).toEqual([
+      'ok',
+      'ok',
+      'fail',
+      'fail',
+      'fail',
+    ]);
   });
 
   it('blames DNS when the internet answers but names do not resolve', () => {

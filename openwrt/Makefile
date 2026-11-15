@@ -31,8 +31,8 @@ define Package/netui
   # luci-base provides the luci-rpc and luci objects (leases, host hints,
   # timezones, conntrack); LuCI stays installed as the fallback UI anyway.
   # rpcd-mod-file runs the three service scripts the ACL allows.
-  # SQM, UPnP, DDNS, WireGuard and wifischedule stay optional: netui hides
-  # what is not installed.
+  # SQM, UPnP, DDNS, WireGuard, wifischedule, etherwake and https-dns-proxy
+  # stay optional: netui hides or explains what is not installed.
   # rpcd-mod-ucode and uclient-fetch run netui.devices, which adopts access
   # points and relays calls to them. owut (firmware upgrades) is optional.
   DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +rpcd-mod-ucode +uclient-fetch +uhttpd +uhttpd-mod-ubus +luci-base

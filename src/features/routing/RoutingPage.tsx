@@ -44,6 +44,8 @@ import {
   ToggleRow,
 } from '../../components/ui';
 
+import { DohCard } from './Doh';
+
 const PLAN = { returnTo: '/settings/routing' };
 
 /** A create/edit drawer. Removal needs no extra prompt: the apply review is the confirmation. */
@@ -531,19 +533,23 @@ function DnsSettingsCard({ dhcp }: { dhcp: UciConfig }) {
         </Banner>
       )}
       <Field label="Upstream DNS">
-        {() => (
-          <Segmented
-            label="Upstream DNS"
-            value={custom ? 'custom' : 'auto'}
-            onChange={(v) => update({ custom: v === 'custom' })}
-            options={[
-              { value: 'auto', label: 'Auto (ISP)' },
-              { value: 'custom', label: 'Custom' },
-            ]}
-          />
-        )}
+        {() =>
+          settings.encrypted ? (
+            <span class="text-muted">DNS over HTTPS (above)</span>
+          ) : (
+            <Segmented
+              label="Upstream DNS"
+              value={custom ? 'custom' : 'auto'}
+              onChange={(v) => update({ custom: v === 'custom' })}
+              options={[
+                { value: 'auto', label: 'Auto (ISP)' },
+                { value: 'custom', label: 'Custom' },
+              ]}
+            />
+          )
+        }
       </Field>
-      {custom && (
+      {custom && !settings.encrypted && (
         <Field
           label="DNS servers"
           error={errors.servers}
@@ -631,6 +637,7 @@ function DnsTab({ dhcp }: { dhcp: UciConfig | undefined }) {
           </table>
         </div>
       </TableCard>
+      {dhcp && <DohCard dhcp={dhcp} />}
       {dhcp && <DnsSettingsCard dhcp={dhcp} />}
       {dhcp && sel === 'new' && <RecordForm records={records ?? []} dhcp={dhcp} onClose={() => setSel(null)} />}
       {dhcp && current && (

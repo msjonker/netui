@@ -22,6 +22,16 @@ describe('useDraft', () => {
     expect(result.current.stale).toBe(false);
   });
 
+  it('is clean once the router holds the draft (after an apply), even via an intermediate state', () => {
+    const { result, rerender } = renderHook(({ s }) => useDraft(s), { initialProps: { s: { a: 1, b: 1 } } });
+    act(() => result.current.update({ a: 5, b: 5 }));
+    rerender({ s: { a: 5, b: 1 } });
+    expect(result.current.stale).toBe(true);
+    rerender({ s: { a: 5, b: 5 } });
+    expect(result.current.dirty).toBe(false);
+    expect(result.current.stale).toBe(false);
+  });
+
   it('is clean again when edited back to the original', () => {
     const { result } = renderHook(() => useDraft({ a: 1 }));
     act(() => result.current.update({ a: 3 }));

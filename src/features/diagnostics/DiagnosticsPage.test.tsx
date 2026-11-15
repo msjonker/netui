@@ -6,7 +6,10 @@ import rec from '../../../test/fixtures/ubus/dl-wrx36/plain/file.exec.diagnostic
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 
-const execs = () => router.calls.filter((c) => c.object === 'file').map((c) => [c.args.command, ...(c.args.params as string[])].join(' '));
+const execs = () =>
+  router.calls
+    .filter((c) => c.object === 'file')
+    .map((c) => [c.args.command, ...(c.args.params as string[])].join(' '));
 
 async function runCheck(card: HTMLElement) {
   const run = await within(card).findByRole('button', { name: 'Run Check' });
@@ -38,7 +41,9 @@ describe('Diagnostics', () => {
   });
 
   it('tries a second address and gives advice when the internet does not answer', async () => {
-    router.overrides.push((c) => (c.object !== 'file' ? undefined : c.args.command === '/usr/bin/nslookup' ? rec.nslookupNxdomain : rec.pingLost));
+    router.overrides.push((c) =>
+      c.object !== 'file' ? undefined : c.args.command === '/usr/bin/nslookup' ? rec.nslookupNxdomain : rec.pingLost,
+    );
     renderApp('#/settings/diagnostics');
     const card = (await screen.findByRole('heading', { name: 'Connection check' })).closest('section')!;
     await runCheck(card);

@@ -29,14 +29,15 @@ export function useDraft<T>(source: T | undefined) {
 
   useEffect(() => {
     if (source === undefined || deepEqual(source, base.current)) return;
-    if (base.current === undefined || !dirty) {
+    // Clean, or the router now holds exactly the draft (it was just applied).
+    if (base.current === undefined || !dirty || deepEqual(source, draft)) {
       base.current = source;
       setDraft(source);
       setStale(false);
     } else {
       setStale(true);
     }
-    // `dirty` is read deliberately at the time the source changes.
+    // `dirty` and `draft` are read deliberately at the time the source changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]);
 

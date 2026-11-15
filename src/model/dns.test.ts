@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import type { UciConfig } from '../api/types';
+import dohDhcp from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.dhcp.doh-active.json';
 import { wrxFixtures } from '../../test/fixtures';
 import { stageOn, FakeRouter } from '../../test/fakeRouter';
 import {
@@ -71,7 +73,18 @@ describe('dnsmasq settings', () => {
       domain: 'lan',
       rebindProtection: true,
       rebindAllowed: [],
+      encrypted: false,
     });
+  });
+
+  it('leaves the DNS over HTTPS proxy its servers and noresolv (recorded while it ran)', () => {
+    const cfg: UciConfig = dohDhcp.values;
+    const s = normalizeDnsSettings(cfg)!;
+    expect(s).toMatchObject({ servers: [], encrypted: true });
+    const ops = dnsSettingsOps({ ...s, domain: 'home.arpa', servers: ['9.9.9.9'] }, cfg);
+    expect(ops).toHaveLength(1);
+    expect(ops[0]).toMatchObject({ op: 'set', values: { domain: 'home.arpa', local: '/home.arpa/' } });
+    expect(JSON.stringify(ops)).not.toMatch(/server|noresolv/);
   });
 
   it('sets upstream servers with noresolv, keeps forwarding entries, and moves local with the domain', () => {

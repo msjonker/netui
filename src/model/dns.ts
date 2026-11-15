@@ -102,6 +102,8 @@ export interface DnsSettings {
   rebindProtection: boolean;
   /** Domains allowed to resolve to private addresses. */
   rebindAllowed: string[];
+  /** https-dns-proxy is running and owns the upstream servers (model/doh). */
+  encrypted?: boolean;
 }
 
 export function dnsmasqSection(dhcp: UciConfig): UciSection | undefined {
@@ -113,9 +115,11 @@ const isForwarding = (s: string) => s.startsWith('/');
 export function normalizeDnsSettings(dhcp: UciConfig): DnsSettings | undefined {
   const s = dnsmasqSection(dhcp);
   if (!s) return undefined;
+  const doh = list(s.doh_server);
   return {
     section: s['.name'],
-    servers: list(s.server).filter((x) => !isForwarding(x)),
+    servers: list(s.server).filter((x) => !isForwarding(x) && !doh.includes(x)),
+    encrypted: doh.length > 0,
     domain: str(s.domain) ?? '',
     rebindProtection: bool(s.rebind_protection, false),
     rebindAllowed: list(s.rebind_domain),
@@ -146,19 +150,21 @@ export function validateDnsSettings(d: DnsSettings): Partial<Record<keyof DnsSet
  */
 export function dnsSettingsOps(d: DnsSettings, dhcp: UciConfig): UciOp[] {
   const s = dhcp[d.section];
+  const doh = list(s?.doh_server);
   const forwarding = list(s?.server).filter(isForwarding);
   const prevDomain = str(s?.domain) ?? '';
   const local = str(s?.local);
-  const plain = list(s?.server).filter((x) => !isForwarding(x));
+  const plain = list(s?.server).filter((x) => !isForwarding(x) && !doh.includes(x));
   const after: Record<string, string | string[]> = {
-    server: [...d.servers, ...forwarding],
     domain: d.domain,
     rebind_protection: d.rebindProtection ? '1' : '0',
     rebind_domain: d.rebindAllowed,
   };
+  // While DNS over HTTPS runs, its proxy owns `server` and `noresolv`.
+  if (!doh.length) after.server = [...d.servers, ...forwarding];
   // Only touch noresolv when the servers change, so editing the domain does
   // not stop a hand-made "ISP plus extra servers" setup from using the ISP.
-  if (plain.join(' ') !== d.servers.join(' ')) after.noresolv = d.servers.length ? '1' : '';
+  if (!doh.length && plain.join(' ') !== d.servers.join(' ')) after.noresolv = d.servers.length ? '1' : '';
   // `local` normally mirrors the domain ("/lan/"); follow it unless customised.
   if (d.domain !== prevDomain && (!local || local === `/${prevDomain}/`)) after.local = d.domain ? `/${d.domain}/` : '';
   return diffSection('dhcp', d.section, s, after);

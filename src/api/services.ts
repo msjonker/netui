@@ -6,10 +6,15 @@
 //   adblock-fast  ignores being switched off and reuses cached lists on reload;
 //                 netui.services adblock_apply downloads/starts or stops it
 //   opennds       no reload trigger; netui.services portal_apply restarts or stops it
+//   https-dns-proxy  no on/off option: switchDoh() below, run after the apply
+//                 (model/doh explains why not as a hook here). Its reload
+//                 trigger handles resolver changes.
 // The ACL grants `file exec` on exactly these paths, nothing broader.
 
 import { call } from './ubus';
 import { syncDevices } from './devices';
+
+const DOH = '/etc/init.d/https-dns-proxy';
 
 const HOOKS: Record<string, [command: string, params: string[]][]> = {
   // enable: start at boot like LuCI's SQM page does; start only acts on enabled queues.
@@ -31,7 +36,7 @@ const SYNC_ATTEMPTS = 7;
 const SYNC_RETRY_MS = 5_000;
 
 /** Paths the netui ACL lets the UI execute; kept in sync with acl.d/netui.json. */
-export const SERVICE_COMMANDS = [...new Set(Object.values(HOOKS).flatMap((h) => h.map(([c]) => c)))];
+export const SERVICE_COMMANDS = [...new Set([...Object.values(HOOKS).flatMap((h) => h.map(([c]) => c)), DOH])];
 
 /**
  * Run the follow-up steps for the packages an apply touched: the service
@@ -78,4 +83,17 @@ export async function runServiceHooks(packages: readonly string[]): Promise<stri
     if (!ok) failed.push('access points');
   }
   return failed;
+}
+
+/** Start (and enable at boot) or stop (and disable) DNS over HTTPS. Takes a few seconds. */
+export async function switchDoh(on: boolean): Promise<void> {
+  for (const action of on ? ['enable', 'start'] : ['stop', 'disable']) {
+    const r = await call<{ code?: number; stderr?: string }>(
+      'file',
+      'exec',
+      { command: DOH, params: [action] },
+      { permissionDeniedIsAuth: false, timeoutMs: 30_000 },
+    );
+    if (r?.code) throw new Error(`Could not ${action} DNS over HTTPS: ${r.stderr?.trim() || `exit ${r.code}`}`);
+  }
 }

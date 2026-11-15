@@ -78,7 +78,8 @@ const ADVICE: Record<Step['id'], string> = {
   cable: 'No link on the WAN port. Check the cable between the modem and the router, and that the modem is on.',
   address:
     'The router got no address from your provider. Restart the modem, wait a minute, and check the connection type under Settings → Internet.',
-  gateway: 'The gateway does not answer pings. Some providers block them; the next step tells whether the internet works anyway.',
+  gateway:
+    'The gateway does not answer pings. Some providers block them; the next step tells whether the internet works anyway.',
   internet:
     'Nothing on the internet answers. Restart the modem; if that does not help, the problem is probably on your provider’s side.',
   dns: 'The internet works but names do not resolve. Check the DNS servers under Settings → Internet, or switch Auto DNS back on.',
@@ -108,7 +109,15 @@ export function checkSteps(i: CheckInput): Step[] {
   push(
     'gateway',
     // Some gateways ignore pings: only a failure when the internet is unreachable too.
-    !i.gatewayPing ? undefined : i.gatewayPing.received > 0 ? 'ok' : !i.internetPing ? undefined : internetOk ? 'warn' : 'fail',
+    !i.gatewayPing
+      ? undefined
+      : i.gatewayPing.received > 0
+        ? 'ok'
+        : !i.internetPing
+          ? undefined
+          : internetOk
+            ? 'warn'
+            : 'fail',
     i.gateway && `${i.gateway}${ms(i.gatewayPing) ? `, ${ms(i.gatewayPing)}` : ''}`,
   );
   push(

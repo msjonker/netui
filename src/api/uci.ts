@@ -24,7 +24,8 @@ export type UciPackage =
   | 'nlbwmon'
   | 'mwan3'
   | 'adblock-fast'
-  | 'opennds';
+  | 'opennds'
+  | 'https-dns-proxy';
 
 export async function getConfig(config: string): Promise<UciConfig> {
   const r = await read<UciGet>('uci', 'get', { config });

@@ -24,7 +24,7 @@
 				"session": [ "access" ],
 				"netui.users": [ "list" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			},
@@ -52,10 +52,11 @@
 				"/usr/bin/etherwake": [ "exec" ],
 				"/bin/ping": [ "exec" ],
 				"/bin/traceroute": [ "exec" ],
-				"/usr/bin/nslookup": [ "exec" ]
+				"/usr/bin/nslookup": [ "exec" ],
+				"/etc/init.d/https-dns-proxy": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ]
 		}
 	},
 	"netui-viewer": {
@@ -82,7 +83,7 @@
 				"file": [ "exec" ],
 				"session": [ "access" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			}

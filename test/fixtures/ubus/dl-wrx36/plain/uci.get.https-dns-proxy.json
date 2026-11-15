@@ -1,0 +1,48 @@
+{
+	"values": {
+		"config": {
+			".anonymous": false,
+			".type": "main",
+			".name": "config",
+			".index": 0,
+			"canary_domains_icloud": "1",
+			"canary_domains_mozilla": "1",
+			"dnsmasq_config_update": "*",
+			"force_dns": "1",
+			"notrack_dns": "1",
+			"force_dns_port": [
+				"53",
+				"853"
+			],
+			"force_dns_src_interface": [
+				"lan"
+			],
+			"procd_trigger_wan6": "0",
+			"heartbeat_domain": "heartbeat.mossdef.org",
+			"heartbeat_sleep_timeout": "10",
+			"heartbeat_wait_timeout": "10",
+			"user": "nobody",
+			"group": "nogroup",
+			"listen_addr": "127.0.0.1",
+			"force_ip_family": "auto"
+		},
+		"cfg022d79": {
+			".anonymous": true,
+			".type": "https-dns-proxy",
+			".name": "cfg022d79",
+			".index": 1,
+			"bootstrap_dns": "1.1.1.1,1.0.0.1,2606:4700:4700::1111,2606:4700:4700::1001",
+			"resolver_url": "https://cloudflare-dns.com/dns-query",
+			"listen_port": "5053"
+		},
+		"cfg032d79": {
+			".anonymous": true,
+			".type": "https-dns-proxy",
+			".name": "cfg032d79",
+			".index": 2,
+			"bootstrap_dns": "8.8.8.8,8.8.4.4,2001:4860:4860::8888,2001:4860:4860::8844",
+			"resolver_url": "https://dns.google/dns-query",
+			"listen_port": "5054"
+		}
+	}
+}
