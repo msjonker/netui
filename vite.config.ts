@@ -4,12 +4,12 @@ import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
 
 // Modules only the lazily loaded screens use (import() in App, SystemPage,
-// VpnPage). Everything else goes into the one entry chunk: left alone,
+// VpnPage): whole folders for Diagnostics, Setup, System, VPN and Routing & DNS. Everything else goes into the one entry chunk: left alone,
 // rolldown splits the modules the entry shares with lazy chunks into a
 // common chunk that loads up front anyway and compresses worse (+2 KB).
 // A module missing here still works; it just loads with the entry.
 const LAZY =
-  /src\/(features\/(diagnostics\/|setup\/|system\/FirmwareUpload|vpn\/(VpnClient|Tailscale))|model\/(diagnostics|vpnClient|tailscale)\.ts|api\/(diagnostics|tailscale)\.ts|components\/(AddonDialog|AddonsList)\.tsx|model\/addons\.ts)/;
+  /src\/(features\/(diagnostics|setup|system|vpn|routing)\/|model\/(diagnostics|vpnClient|tailscale|addons|backup|doh|routing|system|vpn)\.ts|api\/(diagnostics|tailscale|backup)\.ts|components\/(AddonDialog|AddonsList)\.tsx)/;
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');

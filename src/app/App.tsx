@@ -22,15 +22,15 @@ import { FirewallPage } from '../features/firewall/FirewallPage';
 import { TopologyPage } from '../features/topology/TopologyPage';
 import { InsightsPage } from '../features/insights/InsightsPage';
 import { LogsPage } from '../features/logs/LogsPage';
-import { VpnPage } from '../features/vpn/VpnPage';
-import { RoutingPage } from '../features/routing/RoutingPage';
-import { SystemPage } from '../features/system/SystemPage';
 import { DevicesPage } from '../features/devices/DevicesPage';
 import { SettingsLayout } from './SettingsLayout';
 
 // Rarely opened screens load on demand (not counted in the initial bundle budget).
 const DiagnosticsPage = lazy(() => import('../features/diagnostics/DiagnosticsPage').then((m) => ({ default: m.DiagnosticsPage })));
 const SetupPage = lazy(() => import('../features/setup/SetupPage').then((m) => ({ default: m.SetupPage })));
+const VpnPage = lazy(() => import('../features/vpn/VpnPage').then((m) => ({ default: m.VpnPage })));
+const RoutingPage = lazy(() => import('../features/routing/RoutingPage').then((m) => ({ default: m.RoutingPage })));
+const SystemPage = lazy(() => import('../features/system/SystemPage').then((m) => ({ default: m.SystemPage })));
 import { Shell } from './Shell';
 
 const SESSION_EXPIRED = 'Your session expired. Sign in again.';
@@ -159,24 +159,22 @@ function SignedIn({
           </Route>
           <Route path="/settings/*">
             <SettingsLayout>
-              <Switch>
-                <Route path="/settings/wifi" component={WifiPage} />
-                <Route path="/settings/networks" component={NetworksPage} />
-                <Route path="/settings/ports" component={PortsPage} />
-                <Route path="/settings/internet" component={InternetPage} />
-                <Route path="/settings/security" component={FirewallPage} />
-                <Route path="/settings/vpn" component={VpnPage} />
-                <Route path="/settings/routing" component={RoutingPage} />
-                <Route path="/settings/system" component={SystemPage} />
-                <Route path="/settings/diagnostics">
-                  <Suspense fallback={<Spinner class="m-6" />}>
-                    <DiagnosticsPage />
-                  </Suspense>
-                </Route>
-                <Route>
-                  <NotFound />
-                </Route>
-              </Switch>
+              <Suspense fallback={<Spinner class="m-6" />}>
+                <Switch>
+                  <Route path="/settings/wifi" component={WifiPage} />
+                  <Route path="/settings/networks" component={NetworksPage} />
+                  <Route path="/settings/ports" component={PortsPage} />
+                  <Route path="/settings/internet" component={InternetPage} />
+                  <Route path="/settings/security" component={FirewallPage} />
+                  <Route path="/settings/vpn" component={VpnPage} />
+                  <Route path="/settings/routing" component={RoutingPage} />
+                  <Route path="/settings/system" component={SystemPage} />
+                  <Route path="/settings/diagnostics" component={DiagnosticsPage} />
+                  <Route>
+                    <NotFound />
+                  </Route>
+                </Switch>
+              </Suspense>
             </SettingsLayout>
           </Route>
           <Route>
