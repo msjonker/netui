@@ -1,0 +1,27 @@
+{
+  "_comment": "file exec of busybox ping/traceroute/nslookup on the DL-WRX36 (OpenWrt 25.12.6, BusyBox 1.37.0), WAN behind 192.168.0.1",
+  "pingOk": {
+    "code": 0,
+    "stdout": "PING 192.168.0.1 (192.168.0.1): 56 data bytes\n64 bytes from 192.168.0.1: seq=0 ttl=64 time=0.731 ms\n64 bytes from 192.168.0.1: seq=1 ttl=64 time=0.666 ms\n64 bytes from 192.168.0.1: seq=2 ttl=64 time=0.622 ms\n\n--- 192.168.0.1 ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss\nround-trip min/avg/max = 0.622/0.673/0.731 ms\n"
+  },
+  "pingLost": {
+    "code": 1,
+    "stdout": "PING 10.255.255.1 (10.255.255.1): 56 data bytes\n\n--- 10.255.255.1 ping statistics ---\n3 packets transmitted, 0 packets received, 100% packet loss\n"
+  },
+  "pingBadAddress": {
+    "code": 1,
+    "stderr": "ping: bad address 'no-such-host.invalid'\n"
+  },
+  "nslookupOk": {
+    "code": 0,
+    "stdout": "Server:\t\t127.0.0.1\nAddress:\t127.0.0.1:53\n\nNon-authoritative answer:\nName:\topenwrt.org\nAddress: 64.226.122.113\n\nNon-authoritative answer:\nName:\topenwrt.org\nAddress: 2a03:b0c0:3:d0::1a51:c001\n\n"
+  },
+  "nslookupNxdomain": {
+    "code": 1,
+    "stdout": "Server:\t\t127.0.0.1\nAddress:\t127.0.0.1:53\n\n** server can't find no-such-host.invalid: NXDOMAIN\n\n** server can't find no-such-host.invalid: NXDOMAIN\n\n"
+  },
+  "traceroute": {
+    "code": 0,
+    "stdout": "traceroute to openwrt.org (64.226.122.113), 20 hops max, 46 byte packets\n 1  192.168.0.1  0.519 ms\n 2  72.31.144.57  15.006 ms\n 3  72.31.203.22  10.273 ms\n 4  159.56.144.60  11.619 ms\n 5  72.31.202.208  5.297 ms\n 6  72.31.203.108  5.599 ms\n 7  24.27.236.2  15.936 ms\n 8  66.109.5.136  15.260 ms\n 9  66.109.5.225  16.279 ms\n10  62.115.156.204  15.195 ms\n11  62.115.140.108  14.945 ms\n12  62.115.139.32  32.320 ms\n13  62.115.139.245  133.555 ms\n14  62.115.127.7  101.070 ms\n15  62.115.204.9  98.107 ms\n16  *\n17  *\n18  *\n19  *\n20  64.226.122.113  120.032 ms\n"
+  }
+}

@@ -5,6 +5,7 @@ import {
   IconExternal,
   IconGlobe,
   IconNetwork,
+  IconPulse,
   IconRoute,
   IconShield,
   IconSystem,
@@ -22,6 +23,7 @@ const SECTIONS = [
   { href: '/settings/vpn', label: 'VPN', icon: IconVpn },
   { href: '/settings/routing', label: 'Routing & DNS', icon: IconRoute },
   { href: '/settings/system', label: 'System', icon: IconSystem },
+  { href: '/settings/diagnostics', label: 'Diagnostics', icon: IconPulse },
 ];
 
 // Out of scope for v1: link to the matching LuCI page instead.

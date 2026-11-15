@@ -49,7 +49,10 @@
 				"/usr/bin/wifi_schedule.sh": [ "exec" ],
 				"/tmp/backup.tar.gz": [ "write" ],
 				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ],
-				"/usr/bin/etherwake": [ "exec" ]
+				"/usr/bin/etherwake": [ "exec" ],
+				"/bin/ping": [ "exec" ],
+				"/bin/traceroute": [ "exec" ],
+				"/usr/bin/nslookup": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ]

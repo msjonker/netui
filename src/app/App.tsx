@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'preact/hooks';
+import { lazy, Suspense } from 'preact/compat';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, Router, Switch } from 'wouter-preact';
 import { useHashLocation } from 'wouter-preact/use-hash-location';
@@ -26,6 +27,9 @@ import { RoutingPage } from '../features/routing/RoutingPage';
 import { SystemPage } from '../features/system/SystemPage';
 import { DevicesPage } from '../features/devices/DevicesPage';
 import { SettingsLayout } from './SettingsLayout';
+
+// Rarely opened screens load on demand (not counted in the initial bundle budget).
+const DiagnosticsPage = lazy(() => import('../features/diagnostics/DiagnosticsPage').then((m) => ({ default: m.DiagnosticsPage })));
 import { Shell } from './Shell';
 
 const SESSION_EXPIRED = 'Your session expired. Sign in again.';
@@ -158,6 +162,11 @@ function SignedIn({
                 <Route path="/settings/vpn" component={VpnPage} />
                 <Route path="/settings/routing" component={RoutingPage} />
                 <Route path="/settings/system" component={SystemPage} />
+                <Route path="/settings/diagnostics">
+                  <Suspense fallback={<Spinner class="m-6" />}>
+                    <DiagnosticsPage />
+                  </Suspense>
+                </Route>
                 <Route>
                   <NotFound />
                 </Route>

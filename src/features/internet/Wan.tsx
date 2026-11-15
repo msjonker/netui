@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'preact/hooks';
+import { Link } from 'wouter-preact';
 import type { DeviceStatus, InterfaceStatus, UciConfig } from '../../api/types';
 import { useApply } from '../../api/useApply';
 import { validateWan, wanDraft, wanOps, type Wan, type WanDraft } from '../../model/internet';
@@ -71,6 +72,14 @@ export function WanStatusCard({
         <Stat label="Uptime" value={online && live?.uptime != null ? formatDuration(live.uptime) : '—'} />
         <Stat label="Connection" value={PROTO_LABEL[wan.proto] ?? wan.proto} hint={wan.vlan ? `VLAN ${wan.vlan}` : undefined} />
       </div>
+      {!online && !live?.pending && (
+        <p class="pb-3">
+          <Link class="text-accent hover:underline" href="/settings/diagnostics">
+            Run a connection check
+          </Link>{' '}
+          to find out where it fails.
+        </p>
+      )}
       <Detail
         rows={[
           ['Port', <span class="font-mono text-xs">{wan.port || '—'}</span>],

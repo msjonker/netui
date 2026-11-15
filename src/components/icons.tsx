@@ -207,6 +207,12 @@ export const IconInsights = (p: P) => (
   </Svg>
 );
 
+export const IconPulse = (p: P) => (
+  <Svg {...p}>
+    <path d="M2.5 10h3l2-5 3.5 10 2-5h4.5" />
+  </Svg>
+);
+
 export const IconLog = (p: P) => (
   <Svg {...p}>
     <rect x="3.5" y="2.5" width="13" height="15" rx="2" />
