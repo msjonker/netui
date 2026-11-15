@@ -5,6 +5,7 @@ import { renderApp } from '../../../test/renderApp';
 import { applyReviewed, review } from '../../../test/applyFlow';
 import { wireless } from '../../../test/wireless';
 import type { AssocStation } from '../../api/types';
+import { UbusError, UbusStatus } from '../../api/ubus';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 
@@ -167,6 +168,21 @@ describe('Client Devices: deep links and WiFi actions', () => {
       ]),
     );
     expect(await within(drawer).findByText(/should rejoin/)).toBeTruthy();
+    expect(router.writes()).toHaveLength(0);
+  });
+
+  it('wakes a wired device on its network bridge, and explains a missing etherwake', async () => {
+    const drawer = await openClient('laptop');
+    fireEvent.click(await within(drawer).findByRole('button', { name: 'Wake' }));
+    await within(drawer).findByText(/Wake-up sent/);
+    expect(router.calls.filter((c) => c.object === 'file')).toEqual([
+      { object: 'file', method: 'exec', args: { command: '/usr/bin/etherwake', params: ['-i', 'br-lan', '02:4e:55:00:01:10'] } },
+    ]);
+
+    // Without the package rpcd answers NOT_FOUND (recorded on the DL-WRX36).
+    router.overrides.push((c) => (c.object === 'file' ? new UbusError(UbusStatus.NOT_FOUND, 'file', 'exec') : undefined));
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Wake' }));
+    expect((await within(drawer).findByRole('alert')).textContent).toMatch(/apk add etherwake/);
     expect(router.writes()).toHaveLength(0);
   });
 

@@ -492,6 +492,29 @@ export const reconnectClient = (ifname: string, mac: string, apMac?: string) => 
   return apMac ? relay(apMac, `hostapd.${ifname}`, 'del_client', args, true) : call(`hostapd.${ifname}`, 'del_client', args);
 };
 
+/**
+ * Send a Wake-on-LAN packet out of `device` (the client's network bridge) with
+ * etherwake. A runtime action, like reconnecting. Recorded on the DL-WRX36:
+ * {code: 0} when sent, status NOT_FOUND without the package, code 1 + stderr
+ * for a bad interface.
+ */
+export async function wakeClient(device: string, mac: string): Promise<void> {
+  try {
+    const r = await call<{ code?: number; stderr?: string }>(
+      'file',
+      'exec',
+      { command: '/usr/bin/etherwake', params: ['-i', device, mac] },
+      { permissionDeniedIsAuth: false },
+    );
+    if (r?.code) throw new Error(r.stderr?.trim() || `etherwake exited with ${r.code}`);
+  } catch (e) {
+    if (e instanceof UbusError && e.status === UbusStatus.NOT_FOUND) {
+      throw new Error('Wake-on-LAN needs the etherwake package on the router (apk add etherwake).');
+    }
+    throw e;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // --- Devices (adopted access points, via the gateway's netui.devices plugin)
 

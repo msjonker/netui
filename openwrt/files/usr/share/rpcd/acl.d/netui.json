@@ -48,7 +48,8 @@
 				"/etc/init.d/ddns": [ "exec" ],
 				"/usr/bin/wifi_schedule.sh": [ "exec" ],
 				"/tmp/backup.tar.gz": [ "write" ],
-				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ]
+				"/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz": [ "exec" ],
+				"/usr/bin/etherwake": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds" ]

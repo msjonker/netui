@@ -1,7 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import { useLocation, useParams } from 'wouter-preact';
-import { reconnectClient, stationRate, useUci } from '../../api/queries';
+import { reconnectClient, stationRate, useInterfaces, useUci, wakeClient } from '../../api/queries';
 import { useUsage } from '../../api/usage';
 import { normalizeUsage } from '../../model/usage';
 import { useApply } from '../../api/useApply';
@@ -234,6 +234,33 @@ function Reconnect({ c }: { c: Client }) {
   );
 }
 
+/** Wake-on-LAN, for a device that is not on WiFi right now (most wake only over a cable). */
+function Wake({ c }: { c: Client }) {
+  const ifaces = useInterfaces(false);
+  const [state, setState] = useState<{ busy?: boolean; done?: boolean; error?: string }>({});
+  const live = ifaces.data?.interface.find((i) => i.interface === (c.network ?? 'lan'));
+  const device = live?.l3_device ?? live?.device;
+  const run = async () => {
+    setState({ busy: true });
+    try {
+      await wakeClient(device!, c.mac);
+      setState({ done: true });
+    } catch (e) {
+      setState({ error: (e as Error).message });
+    }
+  };
+  return (
+    <div class="flex items-center justify-between gap-4 py-2.5">
+      <p class={state.error ? 'text-bad' : 'text-muted'} role={state.error ? 'alert' : undefined}>
+        {state.error ?? (state.done ? 'Wake-up sent. A sleeping device takes a moment to come online.' : 'Turn on a sleeping or switched-off device that supports Wake-on-LAN.')}
+      </p>
+      <Button onClick={run} disabled={!device || state.busy}>
+        Wake
+      </Button>
+    </div>
+  );
+}
+
 /** This period's bytes for one client from nlbwmon, when it is installed. */
 function usePeriodUsage(mac: string): string | undefined {
   const installed = !!useUci('nlbwmon').data;
@@ -325,11 +352,7 @@ function Overview({ c }: { c: Client }) {
       <div class="mt-4">
         <TrafficChart c={c} />
       </div>
-      {w && (
-        <FormSection title="Actions">
-          <Reconnect c={c} />
-        </FormSection>
-      )}
+      <FormSection title="Actions">{w ? <Reconnect c={c} /> : <Wake c={c} />}</FormSection>
       {c.randomMac && (
         <p class="mt-3 text-xs text-muted">
           This device uses a private (randomized) MAC address. Settings tied to it stop applying if the device rotates its
