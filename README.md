@@ -102,6 +102,10 @@ Browse to **http://192.168.1.1/netui/** and sign in as `netui`. If LuCI is
 installed with HTTPS (`luci-ssl`), use **https://192.168.1.1/netui/** instead:
 the login session is a bearer token, so HTTPS is recommended.
 
+On a freshly installed OpenWrt the Dashboard offers **Set Up**: WiFi on with a
+name and password, the internet connection, time zone, and a password for the
+router itself (`ssh`, LuCI), in one reviewed change.
+
 ### Adding access points
 
 Any other OpenWrt router (24.10 or 25.x) can become an access point managed
@@ -166,7 +170,10 @@ These pages appear when the matching OpenWrt packages are installed
 | Dynamic DNS | `luci-app-ddns` | Settings → Internet |
 | Multi-WAN (failover, load balancing) | `mwan3` | Settings → Internet |
 | Speed test | `librespeed-cli` (8 MB) or the much smaller `speedtestcpp` | Settings → Internet, Dashboard |
-| WireGuard VPN server | `luci-proto-wireguard` | Settings → VPN |
+| WireGuard VPN server, VPN service (the router as a client) | `luci-proto-wireguard` | Settings → VPN |
+| Tailscale (remote access without a public address) | `tailscale` (26 MB) | Settings → VPN |
+| DNS over HTTPS | `https-dns-proxy` | Settings → Routing & DNS |
+| Wake-on-LAN | `etherwake` | Client Devices → a device |
 | WiFi schedules | `wifischedule` | Settings → WiFi |
 | Ad blocking | `adblock-fast` | Settings → Firewall & Security |
 | Guest portal | `opennds` | Settings → Networks |
@@ -186,6 +193,18 @@ A few notes:
   length and speed limit, and lists who is signed in. openNDS's
   "dnsmasq-full" warning only matters for its walled garden, which netui does
   not use.
+- **WireGuard**: after installing it for the first time, restart the router
+  (or the network) once; until then new WireGuard interfaces stay down.
+- **VPN service** sends all devices, or chosen ones, through a VPN provider
+  from its WireGuard configuration file, with an optional kill switch that
+  blocks their internet while the tunnel is down.
+- **Tailscale** reaches home even behind carrier-grade NAT, with no port
+  open: sign in with a Tailscale account, then optionally share the home
+  networks and offer the router as an exit node (approve both in the
+  Tailscale admin console).
+- **DNS over HTTPS**: https-dns-proxy starts as soon as it is installed;
+  netui switches it on and off and picks the provider. LAN devices that use
+  their own DNS server are redirected to the router while it is on.
 - **Usage history** keeps monthly usage per device and per application. By
   default nlbwmon keeps it in memory; the switch on the Usage history page
   moves it to flash so it survives a restart.
@@ -217,6 +236,13 @@ router with `owut` (attended sysupgrade). The OpenWrt build server makes an
 image with the packages you have installed, and the router installs it and
 restarts with its settings. Access points upgrade the same way from their
 panel on the Devices page. The device needs internet access.
+
+No internet on the router, or a particular version? **Install it by hand**
+under the same card takes a *sysupgrade* file from
+[firmware-selector.openwrt.org](https://firmware-selector.openwrt.org/),
+checks it is made for this router, shows its SHA-256 and installs it keeping
+the settings. Packages installed with `apk`/`opkg` are not in that image and
+need installing again afterwards.
 
 netui is not in the OpenWrt package feeds, so the new image is built without
 it. Its files are kept across the upgrade like settings are, so netui and the

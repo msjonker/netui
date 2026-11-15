@@ -129,7 +129,14 @@ The bar on the left (along the bottom on a phone) has the main sections:
 | **Client Devices** | Every phone, laptop, TV and gadget on your network. |
 | **Insights** | WiFi channels and neighbouring networks, traffic, and usage history. |
 | **System Log** | What happened on the router, in plain events. |
-| **Settings** | Everything you can change, in tabs: WiFi, Networks, Ports, Internet, Firewall & Security, VPN, Routing & DNS, System. |
+| **Settings** | Everything you can change, in tabs: WiFi, Networks, Ports, Internet, Firewall & Security, VPN, Routing & DNS, System, Diagnostics. |
+
+**A brand-new router?** The Dashboard then says *Your router is not set up
+yet* and offers **Set Up**: a few short steps to turn the WiFi on with a name
+and password, check the internet connection, pick your time zone, and give
+the router itself a password (for `ssh` and LuCI; netui keeps its own
+sign-in). You see every change before it is made, and the last step shows a
+QR code that phones can scan to join the new WiFi.
 
 Your initial in the top right corner opens a small menu: who you are signed in
 as, the **theme** (*System* follows your computer's light or dark setting, or
@@ -167,6 +174,14 @@ try again more carefully, or ask for help.
 - **Fibre or DSL with a username and password** (often called *PPPoE*):
   click **Edit** on **Primary (WAN1)**, choose PPPoE and enter the username
   and password your provider gave you.
+- **"Behind carrier-grade NAT" or "behind another router".** netui warns
+  you when your router has no address of its own on the internet: your
+  provider shares one between several customers, or there is another router
+  in front of yours. Your internet works, but nothing at home can be reached
+  from outside: port forwards and the VPN server will not work. Ask your
+  provider for a public IPv4 address, put the other router in bridge mode, or
+  use Tailscale ([section 11](#11-reaching-home-from-away-vpn)), which works
+  without one.
 - **Speed test.** Click **Run speed test** to measure your internet speed from
   the router itself, without WiFi getting in the way. It takes about 30
   seconds. (Needs the `librespeed-cli` or `speedtestcpp` package.)
@@ -253,6 +268,8 @@ Click a device to:
 - **See what it is doing:** current speed, data used this session (and this
   month, with usage history turned on), and its open connections.
 - **Reconnect** it (WiFi devices), which helps when it is stuck.
+- **Wake** it: switch on a sleeping or powered-off computer that supports
+  *Wake-on-LAN*, usually over a cable. (Needs `etherwake`.)
 - **Block** it: it can no longer reach the internet or your network until you
   unblock it (under **Firewall & Security → Blocked Devices**).
 
@@ -277,6 +294,16 @@ Cloudflare's free filtering service.
 for example a game console or a home server. Only add what a device's manual
 asks for, and give that device a fixed address first (see
 [Your devices](#8-your-devices)).
+
+**DMZ** (on the same tab) sends everything that comes in from the internet,
+and that no port forward or router service already uses, to one device. Some
+game consoles want this. That device is then fully exposed to the internet:
+use it only for something that needs it, and give it a fixed address first.
+
+**DNS over HTTPS** (**Settings → Routing & DNS → DNS**) encrypts the router's
+name lookups ("where is example.com?"), so your internet provider can no
+longer see or change them. Turn on **Encrypt DNS** and pick a provider; some
+also block malware or adult sites. (Needs `https-dns-proxy`.)
 
 **Policies** and **Traffic Rules** decide which networks may talk to which.
 The defaults are safe: leave them unless you know why you want a change.
@@ -326,6 +353,25 @@ reach a home server, or to browse safely on hotel WiFi.
 
 (Needs `luci-proto-wireguard`.)
 
+**Tailscale** is the easier way in when the VPN server cannot work: if your
+provider uses carrier-grade NAT (netui warns you), or you cannot or do not
+want to open a port. Install the `tailscale` package (about 26 MB), then
+**Settings → VPN → Tailscale → Connect** and sign in with a Tailscale
+account (free for personal use). Install the Tailscale app on your phone and
+laptop with the same account. With **Share my home network** on, they reach
+every device at home, not just the router; with **Use this router as an exit
+node** on, they can send all their internet traffic through home, say on
+public WiFi. Approve both for this router in the Tailscale admin console.
+
+**Using a VPN service** (the other way round): **Settings → VPN → VPN service
+→ Set Up** sends your home's internet traffic through a VPN provider, for
+privacy or to appear in another country. Download a **WireGuard**
+configuration file from your provider (choose a server location there) and
+load it. Choose **All devices** or only **Chosen devices** (give them fixed
+addresses first), and turn on **Block the internet if the VPN is down** if
+nothing should ever go out without it. After installing WireGuard for the
+first time, restart the router once. (Needs `luci-proto-wireguard`.)
+
 ## 12. Keeping an eye on things
 
 - **Dashboard:** internet status and speed, the router's health, the last
@@ -351,6 +397,18 @@ If there is one, click **Update**: the router has an image built with your
 add-ons, installs it and restarts. Allow about five minutes; your settings and
 netui are kept. Access points update the same way from their panel in
 **Devices**. (Needs `owut`, which standard OpenWrt 25.12 includes.)
+
+**Installing a firmware file yourself.** If the router has no internet, or
+you need a particular version, download the *sysupgrade* file for your model
+from [firmware-selector.openwrt.org](https://firmware-selector.openwrt.org/)
+and use **Settings → System → Firmware → Install it by hand**. netui checks
+that the file is made for your router and shows its checksum (compare it with
+the one on the download page) before anything is installed. Settings are
+kept.
+
+**Router password.** **Settings → System → Router password** sets the
+password for `ssh` and LuCI. A new router has none, so anyone on your network
+could sign in to it: set one.
 
 **Updating netui itself.** Download the new file and install it as in
 [step 2](#2-install-netui). Your settings stay.
@@ -396,8 +454,12 @@ connection to the router. Your network is as it was before.
 root@192.168.1.1` and run `netui-passwd` again to set a new one.
 
 **The internet is down.** The **Dashboard** says whether the router itself
-is online. If it is not: restart your modem, check the cable between modem
-and router, then look at **Settings → Internet**. If the router is online
+is online. If it is not, open **Settings → Diagnostics → Run Check**: it
+tests the cable, the address from your provider, the internet and name
+lookup in turn, and says what to do about the first one that fails. Restart
+your modem, check the cable between modem and router, then look at
+**Settings → Internet**. **Diagnostics** can also *ping*, *trace the route
+to* or *look up* any name or address from the router. If the router is online
 but one device is not, open that device in **Client Devices** and check it is
 not blocked.
 
