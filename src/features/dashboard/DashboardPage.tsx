@@ -16,6 +16,7 @@ import { EventRow } from '../../components/EventRow';
 import { IconArrowDown, IconArrowUp, IconWifi, SignalBars } from '../../components/icons';
 import { PortTile } from '../../components/PortTile';
 import { Card, Dot, Empty, LoadError, Meter, Page, Pill, Spinner, Stat } from '../../components/ui';
+import { SetupBanner } from './SetupBanner';
 
 const SERIES = [
   { label: 'Download', color: '--accent' },
@@ -364,6 +365,7 @@ export function DashboardPage() {
     <Page title="Dashboard">
       <LoadError error={firstError(ifaces, board)} />
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <SetupBanner />
         <HealthStrip />
         <InternetCard />
         <GatewayCard />

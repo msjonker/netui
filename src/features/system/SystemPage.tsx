@@ -27,6 +27,7 @@ import { rebootAndWait, rebootDeps, waitForRestart, type RebootPhase } from './r
 import { BusyOverlay, PHASE_TEXT } from './BusyOverlay';
 import { BackupCard } from './Backup';
 import { AdminsCard } from './Admins';
+import { RootPasswordCard } from './RootPassword';
 
 // Loaded on demand: few people install firmware by hand.
 const FirmwareUpload = lazy(() => import('./FirmwareUpload').then((m) => ({ default: m.FirmwareUpload })));
@@ -329,6 +330,7 @@ export function SystemPage() {
           <Restart />
           {!getSession()?.readOnly && <BackupCard />}
           <AdminsCard />
+          <RootPasswordCard />
         </div>
         <div class="space-y-4">
           <DeviceCard />

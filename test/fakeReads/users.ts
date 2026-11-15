@@ -5,6 +5,12 @@ import type { FakeReadHandler, FakeRouter } from '../fakeRouter';
 import type { NetuiUser } from '../../src/api/types';
 
 const states = new WeakMap<FakeRouter, NetuiUser[]>();
+const rootPassword = new WeakMap<FakeRouter, boolean>();
+
+/** A router whose root has no password, like a fresh install. */
+export function seedNoRootPassword(r: FakeRouter): void {
+  rootPassword.set(r, false);
+}
 const usersOf = (r: FakeRouter) => {
   let u = states.get(r);
   if (!u) states.set(r, (u = [{ username: 'netui', role: 'admin' }]));
@@ -23,6 +29,12 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
   switch (method) {
     case 'list':
       return { users: structuredClone(users) };
+    case 'root':
+      return { password_set: rootPassword.get(router) ?? true };
+    case 'root_password':
+      if (String(args.password ?? '').length < 8) return { error: 'Use a password of at least 8 characters.' };
+      rootPassword.set(router, true);
+      return { result: true };
     case 'add':
       if (u) return { error: `${String(args.username)} is already a login on this router.` };
       users.push({ username: args.username as string, role: args.role as NetuiUser['role'] });

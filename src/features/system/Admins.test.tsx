@@ -17,7 +17,7 @@ async function card() {
   return (await screen.findByRole('heading', { name: 'Admins' })).closest('section') as HTMLElement;
 }
 
-const users = () => router.calls.filter((c) => c.object === 'netui.users' && c.method !== 'list');
+const users = () => router.calls.filter((c) => c.object === 'netui.users' && c.method !== 'list' && c.method !== 'root');
 
 describe('admins', () => {
   it('adds a read-only user, makes them an admin and removes them', async () => {

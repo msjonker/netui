@@ -10,6 +10,8 @@
 //   remove {username}
 //   password {username, password}
 //   role {username, role}
+//   root                            whether root has a password (never the hash)
+//   root_password {password}        set root's password (ssh, LuCI), as LuCI does
 //
 // Only logins with exactly these groups are touched; root and logins made for
 // other tools are invisible here. The last admin stays (the UI also keeps
@@ -25,7 +27,7 @@
 'use strict';
 
 import { cursor } from 'uci';
-import { popen } from 'fs';
+import { popen, readfile } from 'fs';
 
 const ROLES = {
 	admin: { read: ['netui'], write: ['netui'] },
@@ -96,6 +98,15 @@ function set_role(uci, section, role) {
 		uci.set('rpcd', section, 'read', ROLES[role].read);
 	if (length(ROLES[role].write))
 		uci.set('rpcd', section, 'write', ROLES[role].write);
+}
+
+// passwd reads the new password twice from stdin; OpenWrt's busybox accepts a pipe.
+function set_system_password(user, password) {
+	const p = popen(`passwd ${shellquote(user)} >/dev/null 2>&1`, 'w');
+	if (!p)
+		return false;
+	p.write(`${password}\n${password}\n`);
+	return p.close() == 0;
 }
 
 const methods = {
@@ -184,6 +195,23 @@ const methods = {
 				return { error: 'could not save' };
 			sign_out_later(l.username);
 			return { result: true };
+		}
+	},
+
+	root: {
+		call: function() {
+			const line = filter(split(readfile('/etc/shadow') ?? '', '\n'), (l) => index(l, 'root:') == 0)[0] ?? '';
+			const h = split(line, ':')[1] ?? '';
+			return { password_set: length(h) > 1 && h != '!' && h != '*' };
+		}
+	},
+
+	root_password: {
+		args: { password: 'password' },
+		call: function(request) {
+			if (!check_password(request.args.password))
+				return { error: 'Use a password of at least 8 characters.' };
+			return set_system_password('root', request.args.password) ? { result: true } : { error: 'could not set the password' };
 		}
 	},
 };

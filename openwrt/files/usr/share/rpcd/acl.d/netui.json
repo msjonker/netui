@@ -23,7 +23,7 @@
 				"uci": [ "get", "state", "changes" ],
 				"file": [ "exec" ],
 				"session": [ "access" ],
-				"netui.users": [ "list" ]
+				"netui.users": [ "list", "root" ]
 			},
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ],
 			"file": {
@@ -43,7 +43,7 @@
 				"netui.speedtest": [ "start" ],
 				"netui.services": [ "adblock_apply", "portal_apply", "portal_auth", "portal_deauth" ],
 				"netui.tailscale": [ "login", "up", "down", "logout", "set" ],
-				"netui.users": [ "add", "remove", "password", "role" ]
+				"netui.users": [ "add", "remove", "password", "role", "root_password" ]
 			},
 			"file": {
 				"/etc/init.d/sqm": [ "exec" ],

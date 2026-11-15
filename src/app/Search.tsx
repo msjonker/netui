@@ -37,6 +37,7 @@ const PAGE_LIST: [string, string, string][] = [
   ['VPN', 'vpn', 'wireguard'],
   ['Routing & DNS', 'routing', 'routes dns'],
   ['System', 'system', 'reboot hostname time firmware'],
+  ['Set up your router', '/setup', 'wizard first run'],
   ['Diagnostics', 'diagnostics', 'ping traceroute dns lookup troubleshoot connection check'],
 ];
 

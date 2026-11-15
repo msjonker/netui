@@ -27,3 +27,16 @@ export const addUser = (username: string, password: string, role: NetuiRole) => 
 export const removeUser = (username: string) => write('remove', { username });
 export const setPassword = (username: string, password: string) => write('password', { username, password });
 export const setRole = (username: string, role: NetuiRole) => write('role', { username, role });
+
+export const rootKey = ['netui.users', 'root'] as const;
+
+/** Whether root (ssh, LuCI) has a password. Admins only; never the hash. */
+export const useRootPassword = (enabled = true) =>
+  useQuery({
+    queryKey: rootKey,
+    enabled,
+    retry: false,
+    queryFn: async () => (await read<{ password_set: boolean }>('netui.users', 'root')).password_set,
+  });
+
+export const setRootPassword = (password: string) => write('root_password', { password });

@@ -10,6 +10,7 @@ import { type } from '../../../test/dom';
 import { applyReviewed } from '../../../test/applyFlow';
 import uciSystem from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.system.json';
 import { rebootDeps } from './reboot';
+import { seedNoRootPassword } from '../../../test/fakeReads/users';
 import fwRecorded from '../../../test/fixtures/ubus/dl-wrx36/plain/system.validate_firmware_image.json';
 import unixtime from '../../../test/fixtures/ubus/bench-v2/gateway.luci.getUnixtime.json';
 
@@ -147,5 +148,23 @@ describe('restart', () => {
     await screen.findByText(/Sign in again/);
     expect(router.writes()).toEqual([]);
     expect(router.calls.some((c) => c.method === 'apply')).toBe(false);
+  });
+});
+
+describe('router password', () => {
+  it('says root has none and sets one', async () => {
+    seedNoRootPassword(router);
+    renderApp('#/settings/system');
+    const card = (await screen.findByRole('heading', { name: 'Router password' })).closest('section')!;
+    expect((await within(card).findByText(/Not set/)).textContent).toMatch(/ssh/);
+    fireEvent.click(within(card).getByRole('button', { name: 'Set Password' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Router password' });
+    type(dialog, 'New password', 'router pass 1');
+    type(dialog, 'Again', 'router pass 2');
+    expect(within(dialog).getByText('The passwords do not match.')).toBeTruthy();
+    type(dialog, 'Again', 'router pass 1');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(await within(card).findByText(/^Set\./)).toBeTruthy();
+    expect(router.calls.filter((c) => c.method === 'root_password')).toHaveLength(1);
   });
 });

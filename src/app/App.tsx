@@ -30,6 +30,7 @@ import { SettingsLayout } from './SettingsLayout';
 
 // Rarely opened screens load on demand (not counted in the initial bundle budget).
 const DiagnosticsPage = lazy(() => import('../features/diagnostics/DiagnosticsPage').then((m) => ({ default: m.DiagnosticsPage })));
+const SetupPage = lazy(() => import('../features/setup/SetupPage').then((m) => ({ default: m.SetupPage })));
 import { Shell } from './Shell';
 
 const SESSION_EXPIRED = 'Your session expired. Sign in again.';
@@ -148,6 +149,11 @@ function SignedIn({
           <Route path="/devices/:mac?" component={DevicesPage} />
           <Route path="/insights" component={InsightsPage} />
           <Route path="/logs" component={LogsPage} />
+          <Route path="/setup">
+            <Suspense fallback={<Spinner class="m-6" />}>
+              <SetupPage />
+            </Suspense>
+          </Route>
           <Route path="/settings">
             <Redirect to="/settings/wifi" replace />
           </Route>
