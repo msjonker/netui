@@ -6,6 +6,7 @@ import {
   newPortForward,
   normalizePortForwards,
   portForwardOps,
+  removePortForwardOps,
   unblockOps,
   validatePortForward,
   zones,
@@ -38,13 +39,8 @@ import {
 import { ContentFilterTab } from './ContentFilterTab';
 import { PolicyTab } from './PolicyTab';
 import { TrafficRulesTab } from './TrafficRulesTab';
-import { LUCI_FIREWALL, LUCI_RULES, PLAN, PROTOCOLS, protoLabel } from './shared';
-
-interface Host {
-  ip: string;
-  name: string;
-  fixed: boolean;
-}
+import { LUCI_FIREWALL, LUCI_RULES, PLAN, PROTOCOLS, protoLabel, type Host } from './shared';
+import { DmzCard } from './Dmz';
 
 /** Zone that holds the destination address, so forwards to a guest network go to its zone. */
 function zoneFor(ip: string, subnets: Subnet[], fw: UciConfig): string | undefined {
@@ -210,7 +206,7 @@ function PortForwardForm({
                 variant="danger"
                 onClick={() => {
                   setConfirmDelete(false);
-                  void apply.start([{ op: 'delete', config: 'firewall', section: pf.section }], PLAN);
+                  void apply.start(removePortForwardOps(pf.section, fw), PLAN);
                 }}
               >
                 Remove
@@ -307,6 +303,9 @@ function PortForwards({ fw, subnets, hosts }: { fw: UciConfig; subnets: Subnet[]
           </div>
         )}
       </Card>
+      <div class="mt-4">
+        <DmzCard fw={fw} hosts={hosts} zoneFor={(ip) => zoneFor(ip, subnets, fw)} />
+      </div>
       {sel === 'new' && <PortForwardForm subnets={subnets} fw={fw} hosts={hosts} onClose={() => setSel(null)} />}
       {current && (
         <PortForwardForm key={current.section} pf={current} subnets={subnets} fw={fw} hosts={hosts} onClose={() => setSel(null)} />

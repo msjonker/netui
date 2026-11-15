@@ -1,3 +1,10 @@
+/** A device a rule can point at. */
+export interface Host {
+  ip: string;
+  name: string;
+  fixed: boolean;
+}
+
 export const PLAN = { returnTo: '/settings/security' };
 
 export const LUCI_FIREWALL = '/cgi-bin/luci/admin/network/firewall';

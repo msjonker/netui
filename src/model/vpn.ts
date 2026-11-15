@@ -30,7 +30,8 @@
 import type { InterfaceDump, UciConfig, UciSection, UciValue, WgInstances } from '../api/types';
 import { bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { formatIPv4, hostAt, hostOffset, inSubnet, isIPv4, networkAddress, parseCidr, parseIPv4 } from '../lib/ip';
-import { findUplink, wanNetworks, type Subnet } from './network';
+import { findUplink, wanZoneName, type Subnet } from './network';
+import { dmzFollowOps } from './firewall';
 
 export const DEFAULT_PORT = 51820;
 /** WireGuard's default MTU; `ip link add type wireguard` uses it. */
@@ -131,12 +132,6 @@ function lanZoneName(fw: UciConfig): string | undefined {
   const zs = sectionsOfType(fw, 'zone');
   const z = zs.find((z) => list(z.network).includes('lan')) ?? zs.find((z) => str(z.name) === 'lan');
   return z && zoneName(z);
-}
-
-function wanZoneName(fw: UciConfig): string {
-  const wan = wanNetworks(fw);
-  const z = sectionsOfType(fw, 'zone').find((z) => list(z.network).some((n) => wan.has(n)));
-  return (z && str(z.name)) ?? 'wan';
 }
 
 function accessOf(fw: UciConfig | undefined, zone: string | undefined): VpnServer['access'] {
@@ -443,6 +438,13 @@ function portRule(iface: string, port: string, wan: string): Record<string, UciV
   return { name: `netui: WireGuard ${iface}`, src: wan, proto: 'udp', dest_port: port, target: 'ACCEPT' };
 }
 
+/** Keep a DMZ off the server's port (or give the port back when null). */
+function dmzFollow(iface: string, port: string | null, firewall: UciConfig): UciOp[] {
+  const name = fwSection.port(iface);
+  const rule = port && { '.name': name, '.type': 'rule', '.anonymous': false, '.index': 1e6, ...portRule(iface, port, wanZoneName(firewall)) };
+  return dmzFollowOps(firewall, { [name]: rule || null });
+}
+
 /** Access-dependent firewall sections: lan forwarding for full access, DNS to the router otherwise. */
 function accessSections(iface: string, zone: string, access: VpnAccess, firewall: UciConfig): UciOp[] {
   const lan = lanZoneName(firewall);
@@ -501,6 +503,7 @@ export function createServerOps(
     addFw(fwSection.wan(iface), 'forwarding', { src: zone, dest: wan }),
     ...accessSections(iface, zone, d.access, ctx.firewall),
     addFw(fwSection.port(iface), 'rule', portRule(iface, String(Number(d.port)), wan)),
+    ...dmzFollow(iface, String(Number(d.port)), ctx.firewall),
   ];
 }
 
@@ -524,6 +527,7 @@ export function editServerOps(
   const wan = wanZoneName(firewall);
   if (rule) ops.push(...diffSection('firewall', fwSection.port(iface), rule, { dest_port: port }));
   else ops.push(addFw(fwSection.port(iface), 'rule', portRule(iface, port, wan)));
+  ops.push(...dmzFollow(iface, port, firewall));
 
   if (d.access !== server.access) {
     const zoneSection = fwSection.zone(iface);
@@ -550,6 +554,7 @@ export function deleteServerOps(server: Pick<VpnServer, 'iface'>, ctx: { network
     ...ownedSections(iface)
       .filter((s) => ctx.firewall[s])
       .map((section): UciOp => ({ op: 'delete', config: 'firewall', section })),
+    ...dmzFollow(iface, null, ctx.firewall),
   ];
 }
 

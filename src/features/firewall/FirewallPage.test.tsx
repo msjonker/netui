@@ -77,6 +77,26 @@ describe('Firewall & Security', () => {
     expect(redirects()).toHaveLength(0);
   });
 
+  it('turns the DMZ on for a device, around the router\'s ports and the forwards, and off again', async () => {
+    await openTab('Port Forwarding');
+    const card = (await screen.findByRole('heading', { name: 'DMZ' })).closest('section')!;
+    pick(card, 'Device', '10.231.1.128');
+    fireEvent.click(within(card).getByRole('button', { name: 'Turn On' }));
+    await applyReviewed();
+    const dmz = () => redirects().filter((r) => r.name === 'netui: DMZ');
+    expect(dmz().map((r) => [r.src_dport, r.dest_ip, r.dest])).toEqual([
+      ['1-67', '10.231.1.128', 'lan'],
+      ['69-8079', '10.231.1.128', 'lan'],
+      ['8081-65535', '10.231.1.128', 'lan'],
+    ]);
+    // Still one port forward in the list: the DMZ is not one.
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+
+    fireEvent.click(await within(card).findByRole('button', { name: 'Turn Off' }));
+    await applyReviewed();
+    expect(dmz()).toHaveLength(0);
+  });
+
   it('blocks LAN from the internet from the zone matrix', async () => {
     renderApp('#/settings/security');
     fireEvent.click(await screen.findByRole('button', { name: 'LAN to Internet: Allow' }));

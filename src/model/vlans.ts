@@ -7,7 +7,7 @@
 import type { UciConfig, UciValue } from '../api/types';
 import { diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { hostOffset, networkAddress } from '../lib/ip';
-import { validateNetwork, wanNetworks, type NetworkDraft, type Subnet } from './network';
+import { validateNetwork, wanNetworks, wanZoneName, type NetworkDraft, type Subnet } from './network';
 import { currentPlan, inUse, removeVlanPlan, renumberPlan, switchOps, validateVid, vlanOf, type Switch } from './ports';
 
 export type Isolation = 'trusted' | 'isolated';
@@ -64,12 +64,6 @@ function zoneNames(fw: UciConfig): string[] {
 function lanZone(fw: UciConfig) {
   const zs = sectionsOfType(fw, 'zone');
   return zs.find((z) => list(z.network).includes('lan')) ?? zs.find((z) => str(z.name) === 'lan');
-}
-
-function wanZoneName(fw: UciConfig): string {
-  const wan = wanNetworks(fw);
-  const z = sectionsOfType(fw, 'zone').find((z) => list(z.network).some((n) => wan.has(n)));
-  return (z && str(z.name)) ?? 'wan';
 }
 
 export function createNetworkOps(

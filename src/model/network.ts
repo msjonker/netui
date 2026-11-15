@@ -74,6 +74,13 @@ export function wanNetworks(firewall: UciConfig | undefined): Set<string> {
   return out;
 }
 
+/** The firewall zone the WAN networks are in. */
+export function wanZoneName(fw: UciConfig): string {
+  const wan = wanNetworks(fw);
+  const z = sectionsOfType(fw, 'zone').find((z) => list(z.network).some((n) => wan.has(n)));
+  return (z && str(z.name)) ?? 'wan';
+}
+
 // ---------------------------------------------------------------------------
 // Networks (UCI interface + its DHCP pool + live state)
 

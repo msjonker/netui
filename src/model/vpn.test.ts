@@ -8,6 +8,7 @@ import ddnsRecording from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.ddns.
 import wgPopulated from '../../test/fixtures/ubus/dl-wrx36/plain/luci.wireguard.getWgInstances.populated.json';
 import type { WgInstances } from '../api/types';
 import { attachedSubnets, localSubnets } from './network';
+import { dmzOps } from './firewall';
 import {
   addPeerOps,
   clientAllowedIps,
@@ -249,6 +250,19 @@ describe('editServerOps', () => {
     const s = withServer();
     const server = normalizeVpn(s.network, s.firewall, undefined, undefined, 0).servers[0]!;
     expect(editServerOps(server, { port: '51820', dns: '', access: 'full', endpoint: 'vpn.example.net' }, s)).toEqual([]);
+  });
+});
+
+describe('a server next to a DMZ', () => {
+  it('keeps the DMZ off its port, and gives the port back when removed', () => {
+    const c = wrx();
+    const fw = staged(c.network, c.firewall, dmzOps(c.firewall, { destIp: '192.168.1.50', destZone: 'lan' })).firewall;
+    const ports = (cfg: UciConfig) => Object.values(cfg).filter((x) => x.name === 'netui: DMZ').map((x) => x.src_dport);
+    expect(ports(fw)).toEqual(['1-67', '69-65535']);
+    const s = staged(c.network, fw, createServerOps(draft(), PRIV, { network: c.network, firewall: fw }));
+    expect(ports(s.firewall)).toEqual(['1-67', '69-51819', '51821-65535']);
+    const out = staged(s.network, s.firewall, deleteServerOps({ iface: 'wg0' }, s));
+    expect(ports(out.firewall)).toEqual(['1-67', '69-65535']);
   });
 });
 

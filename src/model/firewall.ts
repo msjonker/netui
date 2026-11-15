@@ -1,6 +1,7 @@
-import type { UciConfig, UciValue } from '../api/types';
+import type { UciConfig, UciSection, UciValue } from '../api/types';
 import { bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { inSubnet, isIPv4, parseCidr } from '../lib/ip';
+import { wanZoneName } from './network';
 import { normalizeMac } from '../lib/mac';
 
 // ---------------------------------------------------------------------------
@@ -26,7 +27,7 @@ export interface PortForward {
 
 export function normalizePortForwards(fw: UciConfig): PortForward[] {
   return sectionsOfType(fw, 'redirect')
-    .filter((s) => (str(s.target) ?? 'DNAT') === 'DNAT')
+    .filter((s) => (str(s.target) ?? 'DNAT') === 'DNAT' && str(s.name) !== DMZ_NAME)
     .map((s) => {
       const external = str(s.src_dport) ?? '';
       return {
@@ -195,9 +196,115 @@ export function validatePortForward(
   return e;
 }
 
+/** Add or change a port forward; a DMZ moves off its external port. */
 export function portForwardOps(p: PortForwardDraft, section: string | undefined, fw: UciConfig): UciOp[] {
   const values = portForwardValues({ ...p, internalPort: p.internalPort || p.externalPort });
-  if (section) return diffSection('firewall', section, fw[section], values);
   const set = Object.fromEntries(Object.entries(values).filter((e): e is [string, UciValue] => !!e[1] && e[1].length > 0));
-  return [{ op: 'add', config: 'firewall', type: 'redirect', values: set }];
+  const name = section ?? '.new';
+  const dmz = dmzFollowOps(fw, { [name]: { '.name': name, '.type': 'redirect', '.anonymous': true, '.index': fw[name]?.['.index'] ?? 1e6, ...set } });
+  if (section) return [...diffSection('firewall', section, fw[section], values), ...dmz];
+  return [{ op: 'add', config: 'firewall', type: 'redirect', values: set }, ...dmz];
+}
+
+/** Remove a port forward; a DMZ takes its port back. */
+export function removePortForwardOps(section: string, fw: UciConfig): UciOp[] {
+  return [{ op: 'delete', config: 'firewall', section }, ...dmzFollowOps(fw, { [section]: null })];
+}
+
+// ---------------------------------------------------------------------------
+// DMZ: everything arriving on the WAN that nothing else claims goes to one
+// device. fw4 takes one port (or range) per redirect, so the DMZ is a set of
+// redirects named DMZ_NAME covering the gaps between the ports the router
+// itself answers on the WAN (input ACCEPT rules: DHCP renew 68, the VPN
+// server) and the port forwards' external ports. A DMZ over every port would
+// also take the router's DHCP renewals and break the internet connection.
+
+export const DMZ_NAME = 'netui: DMZ';
+
+export interface Dmz {
+  destIp: string;
+  /** The gaps changed since it was written: a port forward or router port moved. */
+  stale: boolean;
+}
+
+function portRanges(spec: string | undefined): [number, number][] {
+  return (spec ?? '')
+    .split(/[\s,]+/)
+    .map((p) => /^(\d+)(?:[-:](\d+))?$/.exec(p))
+    .filter((m): m is RegExpExecArray => !!m)
+    .map((m) => [Number(m[1]), Number(m[2] ?? m[1])]);
+}
+
+/** IPv4 TCP/UDP ports in use on the WAN: the router's own services and the port forwards. */
+export function claimedWanPorts(fw: UciConfig): [number, number][] {
+  const wan = wanZoneName(fw);
+  const tcpUdp = (s: UciSection) => {
+    const p = list(s.proto).join(' ') || 'tcp udp';
+    return /tcp|udp|all/.test(p);
+  };
+  const input = sectionsOfType(fw, 'rule').filter(
+    (s) => str(s.src) === wan && !s.dest && str(s.target) === 'ACCEPT' && str(s.family) !== 'ipv6' && bool(s.enabled, true) && tcpUdp(s),
+  );
+  const forwards = normalizePortForwards(fw).filter((p) => p.enabled && p.srcZone === wan);
+  return [...input.flatMap((s) => portRanges(str(s.dest_port))), ...forwards.flatMap((p) => portRanges(p.externalPort))].sort(
+    (a, b) => a[0] - b[0],
+  );
+}
+
+/** The port ranges between the claimed ones: "1-67", "69-51819", "51821-65535". */
+export function dmzRanges(claimed: [number, number][]): string[] {
+  const out: string[] = [];
+  let next = 1;
+  for (const [a, b] of claimed) {
+    if (a > next) out.push(a - 1 === next ? String(next) : `${next}-${a - 1}`);
+    next = Math.max(next, b + 1);
+  }
+  if (next <= 65535) out.push(next === 65535 ? '65535' : `${next}-65535`);
+  return out;
+}
+
+const dmzSections = (fw: UciConfig) => sectionsOfType(fw, 'redirect').filter((s) => str(s.name) === DMZ_NAME);
+
+export function normalizeDmz(fw: UciConfig): Dmz | undefined {
+  const secs = dmzSections(fw);
+  if (!secs.length) return undefined;
+  const stored = secs.map((s) => str(s.src_dport)).join(' ');
+  return { destIp: str(secs[0]!.dest_ip) ?? '', stale: stored !== dmzRanges(claimedWanPorts(fw)).join(' ') };
+}
+
+/**
+ * Replace the DMZ: send unclaimed WAN ports to `destIp`, or remove it (null).
+ * `destZone` is the zone of the device's network.
+ */
+export function dmzOps(fw: UciConfig, to: { destIp: string; destZone: string } | null): UciOp[] {
+  const ops: UciOp[] = dmzSections(fw).map((s) => ({ op: 'delete', config: 'firewall', section: s['.name'] }));
+  if (!to) return ops;
+  const src = wanZoneName(fw);
+  for (const ports of dmzRanges(claimedWanPorts(fw))) {
+    ops.push({
+      op: 'add',
+      config: 'firewall',
+      type: 'redirect',
+      values: { name: DMZ_NAME, target: 'DNAT', src, dest: to.destZone, proto: 'tcp udp', src_dport: ports, dest_ip: to.destIp },
+    });
+  }
+  return ops;
+}
+
+/**
+ * Ops that keep an existing DMZ off the ports a change claims (a new port
+ * forward, a VPN server's port): rebuild it against the config as it will be.
+ * `patch` holds the changed sections by name, null for removed ones. Empty
+ * when there is no DMZ or its ports stay the same.
+ */
+export function dmzFollowOps(fw: UciConfig, patch: Record<string, UciSection | null>): UciOp[] {
+  const dmz = normalizeDmz(fw);
+  if (!dmz) return [];
+  const after: UciConfig = { ...fw };
+  for (const [name, sec] of Object.entries(patch)) {
+    if (sec) after[name] = sec;
+    else delete after[name];
+  }
+  if (!normalizeDmz(after)!.stale) return [];
+  return dmzOps(after, { destIp: dmz.destIp, destZone: str(dmzSections(fw)[0]!.dest) ?? 'lan' });
 }
