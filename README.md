@@ -6,6 +6,10 @@
 
 A friendly web UI for OpenWrt routers, access points and mesh WiFi.
 
+New to this? The **[user guide](docs/user-guide.md)** walks through
+installing netui and setting up WiFi, a guest network, ad blocking, extra
+access points and more, step by step.
+
 ## Screenshots
 
 | | |
