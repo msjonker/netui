@@ -6,7 +6,7 @@
 <title>netui: a friendly web interface for OpenWrt</title>
 <meta name="description" content="netui gives an OpenWrt router a clean, friendly web interface: dashboard, WiFi, clients, access points and wireless mesh, ad blocking, VPN and more. Every change has a safety timer. Runs alongside LuCI.">
 <link rel="canonical" href="https://msjonker.github.io/netui/">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
 <meta name="theme-color" content="#06090f">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://msjonker.github.io/netui/">
@@ -32,7 +32,7 @@
   nav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px;gap:1rem}
   .brand{display:flex;align-items:center;gap:.55rem;color:var(--ink);text-decoration:none;font-weight:800;font-size:1.2rem;letter-spacing:-.01em}
-  .brand img{width:28px;height:28px}
+  .brand img{width:36px;height:auto}
   nav ul{list-style:none;display:flex;gap:1.3rem;margin:0;padding:0;align-items:center}
   nav ul a{text-decoration:none;color:var(--ink-dim);font-weight:600} nav ul a:hover{color:var(--ink)}
 
@@ -94,7 +94,7 @@
   .two ul{margin:0;padding-left:1.2rem;color:var(--ink-dim)} .two li{margin:.35rem 0} .two li b{color:var(--ink)}
 
   .band{text-align:center}
-  .band .mark{width:min(380px,80%);margin:-1.5rem auto .5rem;mix-blend-mode:lighten}
+  .band .mark{width:min(300px,70%);height:auto;margin:0 auto 1.5rem}
   .band .cta{justify-content:center;margin-top:1.6rem}
 
   footer{padding:2.5rem 0 3rem;color:var(--muted);font-size:.92rem;border-top:1px solid var(--line)}
@@ -122,7 +122,7 @@
 
 <nav>
   <div class="wrap">
-    <a class="brand" href="#top"><img src="assets/favicon.svg" alt="">netui</a>
+    <a class="brand" href="#top"><img src="assets/mark.webp" width="72" height="35" alt="">netui</a>
     <ul>
       <li class="opt"><a href="#features">Features</a></li>
       <li class="opt"><a href="#tour">Tour</a></li>
@@ -237,7 +237,7 @@
       <figure><img src="screenshots/devices.png" width="1440" height="900" loading="lazy" alt="Devices page"><figcaption><b>Devices.</b> The gateway and adopted access points, with how each one is connected: cable or mesh.</figcaption></figure>
       <figure><img src="screenshots/wifi.png" width="1440" height="900" loading="lazy" alt="WiFi settings"><figcaption><b>WiFi.</b> Networks, radios with live utilisation and noise, wireless mesh and client steering.</figcaption></figure>
       <figure><img src="screenshots/client-connections.png" width="1440" height="900" loading="lazy" alt="Client details"><figcaption><b>Client devices.</b> Live activity, usage and open connections for every device.</figcaption></figure>
-      <figure><img src="screenshots/insights.png" width="1440" height="588" loading="lazy" alt="Insights"><figcaption><b>Insights.</b> Channel utilisation, nearby networks per channel and a channel suggestion.</figcaption></figure>
+      <figure><img src="screenshots/insights.png" width="1440" height="620" loading="lazy" alt="Insights"><figcaption><b>Insights.</b> Channel utilisation, nearby networks per channel and a channel suggestion.</figcaption></figure>
       <figure><img src="screenshots/usage.png" width="1440" height="900" loading="lazy" alt="Usage history"><figcaption><b>Usage history.</b> Download and upload per device and per application, month by month.</figcaption></figure>
       <figure><img src="screenshots/internet.png" width="1440" height="900" loading="lazy" alt="Internet settings"><figcaption><b>Internet.</b> Your connection, a second line for failover, and speed tests.</figcaption></figure>
       <figure><img src="screenshots/ad-blocking.png" width="1440" height="900" loading="lazy" alt="Ad blocking"><figcaption><b>Ad blocking and content filtering</b> for every device on the network.</figcaption></figure>
@@ -281,7 +281,7 @@
 
 <section class="band">
   <div class="wrap">
-    <img class="mark" src="assets/logo.jpg" width="960" height="640" loading="lazy" alt="netui">
+    <img class="mark" src="assets/logo.webp" width="760" height="541" loading="lazy" alt="netui">
     <h2>Give your router a friendlier face</h2>
     <p class="sub" style="margin:0 auto">Free, open source and built on OpenWrt. Bug reports and ideas are welcome.</p>
     <div class="cta">
