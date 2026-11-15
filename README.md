@@ -256,7 +256,7 @@ npm install
 cp .env.example .env.local   # set ROUTER_URL
 npm run dev                  # /ubus is proxied to ROUTER_URL
 npm test
-npm run build                # typecheck + build; check gzip sizes against the 190 KB budget
+npm run build                # typecheck + build; check:budget holds the initial load to 190 KB gzipped
 ```
 
 ## Dev router (Docker)
