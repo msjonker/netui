@@ -14,11 +14,14 @@ access points and more, step by step.
 
 | | |
 |---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) **Dashboard**: gateway health, WAN throughput, ports, WiFi, top clients and recent events | ![Topology](docs/screenshots/topology.png) **Topology**: internet, gateway, ports, radios and the clients on each |
+| ![Dashboard](docs/screenshots/dashboard.png) **Dashboard**: gateway health, internet throughput, the last speed test, ports, WiFi, top clients and recent events | ![Topology](docs/screenshots/topology.png) **Topology**: internet, gateway, ports, radios, access points and the clients on each |
+| ![Devices](docs/screenshots/devices.png) **Devices**: the gateway and adopted access points with their uplink (cable or mesh) | ![WiFi settings](docs/screenshots/wifi.png) **WiFi**: SSIDs, radios with live utilisation and noise, wireless mesh, client steering |
 | ![Client details](docs/screenshots/client-connections.png) **Client devices**: live activity, usage and open connections per client | ![Insights](docs/screenshots/insights.png) **Insights**: channel utilisation, nearby networks per channel and a channel suggestion |
-| ![WiFi settings](docs/screenshots/wifi.png) **WiFi**: SSIDs, radios with live utilisation and noise, schedules | ![Firewall policies](docs/screenshots/firewall-policies.png) **Firewall & Security**: zone policies, traffic rules, port forwarding, content filtering |
+| ![Usage history](docs/screenshots/usage.png) **Usage history**: download and upload per device and per application, by month | ![Internet](docs/screenshots/internet.png) **Internet**: the WAN, a second connection for failover, speed tests |
+| ![Ad blocking](docs/screenshots/ad-blocking.png) **Ad blocking and content filtering** for every device on the network | ![System](docs/screenshots/system.png) **System**: firmware updates, backup and restore, admins and read-only users |
+| ![Review changes](docs/screenshots/apply-review.png) **Every change is reviewed** and applied with a safety timer: if it cuts netui off, the router undoes it | <img src="docs/screenshots/mobile.png" alt="On a phone" width="240"> **On a phone**: the same UI with a bottom tab bar |
 
-Captured on a Dynalink DL-WRX36 test router running OpenWrt SNAPSHOT (no WAN connected).
+Captured on a Dynalink DL-WRX36 running OpenWrt 25.12.6, with a Xiaomi AX3600 as an adopted access point.
 
 ## Install on a router
 
