@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/logo.png" alt="netui" width="480">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.png">
+    <img src="docs/logo-light.png" alt="netui" width="360">
+  </picture>
 </p>
 
 # netui
