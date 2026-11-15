@@ -13,9 +13,26 @@ import type { SwitchPort } from '../../model/ports';
 import { formatBitrate, formatBytes, formatDuration, formatPercent } from '../../lib/format';
 import { TimeSeriesChart } from '../../components/TimeSeriesChart';
 import { EventRow } from '../../components/EventRow';
-import { IconArrowDown, IconArrowUp, IconWifi, SignalBars } from '../../components/icons';
-import { PortTile } from '../../components/PortTile';
-import { Card, Dot, Empty, LoadError, Meter, Page, Pill, Spinner, Stat } from '../../components/ui';
+import {
+  IconArrowDown,
+  IconArrowUp,
+  IconBell,
+  IconChip,
+  IconClients,
+  IconDownload,
+  IconEthernet,
+  IconGlobe,
+  IconInsights,
+  IconNetwork,
+  IconPower,
+  IconPulse,
+  IconRouter,
+  IconWifi,
+  SignalBars,
+} from '../../components/icons';
+import { PortPanel, PortTile } from '../../components/PortTile';
+import { Card, Dot, Empty, LoadError, Meter, Page, Pill, Spinner, Stat, cx } from '../../components/ui';
+import type { ComponentChildren } from 'preact';
 import { SetupBanner } from './SetupBanner';
 
 const SERIES = [
@@ -39,6 +56,15 @@ export function compactRate(bytesPerSecond: number | null | undefined): string {
 // ---------------------------------------------------------------------------
 // Gateway health strip
 
+function Tile({ icon, tone, children }: { icon: ComponentChildren; tone: string; children: ComponentChildren }) {
+  return (
+    <div class="flex min-w-0 items-center gap-3 rounded-2xl border border-line bg-surface p-4 shadow-card">
+      <span class={cx('grid size-10 shrink-0 place-items-center rounded-xl', tone)}>{icon}</span>
+      {children}
+    </div>
+  );
+}
+
 function HealthStrip() {
   const board = useSystemBoard();
   const info = useSystemInfo();
@@ -47,29 +73,41 @@ function HealthStrip() {
   const root = info.data?.root;
 
   return (
-    <Card class="lg:col-span-3">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:col-span-3 lg:grid-cols-5" aria-label={sys ? 'Gateway health' : undefined}>
       {!sys ? (
-        <Spinner />
+        <Card class="col-span-full">
+          <Spinner />
+        </Card>
       ) : (
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5" aria-label="Gateway health">
-          <Stat label="Gateway" value={<span class="text-base">{sys.hostname}</span>} hint={sys.model} />
-          <Stat label="CPU load" value={load?.[0]} hint={load && `${load[1]} · ${load[2]} (5 / 15 min)`} />
-          <div class="min-w-0">
-            <div class="text-xs text-muted">Memory</div>
-            <div class="text-xl font-semibold tabular-nums">{formatPercent(sys.memoryUsed)}</div>
-            <div class="mt-1 w-full max-w-32">
-              <Meter value={sys.memoryUsed} tone={sys.memoryUsed > 0.85 ? 'warn' : 'accent'} />
+        <>
+          <Tile icon={<IconRouter />} tone="bg-accent-soft text-accent">
+            <Stat label="Gateway" value={<span class="text-base">{sys.hostname}</span>} hint={sys.model} />
+          </Tile>
+          <Tile icon={<IconPulse />} tone="bg-violet-soft text-violet">
+            <Stat label="CPU load" value={load?.[0]} hint={load && `${load[1]} · ${load[2]} (5 / 15 min)`} />
+          </Tile>
+          <Tile icon={<IconChip />} tone="bg-ok-soft text-ok">
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-medium text-muted">Memory</div>
+              <div class="mt-0.5 text-2xl font-semibold tracking-tight tabular-nums">{formatPercent(sys.memoryUsed)}</div>
+              <div class="mt-1 w-full max-w-32">
+                <Meter value={sys.memoryUsed} tone={sys.memoryUsed > 0.85 ? 'warn' : 'ok'} />
+              </div>
             </div>
-          </div>
-          <Stat label="Uptime" value={formatDuration(sys.uptime)} />
-          <Stat
-            label="Firmware"
-            value={<span class="text-base">OpenWrt {sys.version}</span>}
-            hint={root ? `${formatBytes(root.avail * 1024)} free on overlay` : sys.target}
-          />
-        </div>
+          </Tile>
+          <Tile icon={<IconPower />} tone="bg-warn-soft text-warn">
+            <Stat label="Uptime" value={formatDuration(sys.uptime)} />
+          </Tile>
+          <Tile icon={<IconDownload />} tone="bg-accent-soft text-accent">
+            <Stat
+              label="Firmware"
+              value={<span class="text-base">OpenWrt {sys.version}</span>}
+              hint={root ? `${formatBytes(root.avail * 1024)} free` : sys.target}
+            />
+          </Tile>
+        </>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -88,6 +126,7 @@ function InternetCard() {
     <Card
       class="lg:col-span-2"
       title="Internet"
+      icon={<IconGlobe size={16} />}
       actions={
         ifaces.data && (
           <Pill tone={online ? 'ok' : 'bad'}>
@@ -152,7 +191,7 @@ function LivePort({ p }: { p: SwitchPort }) {
         r ? ` · in ${rate(r.rx)}, out ${rate(r.tx)}` : ''
       }`}
     >
-      {p.carrier && <span class="text-fg/70 tabular-nums">{compactRate(total)}</span>}
+      {p.carrier && <span class="text-white/80">{compactRate(total)}</span>}
     </PortTile>
   );
 }
@@ -164,16 +203,16 @@ function GatewayCard() {
   const lan = ifaces.data?.interface.find((i) => i.interface === 'lan')?.['ipv4-address']?.[0];
 
   return (
-    <Card title="Ports" actions={<Link href="/topology" class="text-accent hover:underline">Topology</Link>}>
+    <Card title="Ports" icon={<IconEthernet size={16} />} actions={<Link href="/topology" class="text-accent hover:underline">Topology</Link>}>
       {!sw ? (
         <Spinner />
       ) : (
         <div class="space-y-3">
-          <div class="flex flex-wrap gap-1.5" aria-label="Ports">
+          <PortPanel>
             {ports.map((p) => (
               <LivePort key={p.name} p={p} />
             ))}
-          </div>
+          </PortPanel>
           <p class="text-xs text-muted">
             {ports.filter((p) => p.carrier).length} of {ports.length} ports linked
             {lan && (
@@ -202,7 +241,7 @@ function ClientsAndWifi() {
 
   return (
     <>
-      <Card title="Clients" actions={<Link href="/clients" class="text-accent hover:underline">View all</Link>}>
+      <Card title="Clients" icon={<IconClients size={16} />} actions={<Link href="/clients" class="text-accent hover:underline">View all</Link>}>
         <div class="grid grid-cols-3 gap-4">
           <Stat label="Total" value={clients.length} />
           <Stat label="Wired" value={clients.length - wireless_.length} />
@@ -223,7 +262,7 @@ function ClientsAndWifi() {
         )}
       </Card>
 
-      <Card title="WiFi" actions={<Link href="/settings/wifi" class="text-accent hover:underline">Manage</Link>}>
+      <Card title="WiFi" icon={<IconWifi size={16} />} actions={<Link href="/settings/wifi" class="text-accent hover:underline">Manage</Link>}>
         {wirelessError ? (
           <p class="text-muted">No wireless radios on this router.</p>
         ) : !wifi ? (
@@ -265,7 +304,7 @@ function ClientsAndWifi() {
         )}
       </Card>
 
-      <Card title="Networks" actions={<Link href="/settings/networks" class="text-accent hover:underline">Manage</Link>}>
+      <Card title="Networks" icon={<IconNetwork size={16} />} actions={<Link href="/settings/networks" class="text-accent hover:underline">Manage</Link>}>
         {subnets.length === 0 ? (
           <Spinner />
         ) : (
@@ -304,6 +343,7 @@ function RecentEvents() {
   const now = Date.now();
   return (
     <Card
+      icon={<IconBell size={16} />}
       class="lg:col-span-2"
       title="Recent events"
       flush
@@ -338,7 +378,7 @@ function TopClients() {
     [clients, traffic.version],
   );
   return (
-    <Card title="Top clients" actions={<Link href="/insights" class="text-accent hover:underline">Insights</Link>}>
+    <Card title="Top clients" icon={<IconInsights size={16} />} actions={<Link href="/insights" class="text-accent hover:underline">Insights</Link>}>
       {top.length === 0 ? (
         <Empty>Collecting usage from the connection table…</Empty>
       ) : (

@@ -10,7 +10,7 @@ import { findUplink, normalizeSystem } from '../../model/network';
 import { buildTopology, type TopoClient, type TopoRadio } from '../../model/topology';
 import { formatDuration } from '../../lib/format';
 import { IconAccessPoint, IconEthernet, IconGlobe, IconRouter, IconWifi, SignalBars } from '../../components/icons';
-import { PortTile } from '../../components/PortTile';
+import { PortPanel, PortTile } from '../../components/PortTile';
 import { Dot, LoadError, Page, Pill, Spinner, cx } from '../../components/ui';
 
 // Topology: Internet -> Gateway -> wired ports / radios ->
@@ -246,11 +246,11 @@ export function TopologyPage() {
                     status={<Pill>{wiredCount}</Pill>}
                   >
                     {topo.ports.length > 0 ? (
-                      <div class="flex flex-wrap gap-1.5" aria-label="Ports">
+                      <PortPanel>
                         {topo.ports.map((p) => (
                           <PortTile key={p.name} p={p} />
                         ))}
-                      </div>
+                      </PortPanel>
                     ) : (
                       <p class="text-xs text-faint">No ports reported.</p>
                     )}

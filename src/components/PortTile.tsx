@@ -1,9 +1,17 @@
 import type { ComponentChildren } from 'preact';
 import { Link } from 'wouter-preact';
-import { IconEthernet } from './icons';
 import { cx } from './ui';
 
-/** A front-panel port in the port strip; links to port settings. */
+/** The dark front panel the port sockets sit in. */
+export function PortPanel({ children }: { children: ComponentChildren }) {
+  return (
+    <div class="inline-flex flex-wrap gap-1 rounded-xl bg-[#1f2228] p-2 ring-1 ring-white/5" aria-label="Ports">
+      {children}
+    </div>
+  );
+}
+
+/** A front-panel port socket; links to port settings. */
 export function PortTile({
   p,
   title,
@@ -15,22 +23,25 @@ export function PortTile({
   children?: ComponentChildren;
 }) {
   const label = p.role === 'wan' ? (p.wanLabel ?? 'WAN') : p.name;
+  const slow = p.carrier && p.speed != null && p.speed < 1000;
   return (
     <Link
       href="/settings/ports"
       aria-label={`Port ${label}: ${p.carrier ? 'link up' : 'no link'}`}
       title={title ?? `${p.name}: ${p.carrier ? `${p.speed ?? '?'} Mbps` : 'no link'}`}
-      class={cx(
-        'flex min-h-11 w-14 flex-col items-center justify-center rounded border py-1 text-[10px] leading-tight hover:border-accent',
-        p.carrier
-          ? p.role === 'wan'
-            ? 'border-accent bg-accent-soft text-accent'
-            : 'border-ok bg-ok-soft text-ok'
-          : 'border-line bg-subtle text-faint',
-      )}
+      class="flex w-14 flex-col items-center gap-1 rounded-lg py-1.5 text-[10px] leading-tight text-white/50 tabular-nums hover:bg-white/5"
     >
-      <IconEthernet size={14} />
-      <span class="font-medium">{label}</span>
+      <span class={cx('relative h-8 w-10 rounded-[5px] border border-white/15 pt-3', p.carrier ? 'bg-[#30343c]' : 'opacity-60')}>
+        <span class="mx-auto block h-3.5 w-6 rounded-[2px] bg-black/60" />
+        <span
+          class={cx(
+            'absolute top-1 left-1 size-1.5 rounded-full bg-current',
+            !p.carrier ? 'text-white/15' : slow ? 'text-warn' : p.role === 'wan' ? 'text-accent' : 'text-ok',
+            p.carrier && 'shadow-[0_0_6px_currentColor]',
+          )}
+        />
+      </span>
+      <span class={cx('font-semibold', p.carrier ? 'text-white/90' : 'text-white/50')}>{label}</span>
       <span>{p.carrier && p.speed ? (p.speed >= 1000 ? `${p.speed / 1000}G` : `${p.speed}M`) : '—'}</span>
       {children}
     </Link>

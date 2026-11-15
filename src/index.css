@@ -6,18 +6,19 @@
  * than raw colors so both themes stay consistent.
  */
 :root {
-  --bg: #f4f5f6;
+  --bg: #f3f5f8;
   --surface: #ffffff;
   --subtle: #f6f6f8;
   --hover: #f0f1f3;
-  --line: #e3e5e8;
-  --line-strong: #d0d3d8;
-  --fg: #212327;
-  --muted: #808893;
+  --line: #e5e8ec;
+  --line-strong: #d3d7dd;
+  --fg: #0f172a;
+  --logo: url(/logo-light.webp);
+  --muted: #6b7380;
   --faint: #b6bbc2;
-  --accent: #006fff;
-  --accent-hover: #0059cc;
-  --accent-soft: #e5f0ff;
+  --accent: #0b6bff;
+  --accent-hover: #0056d6;
+  --accent-soft: #eaf2ff;
   --ok: #38cc65;
   --ok-soft: #e6f8ec;
   --warn: #ff8f1f;
@@ -25,24 +26,26 @@
   --bad: #f03a3e;
   --bad-soft: #feebec;
   --violet: #8f55ee;
+  --violet-soft: #f2ebfe;
   --rail: #ffffff;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.04);
+  --card: 0 1px 2px rgb(16 24 40 / 0.04), 0 2px 8px rgb(16 24 40 / 0.04);
 }
 
 /* Dark: chosen in the account menu (data-theme), or the system's choice. */
 :root[data-theme="dark"] {
-  --bg: #131416;
-  --surface: #1d1e21;
-  --subtle: #222327;
-  --hover: #26282c;
-  --line: #2e3034;
-  --line-strong: #3a3d42;
+  --bg: #0f1012;
+  --surface: #18191c;
+  --subtle: #1f2023;
+  --hover: #24262a;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.12);
   --fg: #f4f5f6;
   --muted: #a1a6ae;
   --faint: #5d626a;
   --accent: #4797ff;
   --accent-hover: #6aabff;
-  --accent-soft: #15253d;
+  --accent-soft: rgb(77 148 255 / 0.14);
   --ok: #4ad677;
   --ok-soft: #15301f;
   --warn: #ffa046;
@@ -50,24 +53,27 @@
   --bad: #ff5a5e;
   --bad-soft: #3b1b1c;
   --violet: #a67bff;
+  --violet-soft: rgb(166 123 255 / 0.14);
   --rail: #1a1b1e;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
+  --card: inset 0 1px 0 rgb(255 255 255 / 0.03);
+  --logo: url(/logo-dark.webp);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #131416;
-    --surface: #1d1e21;
-    --subtle: #222327;
-    --hover: #26282c;
-    --line: #2e3034;
-    --line-strong: #3a3d42;
+    --bg: #0f1012;
+    --surface: #18191c;
+    --subtle: #1f2023;
+    --hover: #24262a;
+    --line: rgb(255 255 255 / 0.07);
+    --line-strong: rgb(255 255 255 / 0.12);
     --fg: #f4f5f6;
     --muted: #a1a6ae;
     --faint: #5d626a;
     --accent: #4797ff;
     --accent-hover: #6aabff;
-    --accent-soft: #15253d;
+    --accent-soft: rgb(77 148 255 / 0.14);
     --ok: #4ad677;
     --ok-soft: #15301f;
     --warn: #ffa046;
@@ -75,8 +81,11 @@
     --bad: #ff5a5e;
     --bad-soft: #3b1b1c;
     --violet: #a67bff;
+    --violet-soft: rgb(166 123 255 / 0.14);
     --rail: #1a1b1e;
     --shadow: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
+    --card: inset 0 1px 0 rgb(255 255 255 / 0.03);
+    --logo: url(/logo-dark.webp);
   }
 }
 
@@ -100,9 +109,11 @@
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
   --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
   --color-rail: var(--rail);
   --shadow-pop: var(--shadow);
-  --font-sans: "Lato", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --shadow-card: var(--card);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -123,8 +134,12 @@
 }
 
 @layer components {
+  .brand-logo {
+    @apply bg-contain bg-center bg-no-repeat;
+    background-image: var(--logo);
+  }
   .input {
-    @apply h-8 w-full rounded-md border border-line bg-surface px-2.5 text-[13px] text-fg outline-none transition-colors placeholder:text-faint hover:border-line-strong focus:border-accent disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted;
+    @apply h-9 w-full rounded-lg border border-line bg-surface px-2.5 text-[13px] text-fg outline-none transition-colors placeholder:text-faint hover:border-line-strong focus:border-accent focus:ring-3 focus:ring-accent-soft disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted;
   }
   .input[aria-invalid="true"] {
     @apply border-bad;
@@ -138,10 +153,13 @@
     @apply w-full border-collapse text-left;
   }
   .table th {
-    @apply sticky top-0 z-[1] h-9 border-b border-line bg-surface px-3 text-xs font-normal whitespace-nowrap text-muted;
+    @apply sticky top-0 z-[1] h-9 border-b border-line bg-subtle px-3 text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted uppercase;
   }
   .table td {
-    @apply h-10 border-b border-line px-3 whitespace-nowrap;
+    @apply h-11 border-b border-line px-3 whitespace-nowrap;
+  }
+  .table tbody tr:last-child td {
+    @apply border-b-0;
   }
   .table tbody tr {
     @apply transition-colors;

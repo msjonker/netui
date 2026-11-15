@@ -184,13 +184,6 @@ export function SignalBars({ dbm, class: cls }: { dbm: number; class?: string })
 }
 
 /** netui mark for the rail: a rounded square with a stylised N. */
-export const Logo = ({ size = 28 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 28 28" aria-hidden="true">
-    <rect width="28" height="28" rx="7" fill="var(--accent)" />
-    <path d="M8.5 19V9l11 10V9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-  </svg>
-);
-
 export const IconTopology = (p: P) => (
   <Svg {...p}>
     <rect x="7.5" y="2.5" width="5" height="4" rx="1" />

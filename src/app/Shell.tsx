@@ -15,7 +15,6 @@ import {
   IconLogout,
   IconSettings,
   IconTopology,
-  Logo,
 } from '../components/icons';
 import { Dot, Segmented, cx } from '../components/ui';
 import { Notifications } from './Notifications';
@@ -39,7 +38,7 @@ function RailLink({ href, label, active, children }: { href: string; label: stri
       aria-current={active ? 'page' : undefined}
       class={cx(
         'group relative flex size-10 items-center justify-center rounded-lg transition-colors',
-        active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-hover hover:text-fg',
+        active ? 'bg-accent text-white shadow-sm shadow-accent/30' : 'text-muted hover:bg-hover hover:text-fg',
       )}
     >
       {children}
@@ -57,7 +56,7 @@ function InternetStatus() {
   if (!q.data) return null;
   const online = uplinkOnline(up, devices.data);
   return (
-    <span class="hidden items-center gap-1.5 text-xs text-muted sm:inline-flex">
+    <span class="hidden h-7 items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-xs font-medium sm:inline-flex">
       <Dot tone={online ? 'ok' : 'bad'} />
       {online ? 'Internet' : 'Offline'}
     </span>
@@ -88,7 +87,7 @@ export function Shell({
         class="fixed inset-x-0 bottom-0 z-30 flex h-14 shrink-0 items-center justify-around border-t border-line bg-rail px-1 md:static md:h-auto md:w-14 md:flex-col md:justify-start md:gap-1 md:border-t-0 md:border-r md:px-0 md:py-2.5"
       >
         <Link href="/" aria-label="netui home" class="mb-3 hidden md:block">
-          <Logo />
+          <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" width={44} height={21} class="mx-auto mt-1.5" />
         </Link>
         {NAV.map(({ href, label, icon: Icon, match }) => (
           <RailLink key={href} href={href} label={label} active={match(path)}>
@@ -117,7 +116,7 @@ export function Shell({
       </nav>
 
       <div class="flex min-w-0 flex-1 flex-col">
-        <header class="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-4 md:px-5">
+        <header class="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-bg px-4 md:px-8">
           <span class="font-semibold">Network</span>
           {board.data && (
             <span class="truncate text-muted">

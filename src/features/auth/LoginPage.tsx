@@ -1,6 +1,5 @@
 import { useState } from 'preact/hooks';
 import { LoginError, TransportError, login, type Session } from '../../api/ubus';
-import { Logo } from '../../components/icons';
 import { Banner, Button } from '../../components/ui';
 
 export function LoginPage({ notice, onLogin }: { notice?: string | null; onLogin: (s: Session) => void }) {
@@ -33,8 +32,8 @@ export function LoginPage({ notice, onLogin }: { notice?: string | null; onLogin
     <div class="flex min-h-screen items-center justify-center p-4">
       <div class="w-full max-w-[360px]">
         <div class="mb-6 flex flex-col items-center gap-3">
-          <Logo size={44} />
-          <h1 class="text-xl font-semibold tracking-tight">Sign in to Network</h1>
+          <div role="img" aria-label="netui" class="brand-logo h-[114px] w-40" />
+          <h1 class="text-xl font-semibold tracking-tight">Sign in to netui</h1>
         </div>
         <form onSubmit={submit} class="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-pop">
           {notice && !error && (
