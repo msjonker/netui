@@ -12,6 +12,10 @@ import tailwindcss from '@tailwindcss/vite';
 const LAZY =
   /src\/(features\/(diagnostics|setup|system|vpn|routing)\/|model\/(diagnostics|vpnClient|tailscale|addons|backup|doh|routing|system|vpn)\.ts|api\/(diagnostics|tailscale|backup)\.ts|components\/(AddonDialog|AddonsList)\.tsx)/;
 
+// The demo build's simulated router (src/demo and the fixtures it reads):
+// its own chunk, so the entry does not carry ~45 KB of fixtures.
+const DEMO = /src\/demo\/|test\/fixtures\//;
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const routerUrl = env.ROUTER_URL || 'http://192.168.1.1';
@@ -37,7 +41,7 @@ export default defineConfig(({ mode }) => {
       // .txt: uhttpd serves it as text/plain, where .md would download.
       license: { fileName: 'licenses.txt' },
       rolldownOptions: {
-        output: { codeSplitting: { groups: [{ name: 'index', test: (id: string) => !LAZY.test(id) }] } },
+        output: { codeSplitting: { groups: [{ name: 'index', test: (id: string) => !LAZY.test(id) && !DEMO.test(id) }] } },
       },
     },
     test: {

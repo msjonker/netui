@@ -18,9 +18,17 @@ if (handoff) saveSession({ ...handoff.session, expiresAt: Date.now() + handoff.s
 
 const queryClient = createQueryClient();
 
-render(
-  <QueryClientProvider client={queryClient}>
-    <App handoff={handoff} />
-  </QueryClientProvider>,
-  document.getElementById('app')!,
-);
+const start = () =>
+  render(
+    <QueryClientProvider client={queryClient}>
+      <App handoff={handoff} />
+    </QueryClientProvider>,
+    document.getElementById('app')!,
+  );
+
+// The demo build (`npm run build:demo`) answers /ubus from a simulated router
+// in the page. The condition is a build-time constant: production drops it.
+// Not a top-level await: the demo chunk imports this one, which would wait
+// on itself.
+if (import.meta.env.MODE === 'demo') void import('./demo').then((m) => (m.installDemo(), start()));
+else start();

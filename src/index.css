@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* The demo build's simulated router (src/demo) must not add utilities to the production CSS. */
+@source not "./demo";
 
 /*
  * Palette. Semantic tokens switch with the theme (light, dark or the system's); use
