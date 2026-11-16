@@ -28,6 +28,7 @@ import { BusyOverlay, PHASE_TEXT } from './BusyOverlay';
 import { BackupCard } from './Backup';
 import { AdminsCard } from './Admins';
 import { RootPasswordCard } from './RootPassword';
+import { AboutCard } from './About';
 
 // Loaded on demand: few people install firmware by hand.
 const FirmwareUpload = lazy(() => import('./FirmwareUpload').then((m) => ({ default: m.FirmwareUpload })));
@@ -352,6 +353,7 @@ export function SystemPage() {
           <DeviceCard />
           <FirmwareCard />
           <AddonsCard />
+          <AboutCard />
         </div>
       </div>
     </Page>

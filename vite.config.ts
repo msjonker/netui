@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { readFileSync } from 'node:fs';
 import { defineConfig, loadEnv } from 'vite';
 import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
@@ -14,12 +15,16 @@ const LAZY =
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const routerUrl = env.ROUTER_URL || 'http://192.168.1.1';
+  // Shown in System > About. A release build takes it from the tag
+  // (release.yml sets NETUI_VERSION); otherwise package.json.
+  const version = env.NETUI_VERSION || JSON.parse(readFileSync('package.json', 'utf8')).version;
 
   return {
     // Served from /www/netui/ on the router; relative base keeps assets working
     // whatever path uhttpd exposes it under.
     base: './',
     plugins: [preact(), tailwindcss()],
+    define: { __NETUI_VERSION__: JSON.stringify(version) },
     server: {
       proxy: {
         '/ubus': { target: routerUrl, changeOrigin: true, secure: false },
@@ -28,6 +33,9 @@ export default defineConfig(({ mode }) => {
     build: {
       target: 'es2022',
       reportCompressedSize: true,
+      // The bundled dependencies' license notices, linked from System > About.
+      // .txt: uhttpd serves it as text/plain, where .md would download.
+      license: { fileName: 'licenses.txt' },
       rolldownOptions: {
         output: { codeSplitting: { groups: [{ name: 'index', test: (id: string) => !LAZY.test(id) }] } },
       },

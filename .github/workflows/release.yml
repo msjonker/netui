@@ -42,6 +42,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npx vite build
+        env:
+          NETUI_VERSION: ${{ steps.version.outputs.version }}
       - run: npm run check:budget
       - uses: actions/upload-artifact@v7
         with:
