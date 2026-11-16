@@ -155,14 +155,16 @@ export function useWifiState(opts: { assoc?: boolean; refetchInterval?: number }
     const ap = !info?.mode || info.mode === 'Master';
     return { ifname, info, stations: ap ? assocs[i]?.data : undefined };
   });
-  // Shared queries give every caller the same timestamp, so several mounted
-  // components sample each poll once.
-  const sampledAt = Math.max(0, ...assocs.map((q) => q.dataUpdatedAt));
+  // Each interface's poll is sampled once, at its own timestamp: the queries
+  // settle separately, and sampling one interface's unchanged data again when
+  // another one updates would record a rate of 0. Shared queries give every
+  // caller the same timestamps, so several mounted components sample once.
+  const updatedAt = assocs.map((q) => q.dataUpdatedAt);
   useEffect(() => {
-    if (sampledAt) sampleStations(devices, sampledAt);
-    // devices is rebuilt every render; the timestamp identifies the data.
+    sampleStations(devices.map((d, i) => ({ ...d, at: updatedAt[i] ?? 0 })));
+    // devices is rebuilt every render; the timestamps identify the data.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sampledAt]);
+  }, [updatedAt.join()]);
   return {
     devices,
     isPending: devs.isPending,
@@ -211,12 +213,15 @@ export function useThroughput(device: string | undefined) {
 /** Per-station byte-counter rates from successive assoclist polls. */
 const stationSeries = new Map<string, ThroughputSeries>();
 
-let stationsSampledAt = 0;
+/** ifname -> the assoclist poll last sampled. */
+const stationsSampledAt = new Map<string, number>();
 
-export function sampleStations(devices: WifiDeviceState[], at: number): void {
-  if (at <= stationsSampledAt) return;
-  stationsSampledAt = at;
+/** Add each interface's stations to their rate series, once per poll (`at`: the poll's time). */
+export function sampleStations(devices: (WifiDeviceState & { at: number })[]): void {
   for (const d of devices) {
+    const { at } = d;
+    if (!at || at <= (stationsSampledAt.get(d.ifname) ?? 0)) continue;
+    stationsSampledAt.set(d.ifname, at);
     for (const st of d.stations ?? []) {
       if (st.rx.bytes === undefined || st.tx.bytes === undefined) continue;
       const key = st.mac.toLowerCase();
