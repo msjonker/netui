@@ -15,6 +15,8 @@ export interface LiveDevice {
   ifname: string;
   info?: IwinfoInfo;
   stations?: AssocStation[];
+  /** false: hostapd is not broadcasting it, whatever iwinfo reports. */
+  running?: boolean;
 }
 
 export interface Radio {
@@ -168,7 +170,7 @@ export interface WifiModel {
 }
 
 export function normalizeWifi(wireless: UciConfig, live: LiveDevice[] = []): WifiModel {
-  const masters = live.filter((d) => d.info && (d.info.mode ?? 'Master') === 'Master');
+  const masters = live.filter((d) => d.info && (d.info.mode ?? 'Master') === 'Master' && d.running !== false);
   const liveBand = (d: LiveDevice) => frequencyBand(d.info?.frequency);
 
   const radios: Radio[] = sectionsOfType(wireless, 'wifi-device').map((s) => {
@@ -310,8 +312,11 @@ export function wlanDraft(w: Wlan, isolated: string[] = []): WlanDraft {
   };
 }
 
-/** A new SSID with sensible defaults (WPA2/WPA3, BSS transition on) on the given radios. */
-export function newWlanDraft(radios: string[], network: string): WlanDraft {
+/**
+ * A new SSID with sensible defaults (WPA2/WPA3, BSS transition on where
+ * hostapd supports it) on the given radios.
+ */
+export function newWlanDraft(radios: string[], network: string, bssTransition = true): WlanDraft {
   return {
     ssid: '',
     enabled: true,
@@ -324,11 +329,30 @@ export function newWlanDraft(radios: string[], network: string): WlanDraft {
     pmf: 'off',
     fastRoaming: false,
     mobilityDomain: '',
-    bssTransition: true,
+    bssTransition,
     multicastEnhance: false,
     maxClients: '',
     guest: false,
   };
+}
+
+// BSS transition (802.11v) is only in hostapd's full build. The basic build
+// stock images ship rejects `bss_transition` as an unknown option and starts
+// no network on that radio at all (recorded on a TL-WR1043ND v2, 25.12.6).
+
+/** Enabled access point networks with BSS transition on, which the basic WiFi package cannot start. */
+export function bssTransitionSsids(wireless: UciConfig): string[] {
+  const ssids = sectionsOfType(wireless, 'wifi-iface')
+    .filter((s) => (str(s.mode) ?? 'ap') === 'ap' && !bool(s.disabled, false) && bool(s.bss_transition, false))
+    .map((s) => str(s.ssid) ?? '');
+  return [...new Set(ssids)];
+}
+
+/** Ops to turn BSS transition off on every access point network. */
+export function bssTransitionOffOps(wireless: UciConfig): UciOp[] {
+  return sectionsOfType(wireless, 'wifi-iface')
+    .filter((s) => s.bss_transition !== undefined && (str(s.mode) ?? 'ap') === 'ap')
+    .map((s): UciOp => ({ op: 'unset', config: 'wireless', section: s['.name'], options: ['bss_transition'] }));
 }
 
 /**

@@ -156,6 +156,21 @@ export interface IwinfoDevices {
   devices: string[];
 }
 
+/**
+ * `hostapd.<ifname> get_status`, the fields netui reads
+ * (dl-wrx36/plain/hostapd.phy0-ap0.get_status.json). The object only exists
+ * while hostapd runs that access point.
+ */
+export interface HostapdStatus {
+  /** "ENABLED" once beaconing; "DFS" during the channel availability check. */
+  status: string;
+  ssid?: string;
+  bssid?: string;
+  phy?: string;
+  channel?: number;
+  freq?: number;
+}
+
 export interface IwinfoInfo {
   phy: string;
   ssid?: string;

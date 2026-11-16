@@ -1,0 +1,18 @@
+wpa_supplicant[1444]: Successfully initialized wpa_supplicant
+hostapd: Set MLD config: [ ]
+hostapd: Reload all interfaces
+wpa_supplicant[1444]: Set MLD config: [ ]
+netifd: radio0 (1818): wifi-scripts: Starting
+hostapd: Set new config for phy phy0:
+wpa_supplicant[1444]: Set new config for phy phy0
+wpa_supplicant[1444]: Set new config for phy phy0
+hostapd: Set new config for phy phy0: /var/run/hostapd-phy0.conf
+hostapd: Restart interface for phy phy0
+hostapd: Configuration file: <inline> (phy phy0) --> new PHY
+hostapd: Configuration file: Reading configuration file '<inline>'
+hostapd: Line 40: unknown configuration item 'bss_transition'
+hostapd: 1 errors found in configuration file '<inline>'
+hostapd: hostapd.add_iface failed for phy phy0 ifname=phy0-ap0
+netifd: radio0 (1818): wifi-scripts: Configuring 'phy0' txantenna: 4294967295, rxantenna: 4294967295 distance: 0
+netifd: radio0 (1818): wifi-scripts: Preparing interface: phy0-ap0 with MAC: 02:00:00:00:00:01
+wpa_supplicant[1444]: Start pending MLD interfaces

@@ -31,6 +31,8 @@ const STATUS_NAMES: Record<number, string> = Object.fromEntries(
 // uhttpd-mod-ubus answers -32002 when the session id is unknown, expired, or
 // the ACL denies the object outright.
 const RPC_ACCESS_DENIED = -32002;
+/** uhttpd-mod-ubus: no such ubus object (checked before the session). */
+export const RPC_OBJECT_NOT_FOUND = -32000;
 
 /** ubus returned a non-zero status in the result tuple. */
 export class UbusError extends Error {

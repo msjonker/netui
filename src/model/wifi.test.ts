@@ -6,7 +6,11 @@ import wrxWireless from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireles
 import wrxInfo5 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.info.phy0-ap0.json';
 import wrxInfo2 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.info.phy1-ap0.json';
 import wrxFresh from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.fresh.json';
+import tlWireless from '../../test/fixtures/ubus/tl-wr1043nd-v2/uci.get.wireless.bss_transition.json';
+import tlInfo from '../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.bss_transition.json';
 import {
+  bssTransitionOffOps,
+  bssTransitionSsids,
   effectivePmf,
   ifaceSettings,
   isolatedNetworks,
@@ -444,5 +448,39 @@ describe('fresh install', () => {
     const w = fresh2410();
     const r = normalizeWifi(w).radios[0]!;
     expect(radioOps({ ...radioDraft(r), enabled: true }, r, w)).toEqual([radioOn('radio0'), placeholderOff('default_radio0')]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A router with hostapd's basic build (TL-WR1043ND v2, 25.12.6) and a WiFi
+// with BSS transition on: hostapd rejected the config and started nothing,
+// yet iwinfo still reports the SSID (from hostapd's config file).
+
+describe('basic WiFi package', () => {
+  const tl = (): UciConfig => structuredClone((tlWireless as UciGet).values);
+  const live = (running?: boolean) => [{ ifname: 'phy0-ap0', info: tlInfo as IwinfoInfo, running }];
+
+  it('is not live when hostapd is not running it, whatever iwinfo says', () => {
+    expect(normalizeWifi(tl(), live()).wlans[0]!.members[0]!.ifname).toBe('phy0-ap0');
+    expect(normalizeWifi(tl(), live(true)).wlans[0]!.members[0]!.ifname).toBe('phy0-ap0');
+    const { wlans, radios } = normalizeWifi(tl(), live(false));
+    expect(wlans[0]!.members[0]!.ifname).toBeUndefined();
+    expect(radios[0]!.live).toBeUndefined();
+  });
+
+  it('finds WiFi networks with BSS transition on and turns it off, keeping 802.11k', () => {
+    const w = tl();
+    expect(bssTransitionSsids(w)).toEqual(['netui-test']);
+    expect(bssTransitionOffOps(w)).toEqual([{ op: 'unset', config: 'wireless', section: 'wifinet0', options: ['bss_transition'] }]);
+    w.wifinet0!.disabled = '1';
+    expect(bssTransitionSsids(w)).toEqual([]);
+  });
+
+  it('creates new networks without BSS transition', () => {
+    const d = { ...newWlanDraft(['radio0'], 'lan', false), ssid: 'Home', key: 'longenough' };
+    const [add] = wlanOps(d, undefined, tl());
+    expect(add).toMatchObject({ op: 'add', values: { ssid: 'Home' } });
+    expect(add!.op === 'add' && add!.values).not.toHaveProperty('bss_transition');
+    expect(newWlanDraft(['radio0'], 'lan').bssTransition).toBe(true);
   });
 });

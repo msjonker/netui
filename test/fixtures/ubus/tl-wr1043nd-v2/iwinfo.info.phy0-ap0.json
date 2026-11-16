@@ -1,0 +1,51 @@
+{
+  "phy": "phy0",
+  "ssid": "netui-test",
+  "bssid": "02:00:00:00:00:01",
+  "country": "US",
+  "mode": "Master",
+  "channel": 1,
+  "center_chan1": 1,
+  "frequency": 2412,
+  "txpower": 25,
+  "quality": 70,
+  "quality_max": 70,
+  "signal": -36,
+  "noise": -95,
+  "bitrate": 144400,
+  "encryption": {
+    "enabled": true,
+    "wpa": [
+      2,
+      3
+    ],
+    "authentication": [
+      "psk",
+      "sae"
+    ],
+    "ciphers": [
+      "ccmp"
+    ]
+  },
+  "htmodes": [
+    "HT20",
+    "HT40"
+  ],
+  "hwmodes": [
+    "b",
+    "g",
+    "n"
+  ],
+  "hwmodes_text": "b/g/n",
+  "hwmode": "n",
+  "htmode": "HT20",
+  "hardware": {
+    "id": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "name": "Generic MAC80211"
+  }
+}

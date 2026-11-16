@@ -1,0 +1,55 @@
+{
+  "manager": "apk",
+  "free": 392,
+  "addons": {
+    "adblock": {
+      "installed": false
+    },
+    "portal": {
+      "installed": false
+    },
+    "multiwan": {
+      "installed": false
+    },
+    "usage": {
+      "installed": false
+    },
+    "sqm": {
+      "installed": false
+    },
+    "upnp": {
+      "installed": false
+    },
+    "ddns": {
+      "installed": false
+    },
+    "wireguard": {
+      "installed": false
+    },
+    "schedule": {
+      "installed": false
+    },
+    "steering": {
+      "installed": false
+    },
+    "speedtest": {
+      "installed": false
+    },
+    "firmware": {
+      "installed": true
+    },
+    "wol": {
+      "installed": false
+    },
+    "doh": {
+      "installed": false
+    },
+    "tailscale": {
+      "installed": false
+    },
+    "mesh": {
+      "installed": false
+    }
+  },
+  "job": null
+}

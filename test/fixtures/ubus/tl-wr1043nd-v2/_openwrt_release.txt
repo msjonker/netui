@@ -1,0 +1,2 @@
+TP-Link TL-WR1043ND v2 (tplink,tl-wr1043nd-v2)
+OpenWrt 25.12.6 r33311-981c978eff, ath79/generic

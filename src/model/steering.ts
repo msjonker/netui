@@ -46,9 +46,10 @@ const isLan = (net: unknown) => (Array.isArray(net) ? net.includes('lan') : Stri
 /**
  * Ops for the gateway's usteer config, plus, when the roaming assistant is
  * on, BSS transition and 802.11k on the LAN WiFi networks: steering is then a
- * polite request the client can follow instead of a disconnect.
+ * polite request the client can follow instead of a disconnect. `wnm` false:
+ * hostapd's basic build, which cannot start a network with BSS transition on.
  */
-export function steeringOps(next: Steering, usteer: UciConfig, wireless: UciConfig | undefined): UciOp[] {
+export function steeringOps(next: Steering, usteer: UciConfig, wireless: UciConfig | undefined, wnm = true): UciOp[] {
   const s = sectionsOfType(usteer, 'usteer')[0];
   if (!s) return [];
   const values = {
@@ -59,7 +60,7 @@ export function steeringOps(next: Steering, usteer: UciConfig, wireless: UciConf
   };
   const changed = Object.fromEntries(Object.entries(values).filter(([k, v]) => str(s[k]) !== v));
   const ops: UciOp[] = Object.keys(changed).length ? [{ op: 'set', config: 'usteer', section: s['.name'], values: changed }] : [];
-  if (next.roaming && wireless) {
+  if (next.roaming && wireless && wnm) {
     for (const w of sectionsOfType(wireless, 'wifi-iface')) {
       if (str(w.mode) !== 'ap' || str(w.disabled) === '1' || !isLan(w.network)) continue;
       if (str(w.bss_transition) !== '1' || str(w.ieee80211k) !== '1')

@@ -9,6 +9,12 @@ import type { UciConfig, UciGet, UciSection } from '../../api/types';
 import wrxWireless from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.json';
 import wrxSchedule from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wifi_schedule.json';
 import wrxFresh from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.fresh.json';
+import tlWireless from '../../../test/fixtures/ubus/tl-wr1043nd-v2/uci.get.wireless.bss_transition.json';
+import tlInfo from '../../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.bss_transition.json';
+import tlInfoUp from '../../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.json';
+import tlHostapd from '../../../test/fixtures/ubus/tl-wr1043nd-v2/hostapd.phy0-ap0.get_status.json';
+import { seedPackages } from '../../../test/fakeReads/packages';
+import { RpcError } from '../../api/ubus';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 // Expose the QR payload; the real component draws it as an SVG path.
@@ -126,6 +132,51 @@ describe('WiFi', () => {
     expect([cfg.radio0!.disabled, cfg.radio1!.disabled]).toEqual([undefined, undefined]);
     expect([cfg.default_radio0!.disabled, cfg.default_radio1!.disabled]).toEqual(['1', '1']);
     expect(ifaces().filter((s) => s.ssid === 'Home' && !s.disabled).map((s) => s.device)).toEqual(['radio0', 'radio1']);
+  });
+
+  it('shows a WiFi hostapd rejected as not running, and turns off the BSS transition the basic WiFi package lacks', async () => {
+    // TL-WR1043ND v2 (25.12.6, basic WiFi package): hostapd has no object for
+    // the interface, while iwinfo still reports its SSID.
+    resetRouter({ wireless: structuredClone((tlWireless as UciGet).values) });
+    seedPackages(router, '', { mesh: false });
+    // hostapd starts the network once the config has no bss_transition.
+    const up = () => router.configs.wireless!.wifinet0!.bss_transition === undefined;
+    router.overrides.push((c) => {
+      if (c.object === 'iwinfo' && c.method === 'devices') return { devices: ['phy0-ap0'] };
+      if (c.object === 'iwinfo' && c.method === 'info') return structuredClone(up() ? tlInfoUp : tlInfo);
+      if (c.object === 'hostapd.phy0-ap0') return up() ? structuredClone(tlHostapd) : new RpcError(-32000, 'Object not found');
+      return undefined;
+    });
+    renderApp('#/settings/wifi');
+    const row = (await screen.findByText('netui-test')).closest('tr')!;
+    await waitFor(() => expect(row.textContent).toContain('Not running'));
+    expect(row.textContent).not.toContain('Broadcasting');
+    await screen.findByText(/"netui-test" cannot start: BSS transition/);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Turn it off' }));
+    await applyReviewed();
+    expect(router.configs.wireless!.wifinet0).not.toHaveProperty('bss_transition');
+    expect(router.configs.wireless!.wifinet0).toMatchObject({ ieee80211k: '1', ssid: 'netui-test' });
+    await waitFor(() => expect(screen.getByText('netui-test').closest('tr')!.textContent).toContain('Broadcasting'));
+    await waitFor(() => expect(screen.queryByText(/cannot start/)).toBeNull());
+  });
+
+  it('does not offer BSS transition with the basic WiFi package', async () => {
+    seedPackages(router, '', { mesh: false });
+    renderApp('#/settings/wifi');
+    await screen.findByText('Home');
+    fireEvent.click(screen.getByRole('button', { name: /Create New/ }));
+    const drawer = await screen.findByRole('complementary', { name: 'Create New WiFi' });
+    const bss = (await within(drawer).findByRole('switch', { name: 'BSS transition' })) as HTMLInputElement;
+    await waitFor(() => expect(bss.disabled).toBe(true));
+    expect(bss.checked).toBe(false);
+    type(drawer, 'Name (SSID)', 'IoT');
+    type(drawer, 'Password', 'things-only');
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Add WiFi' }));
+    await applyReviewed();
+    const iot = ifaces().filter((s) => s.ssid === 'IoT');
+    expect(iot.length).toBeGreaterThan(0);
+    for (const s of iot) expect(s).not.toHaveProperty('bss_transition');
   });
 
   it('refuses a duplicate SSID and a short password', async () => {

@@ -33,6 +33,16 @@ Naming: `<object>.<method>[.<arg>].json`, e.g. `iwinfo.assoclist.phy0-ap0.json`.
 `_ubus_list.txt` is `ubus -v list` for every object the ACL grants, and
 `_openwrt_release.txt` records which release the fixtures came from.
 
+`tl-wr1043nd-v2/` is a fresh OpenWrt 25.12.6 install on a single-radio
+ath79 router with the stock basic WiFi package (`wpad-basic-mbedtls`),
+recorded over `/ubus` (its ssh was off). The `.bss_transition` files are a
+WiFi created by netui with BSS transition on: hostapd rejects the option
+(`log.hostapd.bss_transition.txt`) and starts nothing, so there is no
+`hostapd.phy0-ap0` object (uhttpd answers JSON-RPC -32000), yet iwinfo still
+reports the SSID, read from hostapd's config file. The other files are the
+same WiFi after netui turned the option off. The SSID is renamed to
+`netui-test` and the router's MAC replaced with `02:00:00:00:00:01`.
+
 Credential-like fields are redacted to `"REDACTED"` by the script. Client
 hostnames and MACs are not; check the diff before committing.
 

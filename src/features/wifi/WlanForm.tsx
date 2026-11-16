@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import type { UciConfig } from '../../api/types';
 import { useApply } from '../../api/useApply';
+import { usePackages } from '../../api/packages';
 import { networkLabel } from '../../model/network';
 import {
   deleteWlanOps,
@@ -67,11 +68,16 @@ export function WlanForm({
           ),
     [wlan, radios, networks, isolated],
   );
-  const { draft, dirty, stale, reset, update } = useDraft(source);
+  const { draft: edited, dirty, stale, reset, update } = useDraft(source);
+  // hostapd's basic build has no BSS transition and starts no network with it on.
+  const basicWifi = usePackages().data?.addons.mesh?.installed === false;
   const [showKey, setShowKey] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [sharing, setSharing] = useState(false);
-  if (!draft) return null;
+  if (!edited) return null;
+  const draft = basicWifi ? { ...edited, bssTransition: false } : edited;
+  // Saving removes it; an unchanged WiFi can be applied just for that.
+  const bssFix = basicWifi && !!wlan?.members.some((m) => wireless[m.section]?.bss_transition !== undefined);
 
   const error = validateWlan(
     draft,
@@ -83,7 +89,7 @@ export function WlanForm({
   const keep = wlan?.members.map((m) => m.section) ?? [];
   const placeholders = turnOn.some((r) => placeholdersOn(wireless, r, keep).length > 0);
   // An unchanged WiFi whose radios are all off can be applied just to turn them on.
-  const canApply = (dirty || !wlan || turnOn.length > 0) && !error && !apply.busy;
+  const canApply = (dirty || !wlan || turnOn.length > 0 || bssFix) && !error && !apply.busy;
   const pmf = effectivePmf(draft.security, draft.pmf);
   const pmfFixed = draft.security !== 'psk2' && draft.security !== 'psk-mixed';
   const canRoam = needsKey(draft.security);
@@ -316,8 +322,13 @@ export function WlanForm({
           )}
           <ToggleRow
             label="BSS transition"
-            hint="Steers devices to a better band (802.11v with 802.11k neighbor reports)."
+            hint={
+              basicWifi
+                ? 'Needs the full WiFi package (System, Add-ons); the basic one this router has cannot start a WiFi with it on.'
+                : 'Steers devices to a better band (802.11v with 802.11k neighbor reports).'
+            }
             checked={draft.bssTransition}
+            disabled={basicWifi}
             onChange={(bssTransition) => update({ bssTransition })}
           />
           <ToggleRow

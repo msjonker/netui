@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { QueryClient, useQueries, useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { read, SessionExpiredError, TransportError, UbusError, UbusStatus } from './ubus';
+import { read, RPC_OBJECT_NOT_FOUND, RpcError, SessionExpiredError, TransportError, UbusError, UbusStatus } from './ubus';
 import { getChanges, getConfig } from './uci';
 import { discoverDevices, listDevices, relay } from './devices';
 import { AddonMissingError } from './packages';
@@ -9,6 +9,7 @@ import type {
   BoardJson,
   DeviceStatusMap,
   DhcpLeases,
+  HostapdStatus,
   HostHints,
   InterfaceDump,
   IwinfoDevices,
@@ -56,6 +57,7 @@ export const keys = {
   wifiDevices: ['iwinfo', 'devices'] as const,
   wifiInfo: (dev: string) => ['iwinfo', 'info', dev] as const,
   assoc: (dev: string) => ['iwinfo', 'assoclist', dev] as const,
+  hostapd: (dev: string) => ['hostapd', 'get_status', dev] as const,
   uci: (config: string) => ['uci', config] as const,
   changes: ['uci-changes'] as const,
 };
@@ -123,6 +125,12 @@ export interface WifiDeviceState {
   ifname: string;
   info?: IwinfoInfo;
   stations?: AssocList['results'];
+  /**
+   * Whether hostapd is broadcasting this access point; undefined until known
+   * or for other modes. iwinfo alone cannot tell: it reports the SSID from
+   * hostapd's config file even when hostapd rejected that config.
+   */
+  running?: boolean;
 }
 
 /** iwinfo info (and optionally assoclist) for every wireless device. */
@@ -148,12 +156,30 @@ export function useWifiState(opts: { assoc?: boolean; refetchInterval?: number }
       refetchInterval: interval,
     })),
   });
+  const hostapd = useQueries({
+    queries: names.map((device, i) => ({
+      queryKey: keys.hostapd(device),
+      queryFn: async () => {
+        try {
+          return await read<HostapdStatus>(`hostapd.${device}`, 'get_status');
+        } catch (err) {
+          // No object: hostapd is not running this access point.
+          if (err instanceof RpcError && err.code === RPC_OBJECT_NOT_FOUND) return null;
+          throw err;
+        }
+      },
+      enabled: infos[i]?.data?.mode === 'Master',
+      refetchInterval: interval,
+    })),
+  });
   // Only an access point's stations are clients: a mesh interface lists other
   // routers, a client-mode interface the access point it joined.
   const devices = names.map((ifname, i) => {
     const info = infos[i]?.data;
     const ap = !info?.mode || info.mode === 'Master';
-    return { ifname, info, stations: ap ? assocs[i]?.data : undefined };
+    const status = hostapd[i]?.data;
+    const running = status === undefined ? undefined : status?.status === 'ENABLED';
+    return { ifname, info, stations: ap ? assocs[i]?.data : undefined, running };
   });
   // Each interface's poll is sampled once, at its own timestamp: the queries
   // settle separately, and sampling one interface's unchanged data again when

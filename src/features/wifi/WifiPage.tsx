@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'preact/hooks';
 import { useUci } from '../../api/queries';
+import { usePackages } from '../../api/packages';
+import { useApply } from '../../api/useApply';
 import { useClients, useNetworks } from '../../model/hooks';
 import { networkLabel } from '../../model/network';
-import { SECURITY_LABEL, isolatedNetworks, type Radio, type Wlan } from '../../model/wifi';
+import { SECURITY_LABEL, bssTransitionOffOps, bssTransitionSsids, isolatedNetworks, type Radio, type Wlan } from '../../model/wifi';
 import type { Client } from '../../model/clients';
 import { IconLock, IconPlus, IconQr, IconWifi, SignalBars } from '../../components/icons';
-import { Button, Card, Dot, Empty, Meter, Page, Pill, Spinner } from '../../components/ui';
-import { WlanForm } from './WlanForm';
+import { Banner, Button, Card, Dot, Empty, Meter, Page, Pill, Spinner } from '../../components/ui';
+import { WIFI_PLAN, WlanForm } from './WlanForm';
 import { RadioForm, pct, useChannelLoad } from './RadioForm';
 import { ScheduleCard } from './Schedule';
 import { MeshCard } from './Mesh';
@@ -87,6 +89,9 @@ export function WifiPage() {
   const wireless = useUci('wireless').data;
   const [sel, setSel] = useState<Selection>(null);
   const [share, setShare] = useState<string | null>(null);
+  const apply = useApply();
+  const basicWifi = usePackages().data?.addons.mesh?.installed === false;
+  const blocked = basicWifi && wireless ? bssTransitionSsids(wireless) : [];
 
   const networkIds = useMemo(() => (networks ?? []).map((n) => n.id), [networks]);
   const isolated = useMemo(() => isolatedNetworks(networkIds, firewall.data), [networkIds, firewall.data]);
@@ -130,6 +135,19 @@ export function WifiPage() {
       }
     >
       <div class="space-y-4">
+        {blocked.length > 0 && (
+          <Banner
+            tone="bad"
+            actions={
+              <Button disabled={apply.busy} onClick={() => void apply.start(bssTransitionOffOps(wireless!), WIFI_PLAN)}>
+                Turn it off
+              </Button>
+            }
+          >
+            {blocked.map((s) => `"${s}"`).join(', ')} cannot start: BSS transition (802.11v) is on, and this router's basic WiFi
+            package does not support it. Turn it off, or install the full WiFi package in System, Add-ons.
+          </Banner>
+        )}
         <Card flush>
           {!wifi ? (
             <div class="flex justify-center py-10">

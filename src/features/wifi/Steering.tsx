@@ -1,6 +1,7 @@
 import { useMemo } from 'preact/hooks';
 import { useUci } from '../../api/queries';
 import { useApply } from '../../api/useApply';
+import { usePackages } from '../../api/packages';
 import { MIN_SIGNAL_CHOICES, ROAM_TRIGGER_DBM, readSteering, steeringOps, type Steering } from '../../model/steering';
 import { useDraft } from '../../lib/useDraft';
 import { Button, Card, Field, ToggleRow } from '../../components/ui';
@@ -18,9 +19,11 @@ export function SteeringCard() {
   const wireless = useUci('wireless');
   const source = useMemo(() => (usteer.data ? readSteering(usteer.data) : undefined), [usteer.data]);
   const { draft, dirty, reset, update } = useDraft<Steering | undefined>(source);
+  // hostapd's basic build cannot start a WiFi with BSS transition on.
+  const basicWifi = usePackages().data?.addons.mesh?.installed === false;
 
   if (!usteer.data || !source || !draft) return null;
-  const ops = steeringOps(draft, usteer.data, wireless.data);
+  const ops = steeringOps(draft, usteer.data, wireless.data, !basicWifi);
 
   return (
     <Card title="Client steering">
@@ -33,7 +36,11 @@ export function SteeringCard() {
       />
       <ToggleRow
         label="Roaming assistant"
-        hint={`Ask devices whose signal drops below ${ROAM_TRIGGER_DBM} dBm to move to a closer access point. Turns on BSS transition and 802.11k on the WiFi networks so devices can follow the request.`}
+        hint={
+          basicWifi
+            ? `Ask devices whose signal drops below ${ROAM_TRIGGER_DBM} dBm to move to a closer access point. BSS transition, which lets devices follow the request, needs the full WiFi package (System, Add-ons).`
+            : `Ask devices whose signal drops below ${ROAM_TRIGGER_DBM} dBm to move to a closer access point. Turns on BSS transition and 802.11k on the WiFi networks so devices can follow the request.`
+        }
         checked={draft.roaming}
         disabled={apply.busy}
         onChange={(roaming) => update({ roaming })}
