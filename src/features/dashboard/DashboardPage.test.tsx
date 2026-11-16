@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/preact';
-import { resetRouter } from '../../../test/fakeRouter';
+import { screen, waitFor, within } from '@testing-library/preact';
+import { resetRouter, router } from '../../../test/fakeRouter';
 import { renderApp } from '../../../test/renderApp';
 import { wireless } from '../../../test/wireless';
 import { compactRate } from './DashboardPage';
@@ -39,5 +39,19 @@ describe('Dashboard', () => {
     expect(within(recent).getAllByRole('listitem').length).toBeLessThanOrEqual(6);
     expect(within(recent).getByText('Internet connection lost')).toBeTruthy();
     expect(screen.getAllByRole('link', { name: 'System Log' })).toHaveLength(2);
+  });
+
+  it('counts the clients connected now, as the Clients page does, not a known device that is away', async () => {
+    // A named host with no lease and no association: known, but not here.
+    router.configs.dhcp!.away = { '.anonymous': false, '.index': 99, '.name': 'away', '.type': 'host', name: 'tablet', mac: ['02:00:00:00:00:99'] };
+    renderApp('#/');
+    const total = () => Number((screen.getByText('Total').parentElement!.textContent ?? '').replace(/\D/g, ''));
+    await waitFor(() => expect(total()).toBeGreaterThan(0));
+    const dashboard = total();
+    location.hash = '#/clients';
+    const subtitle = await screen.findByText(/online · \d+ known/);
+    const [, online, known] = /(\d+) online · (\d+) known/.exec(subtitle.textContent!)!;
+    expect(Number(known)).toBeGreaterThan(Number(online));
+    expect(dashboard).toBe(Number(online));
   });
 });

@@ -2,7 +2,7 @@ import { useMemo } from 'preact/hooks';
 import { Link } from 'wouter-preact';
 import { firstError, useInterfaces, useSystemBoard, useSystemInfo, useThroughput } from '../../api/queries';
 import { findUplink, networkLabel, normalizeSystem, uplinkOnline } from '../../model/network';
-import { clientAddresses, displayName } from '../../model/clients';
+import { clientAddresses, displayName, isOffline } from '../../model/clients';
 import { averageExperience } from '../../model/experience';
 import { topClientsByUsage } from '../../model/traffic';
 import { collapseRepeats, relativeTime, type NetEvent } from '../../model/events';
@@ -241,7 +241,9 @@ function GatewayCard() {
 function ClientsAndWifi() {
   const { clients, subnets, wifi, wirelessError } = useClients();
   const exp = useMemo(() => averageExperience(clients), [clients]);
-  const wireless_ = clients.filter((c) => c.wireless);
+  // Connected now, as the Clients page counts them: a known device that is away is not wired.
+  const online = clients.filter((c) => !isOffline(c));
+  const wireless_ = online.filter((c) => c.wireless);
   const top = [...wireless_].sort((a, b) => b.wireless!.signal - a.wireless!.signal).slice(0, 5);
   const radios = useMemo(() => buildTopology({ wifi, clients }).radios, [wifi, clients]);
 
@@ -249,8 +251,8 @@ function ClientsAndWifi() {
     <>
       <Card title="Clients" icon={<IconClients size={16} />} actions={<Link href="/clients" class="text-accent hover:underline">View all</Link>}>
         <div class="grid grid-cols-3 gap-4">
-          <Stat label="Total" value={clients.length} />
-          <Stat label="Wired" value={clients.length - wireless_.length} />
+          <Stat label="Total" value={online.length} />
+          <Stat label="Wired" value={online.length - wireless_.length} />
           <Stat label="WiFi" value={wireless_.length} />
         </div>
         {top.length > 0 && (
@@ -321,7 +323,7 @@ function ClientsAndWifi() {
                 <span class="font-mono text-xs text-muted">
                   {s.address}/{s.prefix}
                 </span>
-                <Pill>{clients.filter((c) => c.network === s.network).length}</Pill>
+                <Pill>{online.filter((c) => c.network === s.network).length}</Pill>
               </li>
             ))}
           </ul>
