@@ -1,12 +1,14 @@
 name: Pages
 
 # Publishes docs/ (the project page, screenshots and user guide) to GitHub
-# Pages. Needs Settings > Pages > Source set to "GitHub Actions".
+# Pages, with the demo build (npm run build:demo: the UI against a simulated
+# router) under demo/. Needs Settings > Pages > Source set to "GitHub Actions".
 
 on:
   push:
     branches: [main]
-    paths: ['docs/**', '.github/workflows/pages.yml']
+    # The demo is the app itself, so app changes republish it too.
+    paths: ['docs/**', 'src/**', 'public/**', 'index.html', 'package.json', 'package-lock.json', 'vite.config.ts', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -26,9 +28,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build:demo
+      - name: Site with the demo under demo/
+        run: |
+          cp -r docs site
+          cp -r dist-demo site/demo
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: docs
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4

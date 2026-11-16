@@ -10,6 +10,9 @@
 A friendly web UI for OpenWrt: manage your router, WiFi, extra access points
 and mesh from one place.
 
+**[Try the live demo](https://msjonker.github.io/netui/demo/)**: the real UI in
+your browser, against a simulated router. Change anything; a reload starts over.
+
 New to this? The **[user guide](docs/user-guide.md)** walks through
 installing netui and setting up WiFi, a guest network, ad blocking, extra
 access points and more, step by step.
