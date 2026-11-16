@@ -197,7 +197,7 @@ function LivePort({ p }: { p: SwitchPort }) {
         r ? ` · in ${rate(r.rx)}, out ${rate(r.tx)}` : ''
       }`}
     >
-      {p.carrier && <span class="text-white/80">{compactRate(total)}</span>}
+      {p.carrier && <span class="text-fg/80">{compactRate(total)}</span>}
     </PortTile>
   );
 }

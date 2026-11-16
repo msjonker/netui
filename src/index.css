@@ -30,6 +30,10 @@
   --rail: #ffffff;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.08), 0 2px 6px rgb(0 0 0 / 0.04);
   --card: 0 1px 2px rgb(16 24 40 / 0.04), 0 2px 8px rgb(16 24 40 / 0.04);
+  /* The ports front panel: a light bezel with white sockets. */
+  --port-panel: #e8ebef;
+  --port-socket: #ffffff;
+  --port-hole: #3d434c;
 }
 
 /* Dark: chosen in the account menu (data-theme), or the system's choice. */
@@ -57,6 +61,9 @@
   --rail: #1a1b1e;
   --shadow: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   --card: inset 0 1px 0 rgb(255 255 255 / 0.03);
+  --port-panel: #1f2228;
+  --port-socket: #30343c;
+  --port-hole: rgb(0 0 0 / 0.6);
   --logo: url(/logo-dark.webp);
 }
 
@@ -85,6 +92,9 @@
     --rail: #1a1b1e;
     --shadow: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
     --card: inset 0 1px 0 rgb(255 255 255 / 0.03);
+    --port-panel: #1f2228;
+    --port-socket: #30343c;
+    --port-hole: rgb(0 0 0 / 0.6);
     --logo: url(/logo-dark.webp);
   }
 }
@@ -111,6 +121,9 @@
   --color-violet: var(--violet);
   --color-violet-soft: var(--violet-soft);
   --color-rail: var(--rail);
+  --color-port-panel: var(--port-panel);
+  --color-port-socket: var(--port-socket);
+  --color-port-hole: var(--port-hole);
   --shadow-pop: var(--shadow);
   --shadow-card: var(--card);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
