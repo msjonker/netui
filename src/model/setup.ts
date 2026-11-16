@@ -8,6 +8,7 @@
 import type { UciConfig, UciValue } from '../api/types';
 import { bool, sectionsOfType, str, type UciOp } from '../api/uci';
 import type { Timezone } from './system';
+import { isPlaceholderIface } from './wifi';
 
 /** WiFi as a fresh install leaves it: networks named OpenWrt, open, disabled. */
 export function isFreshWifi(wireless: UciConfig): boolean {
@@ -17,8 +18,7 @@ export function isFreshWifi(wireless: UciConfig): boolean {
     ifaces.every((s) => {
       const radio = wireless[str(s.device) ?? ''];
       return (
-        str(s.ssid) === 'OpenWrt' &&
-        (str(s.encryption) ?? 'none') === 'none' &&
+        isPlaceholderIface(s) &&
         (bool(s.disabled, false) || bool(radio?.disabled, false))
       );
     })

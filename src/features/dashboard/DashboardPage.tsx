@@ -294,7 +294,7 @@ function ClientsAndWifi() {
             ) : (
               <div class="flex flex-wrap gap-1.5">
                 {wifi.wlans.map((w) => (
-                  <Pill key={w.id} tone={w.enabled ? 'accent' : 'neutral'}>
+                  <Pill key={w.id} tone={w.enabled && !w.radioOff ? 'accent' : 'neutral'}>
                     {w.ssid}
                   </Pill>
                 ))}

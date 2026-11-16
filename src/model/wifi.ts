@@ -111,6 +111,17 @@ export interface Wlan extends IfaceSettings {
   members: WlanMember[];
   /** Bands disagree on security or an Advanced option; saving makes them the same. */
   mixed: boolean;
+  /** Every band's radio is off, so it cannot broadcast even when enabled. */
+  radioOff: boolean;
+}
+
+/**
+ * The open "OpenWrt" network a fresh install leaves on each radio. 24.10
+ * leaves it enabled and turns the radio off instead (25.12 does the
+ * opposite), so turning such a radio on would start it, open, on the LAN.
+ */
+export function isPlaceholderIface(s: UciSection): boolean {
+  return (str(s.mode) ?? 'ap') === 'ap' && str(s.ssid) === 'OpenWrt' && (str(s.encryption) ?? 'none') === 'none';
 }
 
 /** Band of a wifi-device, from `band` (23.05+) or legacy `hwmode`. */
@@ -211,9 +222,11 @@ export function normalizeWifi(wireless: UciConfig, live: LiveDevice[] = []): Wif
     const g = groups.get(ssid);
     const encryption = str(s.encryption) ?? 'none';
     const settings = ifaceSettings(s);
+    const radioOff = radio?.enabled === false;
     if (g) {
       g.members.push(member);
       g.enabled ||= member.enabled;
+      g.radioOff &&= radioOff;
       const first = wireless[g.members[0]!.section]!;
       g.mixed ||=
         securityOf(encryption) !== g.security ||
@@ -233,6 +246,7 @@ export function normalizeWifi(wireless: UciConfig, live: LiveDevice[] = []): Wif
       network: list(s.network),
       members: [member],
       mixed: false,
+      radioOff,
     });
   }
 
@@ -465,7 +479,35 @@ export function wlanOps(d: WlanDraft, existing: Wlan | undefined, wireless: UciC
     );
     ops.push({ op: 'add', config: 'wireless', type: 'wifi-iface', values: { device: radio, ...values } });
   }
+  const keep = members.map((m) => m.section);
+  for (const radio of radiosToTurnOn(d, existing, wireless)) {
+    ops.push({ op: 'unset', config: 'wireless', section: radio, options: ['disabled'] }, ...placeholderOffOps(wireless, radio, keep));
+  }
   return ops;
+}
+
+/**
+ * Radios that are off and that applying `d` turns on: those the WiFi is
+ * added to or switched on for, or all of its radios when it would otherwise
+ * broadcast nowhere (a fresh 24.10 install turns every radio off). A radio
+ * turned off on purpose stays off when a WiFi live on another band is edited.
+ */
+export function radiosToTurnOn(d: WlanDraft, existing: Wlan | undefined, wireless: UciConfig): string[] {
+  if (!d.enabled) return [];
+  const off = d.radios.filter((r) => bool(wireless[r]?.disabled, false));
+  if (off.length === d.radios.length) return off;
+  return off.filter((r) => !existing?.members.some((m) => m.radio === r && m.enabled));
+}
+
+/** Placeholder networks that would start with `radio`, except sections in `keep`. */
+export function placeholdersOn(wireless: UciConfig, radio: string, keep: string[] = []): string[] {
+  return sectionsOfType(wireless, 'wifi-iface')
+    .filter((s) => str(s.device) === radio && isPlaceholderIface(s) && !bool(s.disabled, false) && !keep.includes(s['.name']))
+    .map((s) => s['.name']);
+}
+
+function placeholderOffOps(wireless: UciConfig, radio: string, keep: string[] = []): UciOp[] {
+  return placeholdersOn(wireless, radio, keep).map((section): UciOp => ({ op: 'set', config: 'wireless', section, values: { disabled: '1' } }));
 }
 
 export function deleteWlanOps(w: Wlan): UciOp[] {
@@ -506,6 +548,7 @@ export function radioOps(d: RadioDraft, r: Radio, wireless: UciConfig): UciOp[] 
     txpower: d.txpower,
     country: d.country,
   });
+  if (d.enabled && !r.enabled) ops.push(...placeholderOffOps(wireless, r.section));
   if (d.country && d.country !== (r.country ?? '')) {
     for (const s of sectionsOfType(wireless, 'wifi-device')) {
       if (s['.name'] !== r.section) ops.push(...diffSection('wireless', s['.name'], s, { country: d.country }));

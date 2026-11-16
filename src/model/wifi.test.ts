@@ -5,6 +5,7 @@ import { diffSection } from '../api/uci';
 import wrxWireless from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.json';
 import wrxInfo5 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.info.phy0-ap0.json';
 import wrxInfo2 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.info.phy1-ap0.json';
+import wrxFresh from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.fresh.json';
 import {
   effectivePmf,
   ifaceSettings,
@@ -13,6 +14,7 @@ import {
   frequencyBand,
   newWlanDraft,
   normalizeWifi,
+  radiosToTurnOn,
   radioDraft,
   radioOps,
   securityOf,
@@ -362,5 +364,85 @@ describe('wifi security and validation', () => {
     );
     expect(wifiQrPayload({ ssid: 'Cafe', security: 'none', key: '', hidden: true })).toBe('WIFI:T:nopass;S:Cafe;H:true;;');
     expect(wifiQrPayload({ ssid: 'Cafe', security: 'owe', key: '', hidden: false })).toBe('WIFI:T:nopass;S:Cafe;;');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A fresh install. 25.12 (recorded on the DL-WRX36) disables each "OpenWrt"
+// network and leaves its radio on; 24.10's mac80211.uc writes the same
+// sections with `disabled` on the radio instead, leaving the open network on.
+
+const freshGet: UciGet = wrxFresh;
+const fresh2410 = (): UciConfig => {
+  const w = structuredClone(freshGet.values);
+  for (const s of Object.values(w)) {
+    if (s['.type'] === 'wifi-device') s.disabled = '1';
+    else delete s.disabled;
+  }
+  return w;
+};
+const radioOn = (radio: string) => ({ op: 'unset', config: 'wireless', section: radio, options: ['disabled'] });
+const placeholderOff = (section: string) => ({ op: 'set', config: 'wireless', section, values: { disabled: '1' } });
+
+describe('fresh install', () => {
+  it('reads an enabled network on radios that are off as radio off', () => {
+    const { wlans } = normalizeWifi(fresh2410());
+    expect(wlans).toEqual([expect.objectContaining({ ssid: 'OpenWrt', enabled: true, radioOff: true })]);
+    expect(normalizeWifi(structuredClone(freshGet.values)).wlans[0]).toMatchObject({ enabled: false, radioOff: false });
+  });
+
+  it('turns the radios on for a new WiFi and keeps the open placeholder off (24.10)', () => {
+    const w = fresh2410();
+    const d = { ...newWlanDraft(['radio0', 'radio1'], 'lan'), ssid: 'Home', key: 'longenough' };
+    const ops = wlanOps(d, undefined, w);
+    expect(ops.filter((o) => o.op !== 'add')).toEqual([
+      radioOn('radio0'),
+      placeholderOff('default_radio0'),
+      radioOn('radio1'),
+      placeholderOff('default_radio1'),
+    ]);
+    expect(ops.filter((o) => o.op === 'add')).toHaveLength(2);
+  });
+
+  it('adds nothing for radios that are already on (25.12)', () => {
+    const d = { ...newWlanDraft(['radio0', 'radio1'], 'lan'), ssid: 'Home', key: 'longenough' };
+    expect(wlanOps(d, undefined, structuredClone(freshGet.values)).every((o) => o.op === 'add')).toBe(true);
+  });
+
+  it('turns the radios on when the placeholder itself is renamed, without switching it off', () => {
+    const w = fresh2410();
+    const [placeholder] = normalizeWifi(w).wlans;
+    const d = { ...wlanDraft(placeholder!), ssid: 'Home', security: 'sae-mixed' as const, key: 'longenough' };
+    const ops = wlanOps(d, placeholder, w);
+    expect(ops).toContainEqual(radioOn('radio0'));
+    expect(ops).toContainEqual(radioOn('radio1'));
+    expect(ops.filter((o) => o.op === 'set' && o.values.disabled)).toEqual([]);
+  });
+
+  it('turns an unchanged WiFi on its radios that are all off', () => {
+    const w = fresh2410();
+    const [placeholder] = normalizeWifi(w).wlans;
+    expect(radiosToTurnOn(wlanDraft(placeholder!), placeholder, w)).toEqual(['radio0', 'radio1']);
+    expect(radiosToTurnOn({ ...wlanDraft(placeholder!), enabled: false }, placeholder, w)).toEqual([]);
+  });
+
+  it('leaves a radio turned off on purpose when a WiFi live on another band is edited', () => {
+    const w = wireless();
+    w.radio0!.disabled = '1';
+    const [home, guest] = normalizeWifi(w).wlans;
+    expect(home!.radioOff).toBe(false);
+    expect(wlanOps({ ...wlanDraft(home!), key: 'newpassword' }, home, w)).toEqual([
+      { op: 'set', config: 'wireless', section: 'home2', values: { key: 'newpassword' } },
+      { op: 'set', config: 'wireless', section: 'home5', values: { key: 'newpassword' } },
+    ]);
+    // Switching a WiFi on, or adding it to the radio, is asking for it there.
+    expect(radiosToTurnOn({ ...wlanDraft(guest!), enabled: true }, guest, w)).toEqual(['radio0']);
+    expect(radiosToTurnOn({ ...wlanDraft(guest!), enabled: true, radios: ['radio0', 'radio1'] }, guest, w)).toEqual(['radio0']);
+  });
+
+  it('keeps the open placeholder off when a radio is turned on by hand', () => {
+    const w = fresh2410();
+    const r = normalizeWifi(w).radios[0]!;
+    expect(radioOps({ ...radioDraft(r), enabled: true }, r, w)).toEqual([radioOn('radio0'), placeholderOff('default_radio0')]);
   });
 });

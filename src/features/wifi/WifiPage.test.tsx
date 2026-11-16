@@ -8,6 +8,7 @@ import { wireless } from '../../../test/wireless';
 import type { UciConfig, UciGet, UciSection } from '../../api/types';
 import wrxWireless from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.json';
 import wrxSchedule from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wifi_schedule.json';
+import wrxFresh from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.fresh.json';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 // Expose the QR payload; the real component draws it as an SVG path.
@@ -95,6 +96,36 @@ describe('WiFi', () => {
       expect.objectContaining({ device: 'radio0', mode: 'ap', ssid: 'IoT', encryption: 'psk2', key: 'things-only' }),
     );
     expect(ifaces().filter((s) => s.ssid === 'IoT')).toHaveLength(1);
+  });
+
+  it('turns the radios on for a new WiFi on a fresh 24.10 install, keeping the open placeholder off', async () => {
+    // 25.12's fresh config (recorded) with `disabled` moved to the radios, as 24.10 writes it.
+    const w: UciConfig = structuredClone((wrxFresh as UciGet).values);
+    for (const s of Object.values(w)) {
+      if (s['.type'] === 'wifi-device') s.disabled = '1';
+      else delete s.disabled;
+    }
+    resetRouter({ wireless: w });
+    renderApp('#/settings/wifi');
+    const row = (await screen.findByText('OpenWrt')).closest('tr')!;
+    expect(row.textContent).toContain('Radio off');
+
+    fireEvent.click(screen.getByRole('button', { name: /Create New/ }));
+    const drawer = await screen.findByRole('complementary', { name: 'Create New WiFi' });
+    const bands = within(drawer).getAllByRole('checkbox', { name: /GHz/ }) as HTMLInputElement[];
+    expect(bands.map((b) => b.checked)).toEqual([true, true]);
+    expect(within(drawer).getByRole('status').textContent).toBe(
+      'Applying turns on the 5 GHz and 2.4 GHz radios, which are off. The open "OpenWrt" network from the fresh install stays off.',
+    );
+    type(drawer, 'Name (SSID)', 'Home');
+    type(drawer, 'Password', 'longenough');
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Add WiFi' }));
+
+    await applyReviewed();
+    const cfg = router.configs.wireless!;
+    expect([cfg.radio0!.disabled, cfg.radio1!.disabled]).toEqual([undefined, undefined]);
+    expect([cfg.default_radio0!.disabled, cfg.default_radio1!.disabled]).toEqual(['1', '1']);
+    expect(ifaces().filter((s) => s.ssid === 'Home' && !s.disabled).map((s) => s.device)).toEqual(['radio0', 'radio1']);
   });
 
   it('refuses a duplicate SSID and a short password', async () => {

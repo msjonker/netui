@@ -2,7 +2,7 @@ import { useMemo } from 'preact/hooks';
 import type { IwinfoSurveyEntry, UciConfig } from '../../api/types';
 import { useCountryList, useFreqList, useRadioInfo, useSurvey, useTxPowerList } from '../../api/queries';
 import { useApply } from '../../api/useApply';
-import { CHANNELS, radioDraft, radioOps, validateRadio, type Radio } from '../../model/wifi';
+import { CHANNELS, placeholdersOn, radioDraft, radioOps, validateRadio, type Radio } from '../../model/wifi';
 import {
   TX_LABEL,
   channelLoad,
@@ -126,6 +126,9 @@ export function RadioForm({
             checked={draft.enabled}
             onChange={(enabled) => update({ enabled })}
           />
+          {draft.enabled && !radio.enabled && placeholdersOn(wireless, radio.section).length > 0 && (
+            <p class="pb-2 text-xs text-muted">The open "OpenWrt" network from the fresh install stays off.</p>
+          )}
           <Field
             label="Channel"
             stacked

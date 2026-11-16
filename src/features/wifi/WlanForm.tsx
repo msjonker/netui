@@ -7,6 +7,8 @@ import {
   effectivePmf,
   needsKey,
   newWlanDraft,
+  placeholdersOn,
+  radiosToTurnOn,
   validateWlan,
   wlanDraft,
   wlanOps,
@@ -59,7 +61,8 @@ export function WlanForm({
       wlan
         ? wlanDraft(wlan, isolated)
         : newWlanDraft(
-            radios.filter((r) => r.enabled).map((r) => r.section),
+            // With every radio off (a fresh 24.10 install), all of them: applying turns them on.
+            (radios.some((r) => r.enabled) ? radios.filter((r) => r.enabled) : radios).map((r) => r.section),
             networks[0] ?? 'lan',
           ),
     [wlan, radios, networks, isolated],
@@ -75,7 +78,12 @@ export function WlanForm({
     wlans.filter((w) => w.id !== wlan?.id),
     { radios, isolated },
   );
-  const canApply = (dirty || !wlan) && !error && !apply.busy;
+  const turnOn = radiosToTurnOn(draft, wlan, wireless);
+  const turnOnBands = radios.filter((r) => turnOn.includes(r.section)).map((r) => r.bandLabel);
+  const keep = wlan?.members.map((m) => m.section) ?? [];
+  const placeholders = turnOn.some((r) => placeholdersOn(wireless, r, keep).length > 0);
+  // An unchanged WiFi whose radios are all off can be applied just to turn them on.
+  const canApply = (dirty || !wlan || turnOn.length > 0) && !error && !apply.busy;
   const pmf = effectivePmf(draft.security, draft.pmf);
   const pmfFixed = draft.security !== 'psk2' && draft.security !== 'psk-mixed';
   const canRoam = needsKey(draft.security);
@@ -268,6 +276,13 @@ export function WlanForm({
                 );
               })}
             </div>
+            {turnOnBands.length > 0 && (
+              <p class="pt-2 text-xs text-muted" role="status">
+                Applying turns on the {andList(turnOnBands)} radio{turnOnBands.length > 1 ? 's' : ''}, which{' '}
+                {turnOnBands.length > 1 ? 'are' : 'is'} off.
+                {placeholders && ' The open "OpenWrt" network from the fresh install stays off.'}
+              </p>
+            )}
           </div>
         </FormSection>
 
@@ -362,4 +377,8 @@ export function WlanForm({
       )}
     </Drawer>
   );
+}
+
+function andList(items: string[]): string {
+  return items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : (items[0] ?? '');
 }

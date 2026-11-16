@@ -168,7 +168,7 @@ export function WifiPage() {
                       >
                         <td>
                           <span class="flex items-center gap-2.5 font-medium">
-                            <IconWifi size={16} class={w.enabled ? 'text-accent' : 'text-faint'} />
+                            <IconWifi size={16} class={w.enabled && !w.radioOff ? 'text-accent' : 'text-faint'} />
                             {w.ssid || <span class="text-muted">(no name)</span>}
                             {w.isolate && isolated.includes(w.network[0] ?? '') && <Pill tone="accent">Guest</Pill>}
                             {w.hidden && <Pill>Hidden</Pill>}
@@ -177,7 +177,7 @@ export function WifiPage() {
                         <td>
                           <span class="inline-flex items-center gap-1.5">
                             <Dot tone={!w.enabled ? 'neutral' : live ? 'ok' : 'warn'} />
-                            {!w.enabled ? 'Disabled' : live ? 'Broadcasting' : 'Not running'}
+                            {!w.enabled ? 'Disabled' : live ? 'Broadcasting' : w.radioOff ? 'Radio off' : 'Not running'}
                           </span>
                         </td>
                         <td>{w.network.map(networkLabel).join(', ') || '—'}</td>
