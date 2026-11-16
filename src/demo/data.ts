@@ -230,6 +230,8 @@ function dhcp(): UciConfig {
     ['odhcpd', 'odhcpd', { maindhcp: '0', leasefile: '/tmp/hosts/odhcpd', leasetrigger: '/usr/sbin/odhcpd-update', loglevel: '4' }],
     ['@host', 'host', { name: 'nas', mac: ['00:00:5E:00:53:12'], ip: '192.168.1.102' }],
     ['@host', 'host', { name: 'game-console', mac: ['00:00:5E:00:53:13'], ip: '192.168.1.103' }],
+    // A name only, as netui's client settings write it: the tablet stays known while it is away.
+    ['@host', 'host', { name: 'tablet', mac: ['7A:10:4E:8B:C2:55'] }],
   ]);
 }
 
