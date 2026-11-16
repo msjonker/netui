@@ -146,7 +146,7 @@ export function UpnpCard({ cfg }: { cfg: UciConfig }) {
         />
         {draft.enabled && (
           <>
-            <ToggleRow label="NAT-PMP / PCP" hint="Also accept port requests from Apple devices and PCP clients." checked={draft.natpmp} onChange={(natpmp) => update({ natpmp })} />
+            <ToggleRow label="NAT-PMP / PCP" hint="Also accept port requests made with NAT-PMP or PCP, which some computers and phones use instead of UPnP." checked={draft.natpmp} onChange={(natpmp) => update({ natpmp })} />
             <ToggleRow
               label="Secure mode"
               hint="Devices may only open ports to themselves."
