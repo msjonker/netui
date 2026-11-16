@@ -7,6 +7,7 @@ import {
   useDeviceLinks,
   useDeviceRadios,
   useDeviceSystem,
+  useInterfaces,
   useManagedDevices,
   usePendingDevices,
   useSystemBoard,
@@ -29,6 +30,8 @@ function GatewayRow() {
   const info = useSystemInfo();
   const wifi = useWifiState({ assoc: true });
   const clients = wifi.devices.reduce((n, d) => n + (d.stations?.length ?? 0), 0);
+  // Its LAN address, like the access points' rows; the page may be open by name or over a VPN.
+  const lan = useInterfaces(false).data?.interface.find((i) => i.interface === 'lan')?.['ipv4-address']?.[0]?.address;
   return (
     <tr class="cursor-pointer" onClick={() => navigate('/')}>
       <td>
@@ -40,7 +43,7 @@ function GatewayRow() {
       <td>{board.data?.model ?? '—'}</td>
       <td><Pill tone="accent">Gateway</Pill></td>
       <td>Internet (WAN)</td>
-      <td class="font-mono">{location.hostname}</td>
+      <td class="font-mono">{lan ?? location.hostname}</td>
       <td>{clients}</td>
       <td>{info.data ? formatDuration(info.data.uptime) : '—'}</td>
       <td>{firmwareVersion(board.data?.release.description) ?? '—'}</td>
