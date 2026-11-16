@@ -217,6 +217,32 @@ describe('WiFi', () => {
     expect(radio5().textContent).toContain('-110 dBm');
   });
 
+  it("counts an access point's stations under its WiFi, not under a router radio with the same ifname", async () => {
+    resetRouter({ wireless: wrx() });
+    liveWrx();
+    const sta = (mac: string) => ({ mac, signal: -50, noise: -95, inactive: 0, rx: { rate: 866700, packets: 1 }, tx: { rate: 866700, packets: 1 } });
+    // The AP's 5 GHz WiFi is phy1-ap0, which on the router is the 2.4 GHz one.
+    router.overrides.push((c) => {
+      if (c.object === 'netui.devices' && c.method === 'list') return { devices: [{ mac: '02:00:00:00:00:aa', name: 'Office AP', online: true, ip: '192.168.1.2' }] };
+      if (c.object !== 'netui.devices' || c.method !== 'call') return undefined;
+      const a = c.args as { object: string; method: string };
+      const data =
+        a.object === 'iwinfo' && a.method === 'devices'
+          ? { devices: ['phy1-ap0'] }
+          : a.object === 'iwinfo' && a.method === 'info'
+            ? { phy: 'phy1', ssid: 'netui-test', mode: 'Master', channel: 36, frequency: 5180 }
+            : a.object === 'iwinfo' && a.method === 'assoclist'
+              ? { results: [sta('AA:BB:CC:00:00:01'), sta('AA:BB:CC:00:00:02')] }
+              : undefined;
+      return data && { status: 0, data };
+    });
+    renderApp('#/settings/wifi');
+    const wlan = (await screen.findByText('netui-test')).closest('tr')!;
+    await waitFor(() => expect(within(wlan).getAllByRole('cell')[5]!.textContent).toBe('2'));
+    const radio2 = screen.getAllByRole('row').find((r) => r.textContent!.startsWith('2.4 GHz'))!;
+    expect(within(radio2).getAllByRole('cell')[7]!.textContent).toBe('0');
+  });
+
   it('adds a WiFi schedule entry and rebuilds the timers after applying', async () => {
     resetRouter({ wireless: wireless(), wifi_schedule: structuredClone(scheduleGet.values) });
     renderApp('#/settings/wifi');

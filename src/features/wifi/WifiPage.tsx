@@ -92,8 +92,12 @@ export function WifiPage() {
   const isolated = useMemo(() => isolatedNetworks(networkIds, firewall.data), [networkIds, firewall.data]);
   const wlans = wifi?.wlans ?? [];
   const radios = wifi?.radios ?? [];
-  const onIfaces = (ifnames: (string | undefined)[]) => (c: Client) => !!c.wireless && ifnames.includes(c.wireless.ifname);
-  const wlanClients = (w: Wlan) => clients.filter(onIfaces(w.members.map((m) => m.ifname)));
+  // This router's own interfaces only: an access point's ifnames (phy1-ap0, ...) can repeat the router's.
+  const onIfaces = (ifnames: (string | undefined)[]) => (c: Client) =>
+    !!c.wireless && !c.wireless.ap && ifnames.includes(c.wireless.ifname);
+  // A network's clients include those on access points broadcasting it.
+  const wlanClients = (w: Wlan) =>
+    clients.filter((c) => onIfaces(w.members.map((m) => m.ifname))(c) || (!!c.wireless?.ap && c.wireless.ssid === w.ssid));
   const radioClients = (r: Radio) =>
     clients.filter(onIfaces(wlans.flatMap((w) => w.members.filter((m) => m.radio === r.section).map((m) => m.ifname)))).length;
 
