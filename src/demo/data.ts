@@ -10,6 +10,7 @@ import upnpd from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.upnpd.json';
 import ddns from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.ddns.json';
 import wifiSchedule from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wifi_schedule.json';
 import doh from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.https-dns-proxy.json';
+import cloudflared from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.cloudflared.json';
 import usteer from '../../test/fixtures/ubus/bench-v2/gateway.uci.get.usteer.json';
 import adblock from '../../test/fixtures/ubus/bench-v2/gateway.uci.get.adblock-fast.json';
 import mwan3 from '../../test/fixtures/ubus/bench-v2/gateway.uci.get.mwan3.json';
@@ -330,6 +331,7 @@ export function initialConfigs(): Record<string, UciConfig> {
     'adblock-fast': withAdblock(),
     mwan3: fixture(mwan3),
     opennds: fixture(opennds),
+    cloudflared: fixture(cloudflared),
   };
 }
 
@@ -350,6 +352,7 @@ export const INSTALLED: Record<AddonKey, boolean> = {
   wol: true,
   doh: false,
   tailscale: false,
+  tunnel: false,
   mesh: false,
 };
 
@@ -365,6 +368,7 @@ export const ADDON_CONFIG: Partial<Record<AddonKey, string>> = {
   schedule: 'wifi_schedule',
   steering: 'usteer',
   doh: 'https-dns-proxy',
+  tunnel: 'cloudflared',
 };
 
 /** The access point's own wireless config (sync copies the gateway's SSIDs). */

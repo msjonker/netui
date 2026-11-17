@@ -10,7 +10,7 @@ import tailwindcss from '@tailwindcss/vite';
 // common chunk that loads up front anyway and compresses worse (+2 KB).
 // A module missing here still works; it just loads with the entry.
 const LAZY =
-  /src\/(features\/(diagnostics|setup|system|vpn|routing)\/|model\/(diagnostics|vpnClient|tailscale|addons|backup|doh|routing|system|vpn)\.ts|api\/(diagnostics|tailscale|backup)\.ts|components\/(AddonDialog|AddonsList)\.tsx)/;
+  /src\/(features\/(diagnostics|setup|system|vpn|routing)\/|model\/(diagnostics|vpnClient|tailscale|tunnel|addons|backup|doh|routing|system|vpn)\.ts|api\/(diagnostics|tailscale|tunnel|backup)\.ts|components\/(AddonDialog|AddonsList)\.tsx)/;
 
 // The demo build's simulated router (src/demo and the fixtures it reads):
 // its own chunk, so the entry does not carry ~45 KB of fixtures.

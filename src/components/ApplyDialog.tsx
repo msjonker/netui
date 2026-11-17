@@ -116,7 +116,7 @@ export function sectionTypeLabel(type: string, pkg?: string): string {
   return (pkg === 'network' ? NETWORK_TYPE_LABEL[type] : undefined) ?? TYPE_LABEL[type] ?? type;
 }
 
-const SECRET = /(^|_)(key|password|psk)$/;
+const SECRET = /(^|_)(key|password|psk|token)$/;
 const shown = (option: string | undefined, value: string | undefined) => (SECRET.test(option ?? '') ? '••••••••' : value);
 
 function Marker({ kind }: { kind: ChangeLine['kind'] }) {

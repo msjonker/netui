@@ -1,0 +1,17 @@
+{
+	"values": {
+		"config": {
+			".anonymous": false,
+			".type": "cloudflared",
+			".name": "config",
+			".index": 0,
+			"enabled": "0",
+			"interfaces": [
+				"wan"
+			],
+			"protocol": "auto",
+			"loglevel": "info",
+			"logfile": "/var/log/cloudflared.log"
+		}
+	}
+}

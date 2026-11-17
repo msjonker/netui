@@ -681,6 +681,31 @@ export interface PortalStatus {
   clients?: PortalClient[];
 }
 
+/**
+ * `netui.services tunnel` (dl-wrx36/plain/netui.services.tunnel.json,
+ * cloudflared 2026.10.6): Cloudflare Tunnel's state. Never the token itself.
+ */
+export interface TunnelStatus {
+  installed: boolean;
+  /** cloudflared's `config` section exists. */
+  section?: boolean;
+  enabled?: boolean;
+  /** A token is set. */
+  token?: boolean;
+  /** The tunnel's ID, from the token. */
+  tunnel?: string | null;
+  /** Enabled without a token: runs from a config.yml set up outside netui. */
+  config_file?: boolean;
+  running?: boolean;
+  /** Connections to the edge (the metrics server's /ready); null when not running. */
+  connections?: number | null;
+  connector?: string | null;
+  /** Edge locations of the registered connections, e.g. "ams01". */
+  locations?: string[];
+  /** The last error cloudflared logged since it started. */
+  error?: string | null;
+}
+
 // --- netui.users -------------------------------------------------------------
 
 export type NetuiRole = 'admin' | 'viewer';
@@ -750,6 +775,7 @@ export type AddonKey =
   | 'wol'
   | 'doh'
   | 'tailscale'
+  | 'tunnel'
   | 'mesh';
 
 export interface PackagesJob {

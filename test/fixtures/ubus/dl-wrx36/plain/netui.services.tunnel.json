@@ -1,0 +1,62 @@
+{
+	"connected": {
+		"installed": true,
+		"section": true,
+		"enabled": true,
+		"token": true,
+		"tunnel": "6f1c2a9e-3b7d-4c55-9a10-2e8f4d7b6c31",
+		"config_file": false,
+		"running": true,
+		"connections": 4,
+		"connector": "1b9e4f20-7c3a-4d8e-b5f6-0a2c9d8e7f14",
+		"locations": [
+			"ord02",
+			"ord06",
+			"ord08",
+			"ord11"
+		],
+		"error": null
+	},
+	"rejected": {
+		"installed": true,
+		"section": true,
+		"enabled": true,
+		"token": true,
+		"tunnel": "00000000-0000-4000-8000-000000000000",
+		"config_file": false,
+		"running": true,
+		"connections": 0,
+		"connector": null,
+		"locations": [],
+		"error": "Register tunnel error from server side: Failed to get tunnel"
+	},
+	"off": {
+		"installed": true,
+		"section": true,
+		"enabled": false,
+		"token": true,
+		"tunnel": "6f1c2a9e-3b7d-4c55-9a10-2e8f4d7b6c31",
+		"config_file": false,
+		"running": false,
+		"connections": null,
+		"connector": null,
+		"locations": [],
+		"error": "no more connections active and exiting"
+	},
+	"notSetUp": {
+		"installed": true,
+		"section": true,
+		"enabled": false,
+		"token": false,
+		"tunnel": null,
+		"config_file": false,
+		"running": false,
+		"connections": null,
+		"connector": null,
+		"locations": [],
+		"error": "no more connections active and exiting"
+	},
+	"notInstalled": {
+		"installed": false
+	}
+}

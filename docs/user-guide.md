@@ -184,8 +184,8 @@ try again more carefully, or ask for help.
   in front of yours. Your internet works, but nothing at home can be reached
   from outside: port forwards and the VPN server will not work. Ask your
   provider for a public IPv4 address, put the other router in bridge mode, or
-  use Tailscale ([section 11](#11-reaching-home-from-away-vpn)), which works
-  without one.
+  use Tailscale or Cloudflare Tunnel ([section 11](#11-reaching-home-from-away-vpn)),
+  which work without one.
 - **Speed test.** Click **Run speed test** to measure your internet speed from
   the router itself, without WiFi getting in the way. It takes about 30
   seconds. (An add-on.)
@@ -383,6 +383,21 @@ laptop with the same account. With **Share my home network** on, they reach
 every device at home, not just the router; with **Use this router as an exit
 node** on, they can send all their internet traffic through home, say on
 public WiFi. Approve both for this router in the Tailscale admin console.
+
+**Cloudflare Tunnel** publishes a website or app at home (a home server, a
+camera's page, a photo library) under your own domain, without a public
+address or an open port. You need a Cloudflare account with your domain on it.
+Install the Cloudflare Tunnel add-on on its card (about 25 MB). In the
+Cloudflare dashboard, open **Networks → Tunnels**, create a tunnel, choose its
+connector, and copy the install command it shows. Paste it into the card on
+**Settings → VPN** and click **Connect**: netui keeps only the token, and the
+card turns *Connected* within a few seconds. Then, on the tunnel's page in the
+dashboard, add a public hostname for each website or app with the device's
+address at home, for example `http://192.168.1.20:8080`. Anyone on the
+internet can open a published hostname, so protect anything private (this
+router's pages included) with an Access policy there. **Turn Off** stops the
+tunnel and keeps the token; **Remove** forgets it (the tunnel itself stays in
+your account).
 
 **Using a VPN service** (the other way round): **Settings → VPN → VPN service
 → Set Up** sends your home's internet traffic through a VPN provider, for

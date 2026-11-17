@@ -8,6 +8,9 @@ import { applyReviewed, review } from '../../../test/applyFlow';
 import { fakeKey } from '../../../test/fakeReads/vpn';
 import { createServerOps, fwSection } from '../../model/vpn';
 import tsRec from '../../../test/fixtures/ubus/dl-wrx36/plain/tailscale.status.json';
+import tunnelRec from '../../../test/fixtures/ubus/dl-wrx36/plain/netui.services.tunnel.json';
+import cloudflaredRec from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.cloudflared.json';
+import type { UciConfig } from '../../api/types';
 
 vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRouter')).fakeUbusModule(await orig()));
 
@@ -234,5 +237,97 @@ describe('Tailscale', () => {
     expect(await within(card).findByText(/Needs about 26 MB of storage/)).toBeTruthy();
     expect(within(card).getByRole('button', { name: 'Install' })).toBeTruthy();
     expect(within(card).queryByRole('button', { name: 'Connect' })).toBeNull();
+  });
+});
+
+describe('Cloudflare Tunnel', () => {
+  const TOKEN = btoa(JSON.stringify({ a: '0123456789abcdef0123456789abcdef', t: tunnelRec.connected.tunnel, s: 'c2VjcmV0LXNlY3JldA==' }));
+
+  /** Live state follows the committed UCI, as the package's reload trigger makes it. */
+  function withCloudflared() {
+    const r = resetRouter();
+    r.configs.cloudflared = structuredClone(cloudflaredRec.values) as unknown as UciConfig;
+    r.overrides.push((c) => {
+      if (c.object !== 'netui.services' || c.method !== 'tunnel') return undefined;
+      const s = r.configs.cloudflared?.config;
+      if (!s?.token) return tunnelRec.notSetUp;
+      return s.enabled === '1' ? tunnelRec.connected : tunnelRec.off;
+    });
+    return r;
+  }
+  const card = async () => (await screen.findByRole('heading', { name: /^Cloudflare Tunnel/ })).closest('section')!;
+
+  it('sets up from a pasted install command, with the token hidden in the review', async () => {
+    withCloudflared();
+    renderApp('#/settings/vpn');
+    const c = await card();
+    await within(c).findByLabelText('Tunnel token');
+    type(c, 'Tunnel token', `sudo cloudflared service install ${TOKEN}`);
+    expect(await within(c).findByText(tunnelRec.connected.tunnel)).toBeTruthy();
+    fireEvent.click(within(c).getByRole('button', { name: 'Connect' }));
+    const dialog = await review();
+    expect(dialog.textContent).not.toContain(TOKEN);
+    expect(dialog.textContent).toContain('••••••••');
+    await applyReviewed();
+    expect(router.configs.cloudflared!.config).toMatchObject({ enabled: '1', token: TOKEN });
+    expect(await within(c).findByText('Connected', {}, { timeout: 4000 })).toBeTruthy();
+    expect(within(c).getByText('ord02, ord06, ord08, ord11')).toBeTruthy();
+  });
+
+  it('does not stage something that is not a token', async () => {
+    withCloudflared();
+    renderApp('#/settings/vpn');
+    const c = await card();
+    await within(c).findByLabelText('Tunnel token');
+    type(c, 'Tunnel token', 'hello there');
+    fireEvent.click(within(c).getByRole('button', { name: 'Connect' }));
+    expect(await within(c).findByText(/This is not a tunnel token/)).toBeTruthy();
+    expect(router.writes()).toHaveLength(0);
+  });
+
+  it('turns off and removes through applies', async () => {
+    const r = withCloudflared();
+    stageOn(r, [{ op: 'set', config: 'cloudflared', section: 'config', values: { enabled: '1', token: TOKEN } }]);
+    r.handle('uci', 'apply', {});
+    renderApp('#/settings/vpn');
+    const c = await card();
+    fireEvent.click(await within(c).findByRole('button', { name: 'Turn Off' }));
+    await applyReviewed();
+    expect(router.configs.cloudflared!.config!.enabled).toBe('0');
+    fireEvent.click(await within(c).findByRole('button', { name: 'Turn On' }));
+    await applyReviewed();
+    fireEvent.click(screen.getByRole('button', { name: 'OK' }));
+    fireEvent.click(await within(c).findByRole('button', { name: 'Remove' }));
+    fireEvent.click(within(await screen.findByRole('dialog', { name: /Remove the tunnel/ })).getByRole('button', { name: 'Remove' }));
+    await applyReviewed();
+    expect(router.configs.cloudflared!.config).toMatchObject({ enabled: '0' });
+    expect(router.configs.cloudflared!.config!.token).toBeUndefined();
+  });
+
+  it('explains a rejected token', async () => {
+    resetRouter();
+    router.overrides.push((c) => (c.object === 'netui.services' && c.method === 'tunnel' ? tunnelRec.rejected : undefined));
+    renderApp('#/settings/vpn');
+    const c = await card();
+    expect(await within(c).findByText(/did not accept the token/)).toBeTruthy();
+    expect(within(c).getByText('Not working')).toBeTruthy();
+  });
+
+  it('shows read-only users the state without actions', async () => {
+    resetRouter();
+    router.overrides.push((c) => (c.object === 'netui.services' && c.method === 'tunnel' ? tunnelRec.connected : undefined));
+    renderApp('#/settings/vpn', undefined, { readOnly: true });
+    const c = await card();
+    expect(await within(c).findByText('Connected')).toBeTruthy();
+    expect(within(c).queryByRole('button')).toBeNull();
+  });
+
+  it('offers the add-on when it is not installed', async () => {
+    resetRouter();
+    router.overrides.push((c) => (c.object === 'netui.services' && c.method === 'tunnel' ? { installed: false } : undefined));
+    renderApp('#/settings/vpn');
+    const c = await card();
+    expect(await within(c).findByText(/Needs about 25 MB of storage/)).toBeTruthy();
+    expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });

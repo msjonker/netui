@@ -48,6 +48,7 @@ const ADDONS = {
 	wol: { packages: ['etherwake'] },
 	doh: { packages: ['https-dns-proxy'], after: '/etc/init.d/https-dns-proxy stop; /etc/init.d/https-dns-proxy disable' },
 	tailscale: { packages: ['tailscale'] },
+	tunnel: { packages: ['cloudflared'] },
 	// Removing the basic build stops the wpad service and installing the full one
 	// does not start it again: restart it, then bring the radios back.
 	mesh: { packages: ['wpad-mbedtls'], check: FULL_WPAD, replaces: BASIC_WPAD, after: '/etc/init.d/wpad restart; sleep 2; wifi', keep: true },

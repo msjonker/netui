@@ -16,7 +16,7 @@
 				"netui.devices": [ "list", "discover" ],
 				"netui.firmware": [ "status" ],
 				"netui.speedtest": [ "status" ],
-				"netui.services": [ "adblock", "portal" ],
+				"netui.services": [ "adblock", "portal", "tunnel" ],
 				"netui.tailscale": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
@@ -26,7 +26,7 @@
 				"netui.users": [ "list", "root" ],
 				"netui.packages": [ "status" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			},
@@ -62,7 +62,7 @@
 				"/etc/init.d/https-dns-proxy": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared" ]
 		}
 	},
 	"netui-viewer": {
@@ -82,7 +82,7 @@
 				"netui.devices": [ "list", "discover" ],
 				"netui.firmware": [ "status" ],
 				"netui.speedtest": [ "status" ],
-				"netui.services": [ "adblock", "portal" ],
+				"netui.services": [ "adblock", "portal", "tunnel" ],
 				"netui.tailscale": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],

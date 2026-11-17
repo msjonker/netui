@@ -40,6 +40,12 @@ export const ADDONS: Record<AddonKey, AddonInfo> = {
   wol: { label: 'Wake-on-LAN', description: 'Wakes a sleeping computer from its client panel.', mb: 0.1 },
   doh: { label: 'DNS over HTTPS', description: 'Encrypts the router’s DNS lookups. Installed switched off.', mb: 1 },
   tailscale: { label: 'Tailscale', description: 'Remote access that works even behind carrier-grade NAT.', mb: 26, note: 'Needs a Tailscale account.' },
+  tunnel: {
+    label: 'Cloudflare Tunnel',
+    description: 'Publishes a website or app at home under your own domain, with no port to open.',
+    mb: 25,
+    note: 'Needs a Cloudflare account. Installed switched off.',
+  },
   mesh: {
     label: 'Full WiFi package (mesh)',
     description: 'Replaces the basic WiFi software with the full one, which wireless mesh needs.',

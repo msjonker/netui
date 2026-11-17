@@ -11,7 +11,8 @@ export function NatNotice({ exposure }: { exposure: WanExposure }) {
         <>
           Your provider shares one public address between several customers (carrier-grade NAT; this router's internet
           address is {at}). Port forwards and the VPN server cannot be reached from the internet. Ask your provider for
-          a public IPv4 address, or use Tailscale for remote access.
+          a public IPv4 address, or use Tailscale for remote access and Cloudflare Tunnel to publish a website or app
+          (Settings → VPN).
         </>
       ) : (
         <>

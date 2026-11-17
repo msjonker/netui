@@ -32,7 +32,7 @@ access points and more, step by step.
   the mesh as a backup; unplug it and it moves to the mesh within about 20
   seconds.
 - **Add-ons from the browser.** Optional features (ad blocking, a guest
-  sign-in page, VPN, Tailscale, usage history and more) install from their own
+  sign-in page, VPN, Tailscale, Cloudflare Tunnel, usage history and more) install from their own
   card. netui checks there is room first, and installing never switches
   anything on.
 - **A new router set up in one go.** On a fresh OpenWrt, **Set Up** turns the
@@ -47,7 +47,8 @@ access points and more, step by step.
 - **VPN both ways.** A WireGuard server with a QR code for each phone; the
   router as the client of a VPN provider, for all devices or chosen ones,
   with a switch that blocks their internet if the tunnel drops; or Tailscale
-  for remote access without a public address.
+  for remote access without a public address. Cloudflare Tunnel publishes a
+  website or app at home under your own domain, again with no port to open.
 - **Firmware updates for the whole network.** The router and every access
   point update from netui, with an image built with the add-ons they have
   installed, keeping their settings.
@@ -227,6 +228,7 @@ too.
 | Speed test | `librespeed-cli` (8 MB) or the much smaller `speedtestcpp` | Settings → Internet, Dashboard |
 | WireGuard VPN server, VPN service (the router as a client) | `luci-proto-wireguard` | Settings → VPN |
 | Tailscale (remote access without a public address) | `tailscale` (26 MB) | Settings → VPN |
+| Cloudflare Tunnel (publish a website or app without a public address) | `cloudflared` (25 MB) | Settings → VPN |
 | DNS over HTTPS | `https-dns-proxy` | Settings → Routing & DNS |
 | Wake-on-LAN | `etherwake` | Client Devices → a device |
 | WiFi schedules | `wifischedule` | Settings → WiFi |
@@ -262,6 +264,13 @@ A few notes:
   open: sign in with a Tailscale account, then optionally share the home
   networks and offer the router as an exit node (approve both in the
   Tailscale admin console).
+- **Cloudflare Tunnel** publishes websites and apps at home under your own
+  domain, even behind carrier-grade NAT: create a tunnel in the Cloudflare
+  dashboard and paste its install command into the card; netui keeps only the
+  token, which read-only users cannot see. Which hostname leads to which
+  device is set in the dashboard. Only tunnels run with a token are set up
+  from netui; one run from `/etc/cloudflared/config.yml` is shown and can be
+  switched off and on.
 - **DNS over HTTPS**: netui switches https-dns-proxy on and off and picks the provider. LAN devices that use
   their own DNS server are redirected to the router while it is on.
 - **Usage history** keeps monthly usage per device and per application. By

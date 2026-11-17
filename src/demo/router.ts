@@ -1291,6 +1291,32 @@ export class DemoRouter {
       'netui.services.portal_apply': () => ({}),
       'netui.services.portal_auth': () => ({}),
       'netui.services.portal_deauth': () => ({}),
+      // Any well-formed token connects: the demo has no tunnel service to ask.
+      'netui.services.tunnel': () => {
+        if (!this.installed.tunnel) return { installed: false };
+        const s = u.committed('cloudflared').config;
+        const token = str(s?.token) ?? '';
+        const on = str(s?.enabled) === '1' && !!token;
+        let tunnel: string | null = null;
+        try {
+          tunnel = token ? ((JSON.parse(atob(token)) as { t?: string }).t ?? null) : null;
+        } catch {
+          // shown without an ID
+        }
+        return {
+          installed: true,
+          section: !!s,
+          enabled: str(s?.enabled) === '1',
+          token: !!token,
+          tunnel,
+          config_file: false,
+          running: on,
+          connections: on ? 4 : null,
+          connector: on ? '0d6f2b7e-5c1a-4e93-8b20-7f4a1c9e3d58' : null,
+          locations: on ? ['ams01', 'ams03', 'fra02', 'fra07'] : [],
+          error: null,
+        };
+      },
       'netui.tailscale.status': () => {
         if (!this.installed.tailscale) return { installed: false };
         const needsLogin = clone(tailscaleFixture.needsLogin) as unknown as Record<string, unknown>;
@@ -1427,6 +1453,7 @@ const PACKAGE_NAMES: Record<AddonKey, string> = {
   wol: 'etherwake',
   doh: 'https-dns-proxy',
   tailscale: 'tailscale',
+  tunnel: 'cloudflared',
   mesh: 'wpad-mbedtls',
 };
 

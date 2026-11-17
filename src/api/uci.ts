@@ -25,7 +25,8 @@ export type UciPackage =
   | 'mwan3'
   | 'adblock-fast'
   | 'opennds'
-  | 'https-dns-proxy';
+  | 'https-dns-proxy'
+  | 'cloudflared';
 
 export async function getConfig(config: string): Promise<UciConfig> {
   const r = await read<UciGet>('uci', 'get', { config });
