@@ -338,14 +338,29 @@ export function newWlanDraft(radios: string[], network: string, bssTransition = 
 
 // BSS transition (802.11v) is only in hostapd's full build. The basic build
 // stock images ship rejects `bss_transition` as an unknown option and starts
-// no network on that radio at all (recorded on a TL-WR1043ND v2, 25.12.6).
+// no network on that radio at all: one such network takes down every other
+// on the same radio (recorded on a TL-WR1043ND v2 and the DL-WRX36, 25.12.6).
 
-/** Enabled access point networks with BSS transition on, which the basic WiFi package cannot start. */
-export function bssTransitionSsids(wireless: UciConfig): string[] {
-  const ssids = sectionsOfType(wireless, 'wifi-iface')
-    .filter((s) => (str(s.mode) ?? 'ap') === 'ap' && !bool(s.disabled, false) && bool(s.bss_transition, false))
-    .map((s) => str(s.ssid) ?? '');
-  return [...new Set(ssids)];
+export interface BssTransitionBlock {
+  /** SSIDs with BSS transition on. */
+  ssids: string[];
+  /** wifi-device sections they keep from starting. */
+  radios: string[];
+  /** Other SSIDs on those radios, down with them. */
+  others: string[];
+}
+
+/** What BSS transition keeps from starting under the basic WiFi package; undefined when nothing. */
+export function bssTransitionBlock(wireless: UciConfig): BssTransitionBlock | undefined {
+  const aps = sectionsOfType(wireless, 'wifi-iface').filter((s) => (str(s.mode) ?? 'ap') === 'ap' && !bool(s.disabled, false));
+  const on = aps.filter((s) => bool(s.bss_transition, false));
+  if (!on.length) return undefined;
+  const radios = [...new Set(on.map((s) => str(s.device) ?? ''))];
+  const ssids = [...new Set(on.map((s) => str(s.ssid) ?? ''))];
+  const others = [...new Set(aps.filter((s) => radios.includes(str(s.device) ?? '')).map((s) => str(s.ssid) ?? ''))].filter(
+    (x) => !ssids.includes(x),
+  );
+  return { ssids, radios, others };
 }
 
 /** Ops to turn BSS transition off on every access point network. */

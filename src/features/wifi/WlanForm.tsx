@@ -19,6 +19,7 @@ import {
   type Wlan,
   type WlanDraft,
 } from '../../model/wifi';
+import { andList } from '../../lib/format';
 import { useDraft } from '../../lib/useDraft';
 import { Drawer, Modal } from '../../components/overlay';
 import { IconQr, IconTrash, IconWifi } from '../../components/icons';
@@ -388,8 +389,4 @@ export function WlanForm({
       )}
     </Drawer>
   );
-}
-
-function andList(items: string[]): string {
-  return items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : (items[0] ?? '');
 }

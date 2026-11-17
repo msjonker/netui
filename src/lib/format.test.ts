@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatBitrate, formatBytes, formatDuration, formatPercent } from './format';
+import { andList, formatBitrate, formatBytes, formatDuration, formatPercent } from './format';
 
 describe('format', () => {
   it('formats bytes in binary units', () => {
@@ -26,5 +26,14 @@ describe('format', () => {
 
   it('formats percentages', () => {
     expect(formatPercent(0.4567, 1)).toBe('45.7%');
+  });
+});
+
+describe('andList', () => {
+  it('joins with commas and a final "and"', () => {
+    expect(andList([])).toBe('');
+    expect(andList(['a'])).toBe('a');
+    expect(andList(['a', 'b'])).toBe('a and b');
+    expect(andList(['a', 'b', 'c'])).toBe('a, b and c');
   });
 });

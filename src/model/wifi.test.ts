@@ -9,8 +9,8 @@ import wrxFresh from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.f
 import tlWireless from '../../test/fixtures/ubus/tl-wr1043nd-v2/uci.get.wireless.bss_transition.json';
 import tlInfo from '../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.bss_transition.json';
 import {
+  bssTransitionBlock,
   bssTransitionOffOps,
-  bssTransitionSsids,
   effectivePmf,
   ifaceSettings,
   isolatedNetworks,
@@ -470,10 +470,20 @@ describe('basic WiFi package', () => {
 
   it('finds WiFi networks with BSS transition on and turns it off, keeping 802.11k', () => {
     const w = tl();
-    expect(bssTransitionSsids(w)).toEqual(['netui-test']);
+    expect(bssTransitionBlock(w)).toEqual({ ssids: ['netui-test'], radios: ['radio0'], others: [] });
     expect(bssTransitionOffOps(w)).toEqual([{ op: 'unset', config: 'wireless', section: 'wifinet0', options: ['bss_transition'] }]);
     w.wifinet0!.disabled = '1';
-    expect(bssTransitionSsids(w)).toEqual([]);
+    expect(bssTransitionBlock(w)).toBeUndefined();
+  });
+
+  it('names the other networks on a radio it keeps from starting', () => {
+    // As on the DL-WRX36 with the basic package: one network with the option
+    // takes down every network on its radio.
+    const w = wireless();
+    w.home5!.bss_transition = '1';
+    w.guest!.bss_transition = '1'; // disabled: blocks nothing
+    w.iot = { ...w.guest!, '.name': 'iot', device: 'radio1', ssid: 'IoT', disabled: '0', bss_transition: '0' };
+    expect(bssTransitionBlock(w)).toEqual({ ssids: ['Home'], radios: ['radio1'], others: ['IoT'] });
   });
 
   it('creates new networks without BSS transition', () => {

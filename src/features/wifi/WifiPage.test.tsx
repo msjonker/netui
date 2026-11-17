@@ -151,14 +151,15 @@ describe('WiFi', () => {
     const row = (await screen.findByText('netui-test')).closest('tr')!;
     await waitFor(() => expect(row.textContent).toContain('Not running'));
     expect(row.textContent).not.toContain('Broadcasting');
-    await screen.findByText(/"netui-test" cannot start: BSS transition/);
+    const banner = await screen.findByText(/"netui-test" has BSS transition \(802\.11v\) on/);
+    expect(banner.textContent).toContain('so no WiFi on the 2.4 GHz radio can start.');
 
     fireEvent.click(screen.getByRole('button', { name: 'Turn it off' }));
     await applyReviewed();
     expect(router.configs.wireless!.wifinet0).not.toHaveProperty('bss_transition');
     expect(router.configs.wireless!.wifinet0).toMatchObject({ ieee80211k: '1', ssid: 'netui-test' });
     await waitFor(() => expect(screen.getByText('netui-test').closest('tr')!.textContent).toContain('Broadcasting'));
-    await waitFor(() => expect(screen.queryByText(/cannot start/)).toBeNull());
+    await waitFor(() => expect(screen.queryByText(/can start/)).toBeNull());
   });
 
   it('does not offer BSS transition with the basic WiFi package', async () => {

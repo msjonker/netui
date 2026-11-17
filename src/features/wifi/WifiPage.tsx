@@ -1,10 +1,19 @@
 import { useMemo, useState } from 'preact/hooks';
 import { useUci } from '../../api/queries';
+import { andList } from '../../lib/format';
 import { usePackages } from '../../api/packages';
 import { useApply } from '../../api/useApply';
 import { useClients, useNetworks } from '../../model/hooks';
 import { networkLabel } from '../../model/network';
-import { SECURITY_LABEL, bssTransitionOffOps, bssTransitionSsids, isolatedNetworks, type Radio, type Wlan } from '../../model/wifi';
+import {
+  SECURITY_LABEL,
+  bssTransitionBlock,
+  bssTransitionOffOps,
+  isolatedNetworks,
+  type BssTransitionBlock,
+  type Radio,
+  type Wlan,
+} from '../../model/wifi';
 import type { Client } from '../../model/clients';
 import { IconLock, IconPlus, IconQr, IconWifi, SignalBars } from '../../components/icons';
 import { Banner, Button, Card, Dot, Empty, Meter, Page, Pill, Spinner } from '../../components/ui';
@@ -91,7 +100,7 @@ export function WifiPage() {
   const [share, setShare] = useState<string | null>(null);
   const apply = useApply();
   const basicWifi = usePackages().data?.addons.mesh?.installed === false;
-  const blocked = basicWifi && wireless ? bssTransitionSsids(wireless) : [];
+  const blocked = basicWifi && wireless ? bssTransitionBlock(wireless) : undefined;
 
   const networkIds = useMemo(() => (networks ?? []).map((n) => n.id), [networks]);
   const isolated = useMemo(() => isolatedNetworks(networkIds, firewall.data), [networkIds, firewall.data]);
@@ -135,7 +144,7 @@ export function WifiPage() {
       }
     >
       <div class="space-y-4">
-        {blocked.length > 0 && (
+        {blocked && (
           <Banner
             tone="bad"
             actions={
@@ -144,8 +153,7 @@ export function WifiPage() {
               </Button>
             }
           >
-            {blocked.map((s) => `"${s}"`).join(', ')} cannot start: BSS transition (802.11v) is on, and this router's basic WiFi
-            package does not support it. Turn it off, or install the full WiFi package in System, Add-ons.
+            <BlockedText block={blocked} radios={radios} />
           </Banner>
         )}
         <Card flush>
@@ -325,5 +333,21 @@ export function WifiPage() {
       )}
       {sharing && <ShareWifi wlan={sharing} onClose={() => setShare(null)} />}
     </Page>
+  );
+}
+
+const quoted = (xs: string[]) => andList(xs.map((x) => `"${x}"`));
+
+/** Why WiFi is down under the basic WiFi package, naming every network it takes with it. */
+function BlockedText({ block, radios }: { block: BssTransitionBlock; radios: Radio[] }) {
+  const bands = radios.filter((r) => block.radios.includes(r.section)).map((r) => r.bandLabel);
+  const many = bands.length > 1;
+  return (
+    <>
+      {quoted(block.ssids)} {block.ssids.length > 1 ? 'have' : 'has'} BSS transition (802.11v) on, which this router's basic WiFi
+      package does not support, so no WiFi on the {andList(bands)} radio{many ? 's' : ''} can start
+      {block.others.length > 0 && <>, {quoted(block.others)} included</>}. Turn it off, or install the full WiFi package in System,
+      Add-ons.
+    </>
   );
 }

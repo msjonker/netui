@@ -41,3 +41,8 @@ export function formatPercent(fraction: number, digits = 0): string {
   if (!Number.isFinite(fraction)) return '—';
   return `${(fraction * 100).toFixed(digits)}%`;
 }
+
+/** "a", "a and b", "a, b and c". */
+export function andList(items: string[]): string {
+  return items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}` : (items[0] ?? '');
+}
