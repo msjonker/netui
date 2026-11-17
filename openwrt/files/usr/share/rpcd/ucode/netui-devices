@@ -216,10 +216,35 @@ function phy_rank(htmode) {
 }
 
 // "HE80" on a radio currently at "VHT40" -> "VHT80".
-function same_width(want, current) {
-	const width = match(want ?? '', /[0-9]+$/)?.[0];
+// Widest channel of each PHY family, for radios iwinfo cannot describe.
+const FAMILY_MAX = { HT: 40, VHT: 160, HE: 160, EHT: 320 };
+
+// The gateway's width in this radio's PHY family ("HE80" on a WiFi 5 radio
+// -> "VHT80"), no wider than the radio supports: an 802.11n radio given
+// "HT80" falls back to 20 MHz without 802.11n at all (seen on a TL-WDR4300).
+function fit_width(dev, radio, want, current) {
 	const family = match(current ?? '', /^[A-Z]+/)?.[0];
-	return width && family ? family + width : want;
+	const width = +(match(want ?? '', /[0-9]+$/)?.[0] ?? 0);
+	if (!family || !width)
+		return want;
+	const info = relay(dev, 'iwinfo', 'info', { device: radio });
+	let best = 0;
+	for (let m in (info.status == 0 ? info.data?.htmodes : null) ?? []) {
+		const f = match(m, /^([A-Z]+)([0-9]+)$/);
+		if (f?.[1] == family && +f[2] <= width && +f[2] > best)
+			best = +f[2];
+	}
+	if (best)
+		return family + best;
+	const max = FAMILY_MAX[family] ?? width;
+	return family + (width > max ? max : width);
+}
+
+// The open "OpenWrt" network a fresh install leaves on each radio. 24.10
+// leaves it enabled and turns the radio off instead, so turning the radio on
+// for the gateway's networks would start it too, open and bridged to the LAN.
+function is_placeholder(s) {
+	return (s.mode ?? 'ap') == 'ap' && s.ssid == 'OpenWrt' && (s.encryption ?? 'none') == 'none';
 }
 
 function is_lan(net) {
@@ -347,8 +372,14 @@ function sync_wifi(dev) {
 	let changes = 0;
 	const keep = {};
 	const set = (section, values) => { relay(dev, 'uci', 'set', { config: 'wireless', section, values }); changes++; };
+	// Settings per radio this sync uses, applied once after all networks.
+	const radio_values = {};
 
 	for (let w in want.wlans) {
+		// The basic build has no mesh either: the interface would come up and
+		// join nothing, while pinning the radio's channel and width.
+		if (w.mesh && basic_wifi)
+			continue;
 		const radio = radio_for[w.band];
 		if (!radio)
 			continue;
@@ -372,19 +403,33 @@ function sync_wifi(dev) {
 				changes++;
 			}
 		}
-		const radio_values = { disabled: '0' };
+		const rv = (radio_values[radio] ??= { disabled: '0' });
 		if (w.country)
-			radio_values.country = w.country;
+			rv.country = w.country;
 		// Mesh peers must share the channel: follow the gateway's, at the same
 		// width in this radio's own PHY family (a WiFi 5 backhaul radio cannot
 		// take the gateway's "HE80").
 		if (w.mesh) {
 			if (w.channel)
-				radio_values.channel = w.channel;
+				rv.channel = w.channel;
 			if (w.htmode)
-				radio_values.htmode = same_width(w.htmode, ap[radio].htmode);
+				rv.htmode = fit_width(dev, radio, w.htmode, ap[radio].htmode);
 		}
-		set(radio, radio_values);
+	}
+	for (let radio, rv in radio_values) {
+		// A width the radio does not have (written by an older sync) leaves it
+		// without 802.11n/ac/ax: fit it.
+		if (!rv.htmode && ap[radio].htmode) {
+			const fitted = fit_width(dev, radio, ap[radio].htmode, ap[radio].htmode);
+			if (fitted != ap[radio].htmode)
+				rv.htmode = fitted;
+		}
+		set(radio, rv);
+		// netui runs this AP's WiFi: an enabled placeholder on a radio it uses
+		// is never wanted, whether this sync turned the radio on or not.
+		for (let name, s in ap)
+			if (s['.type'] == 'wifi-iface' && s.device == radio && !match(name, /^netui_/) && s.disabled != '1' && is_placeholder(s))
+				set(name, { disabled: '1' });
 	}
 	for (let name, s in ap)
 		if (s['.type'] == 'wifi-iface' && match(name, /^netui_/) && !keep[name]) {
