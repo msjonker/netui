@@ -169,7 +169,22 @@
       <div class="card">
         <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0114 0M8 15.5a5.5 5.5 0 018 0"/><circle cx="12" cy="19" r="1"/><path d="M2 9.5a14.5 14.5 0 0120 0"/></svg></div>
         <h3>Access points and mesh, made easy</h3>
-        <p>Turn any other OpenWrt router into an access point with one click. Connect it by cable or by wireless mesh, with automatic failover between the two. WiFi settings are copied to every access point.</p>
+        <p>Turn any other OpenWrt router into an access point with one click. Connect it by cable or by wireless mesh, with automatic failover between the two. WiFi settings are copied to every access point, and each one updates its firmware from netui.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5"/></svg></div>
+        <h3>A new router, set up in one go</h3>
+        <p>On a fresh OpenWrt, Set Up turns the WiFi on, checks the internet connection, sets the time zone and a router password, and ends with a QR code that phones scan to join.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6H21"/></svg></div>
+        <h3>Plain answers when something is wrong</h3>
+        <p>A one-click check tests the cable, the provider, the internet and name lookup, and says what to do about the first that fails. netui also warns when your provider shares one address between customers, which breaks port forwards.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 8h14l-3.5-3.5M19 16H5l3.5 3.5"/></svg></div>
+        <h3>VPN both ways</h3>
+        <p>Reach home with a WireGuard server and a QR code per phone, or with Tailscale when there is no public address. Or send chosen devices through a VPN provider, blocked if the tunnel drops.</p>
       </div>
       <div class="card">
         <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M7 13l3-3 3 2 4-4M8 21h8M12 17v4"/></svg></div>
@@ -189,7 +204,7 @@
       <div class="card">
         <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><path d="M17.25 14v6.5M14 17.25h6.5"/></svg></div>
         <h3>Grows with you</h3>
-        <p>Ad blocking, a guest sign-in page, a VPN server, a second internet line for failover, smart queues, speed tests and firmware updates appear as soon as their package is installed.</p>
+        <p>Ad blocking, a guest sign-in page, VPN, a second internet line for failover, smart queues and more install from netui itself, after a check that there is room. Installing never switches anything on.</p>
       </div>
     </div>
   </div>
@@ -233,18 +248,23 @@
 <section id="tour">
   <div class="wrap">
     <h2>Take the tour</h2>
-    <p class="sub">Real screenshots from a gateway and an adopted access point running OpenWrt 25.12. Click any picture to enlarge it.</p>
+    <p class="sub">Screenshots from the <a href="demo/">live demo</a>, which simulates a gateway and an adopted access point running OpenWrt 25.12. Click any picture to enlarge it.</p>
     <div class="gal">
       <figure><img src="screenshots/topology.png" width="1440" height="900" loading="lazy" alt="Topology view"><figcaption><b>Topology.</b> The internet, the gateway, its ports and radios, the access points and the devices on each.</figcaption></figure>
-      <figure><img src="screenshots/devices.png" width="1440" height="900" loading="lazy" alt="Devices page"><figcaption><b>Devices.</b> The gateway and adopted access points, with how each one is connected: cable or mesh.</figcaption></figure>
+      <figure><img src="screenshots/devices.png" width="1440" height="900" loading="lazy" alt="Devices page"><figcaption><b>Devices.</b> The gateway and adopted access points, with how each one is connected (cable or mesh), and routers ready to adopt.</figcaption></figure>
+      <figure><img src="screenshots/access-point.png" width="1440" height="900" loading="lazy" alt="An access point's panel"><figcaption><b>An access point's panel.</b> Its firmware, add-ons, radios (channel and power per access point) and the devices on its WiFi.</figcaption></figure>
       <figure><img src="screenshots/wifi.png" width="1440" height="900" loading="lazy" alt="WiFi settings"><figcaption><b>WiFi.</b> Networks, radios with live utilisation and noise, wireless mesh and client steering.</figcaption></figure>
       <figure><img src="screenshots/client-connections.png" width="1440" height="900" loading="lazy" alt="Client details"><figcaption><b>Client devices.</b> Live activity, usage and open connections for every device.</figcaption></figure>
       <figure><img src="screenshots/insights.png" width="1440" height="620" loading="lazy" alt="Insights"><figcaption><b>Insights.</b> Channel utilisation, nearby networks per channel and a channel suggestion.</figcaption></figure>
       <figure><img src="screenshots/usage.png" width="1440" height="900" loading="lazy" alt="Usage history"><figcaption><b>Usage history.</b> Download and upload per device and per application, month by month.</figcaption></figure>
-      <figure><img src="screenshots/internet.png" width="1440" height="900" loading="lazy" alt="Internet settings"><figcaption><b>Internet.</b> Your connection, a second line for failover, and speed tests.</figcaption></figure>
+      <figure><img src="screenshots/internet.png" width="1440" height="900" loading="lazy" alt="Internet settings, warning about carrier-grade NAT"><figcaption><b>Internet.</b> Your connection, with a warning when the provider shares its address (carrier-grade NAT), a second line for failover, and speed tests.</figcaption></figure>
+      <figure><img src="screenshots/vpn.png" width="1440" height="900" loading="lazy" alt="VPN settings"><figcaption><b>VPN.</b> A WireGuard server and its clients, Tailscale, and a VPN service for chosen devices that blocks their internet if the tunnel drops.</figcaption></figure>
       <figure><img src="screenshots/ad-blocking.png" width="1440" height="900" loading="lazy" alt="Ad blocking"><figcaption><b>Ad blocking and content filtering</b> for every device on the network.</figcaption></figure>
-      <figure><img src="screenshots/system.png" width="1440" height="900" loading="lazy" alt="System settings"><figcaption><b>System.</b> Firmware updates, backup and restore, admins and read-only users.</figcaption></figure>
+      <figure><img src="screenshots/diagnostics.png" width="1440" height="900" loading="lazy" alt="Diagnostics"><figcaption><b>Diagnostics.</b> A one-click connection check that says what to fix, plus ping, traceroute and DNS lookup from the router.</figcaption></figure>
+      <figure><img src="screenshots/system.png" width="1440" height="900" loading="lazy" alt="System settings"><figcaption><b>System.</b> Firmware updates built with your add-ons, and backup and restore.</figcaption></figure>
+      <figure><img src="screenshots/addons.png" width="1440" height="900" loading="lazy" alt="Installing an add-on"><figcaption><b>Add-ons.</b> Optional features install from netui after a check that there is room. Admins and read-only users.</figcaption></figure>
       <figure><img src="screenshots/apply-review.png" width="1440" height="900" loading="lazy" alt="Review changes dialog"><figcaption><b>Every change is reviewed</b> and applied with a safety timer. If it cuts you off, the router undoes it.</figcaption></figure>
+      <figure><img src="screenshots/setup.png" width="1608" height="1688" loading="lazy" alt="First-run setup on a phone"><figcaption><b>First-run setup.</b> WiFi name and password, the internet, time zone and a router password, ending with a QR code to join.</figcaption></figure>
       <figure class="phone"><img src="screenshots/mobile.png" width="780" height="1688" loading="lazy" alt="netui on a phone"><figcaption><b>On a phone.</b> The same interface with a bottom tab bar, for a quick look from the sofa.</figcaption></figure>
     </div>
   </div>
@@ -254,17 +274,24 @@
   <div class="wrap two">
     <div>
       <h2>Optional extras</h2>
-      <p class="sub">netui shows these pages as soon as the matching OpenWrt package is installed. Without them, it stays out of the way.</p>
+      <p class="sub">Each one installs from netui: its card has an Install button, and System → Add-ons lists them all. Installing never switches anything on. Without them, netui stays out of the way.</p>
       <table>
         <tr><th>Feature</th><th>Package</th></tr>
         <tr><td>Ad blocking</td><td><code>adblock-fast</code></td></tr>
         <tr><td>Guest sign-in page</td><td><code>opennds</code></td></tr>
-        <tr><td>VPN server</td><td><code>luci-proto-wireguard</code></td></tr>
+        <tr><td>VPN server, VPN service</td><td><code>luci-proto-wireguard</code></td></tr>
+        <tr><td>Tailscale</td><td><code>tailscale</code></td></tr>
+        <tr><td>DNS over HTTPS</td><td><code>https-dns-proxy</code></td></tr>
         <tr><td>Second internet line</td><td><code>mwan3</code></td></tr>
         <tr><td>Smart queues</td><td><code>sqm-scripts</code></td></tr>
+        <tr><td>UPnP</td><td><code>luci-app-upnp</code></td></tr>
+        <tr><td>Dynamic DNS</td><td><code>luci-app-ddns</code></td></tr>
         <tr><td>Speed test</td><td><code>speedtestcpp</code> or <code>librespeed-cli</code></td></tr>
         <tr><td>Usage history</td><td><code>nlbwmon</code></td></tr>
+        <tr><td>Wake-on-LAN</td><td><code>etherwake</code></td></tr>
+        <tr><td>WiFi schedules</td><td><code>wifischedule</code></td></tr>
         <tr><td>Client steering</td><td><code>usteer</code></td></tr>
+        <tr><td>Wireless mesh</td><td><code>wpad-mbedtls</code> (the full WiFi package)</td></tr>
         <tr><td>Firmware updates</td><td><code>owut</code> (standard on 25.x)</td></tr>
       </table>
     </div>

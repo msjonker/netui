@@ -17,18 +17,62 @@ New to this? The **[user guide](docs/user-guide.md)** walks through
 installing netui and setting up WiFi, a guest network, ad blocking, extra
 access points and more, step by step.
 
+## What makes netui different
+
+- **You cannot lock yourself out.** Every change is shown for review, then
+  applied with a 30-second safety timer: if it cuts netui off from the
+  router, the router undoes it by itself. A change that moves the router to
+  a new address is followed there.
+- **Access points in one click.** Install a small agent on any other OpenWrt
+  router and click **Adopt**: it becomes an access point with your WiFi
+  networks, and every later WiFi change is copied to it. Each access point
+  has its own panel with its uplink, clients, radios, firmware and add-ons.
+- **Wireless mesh with failover.** One switch gives every access point an
+  encrypted mesh link to the gateway. With a cable it uses the cable and keeps
+  the mesh as a backup; unplug it and it moves to the mesh within about 20
+  seconds.
+- **Add-ons from the browser.** Optional features (ad blocking, a guest
+  sign-in page, VPN, Tailscale, usage history and more) install from their own
+  card. netui checks there is room first, and installing never switches
+  anything on.
+- **A new router set up in one go.** On a fresh OpenWrt, **Set Up** turns the
+  WiFi on, checks the internet connection, sets the time zone and a password
+  for the router, and ends with a QR code that phones scan to join.
+- **Plain answers when something is wrong.** A one-click connection check
+  tests the cable, the provider's address, the internet and name lookup in
+  turn, and says what to do about the first that fails. netui also warns when
+  the provider shares one public address between customers (carrier-grade
+  NAT) or another router sits in front, where port forwards and the VPN
+  server cannot work.
+- **VPN both ways.** A WireGuard server with a QR code for each phone; the
+  router as the client of a VPN provider, for all devices or chosen ones,
+  with a switch that blocks their internet if the tunnel drops; or Tailscale
+  for remote access without a public address.
+- **Firmware updates for the whole network.** The router and every access
+  point update from netui, with an image built with the add-ons they have
+  installed, keeping their settings.
+- **Its own limited login.** netui never signs in as root. Add other admins,
+  or read-only users who can see everything and change nothing.
+- **Light on the router.** Plain web files: no service running in the
+  background, no cloud account, under 190 KB to load. Settings are read fresh
+  from the router every time, so changes made in LuCI or over ssh show up, and
+  LuCI stays available for everything netui does not cover.
+
 ## Screenshots
 
 | | |
 |---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) **Dashboard**: gateway health, internet throughput, the last speed test, ports, WiFi, top clients and recent events | ![Topology](docs/screenshots/topology.png) **Topology**: internet, gateway, ports, radios, access points and the clients on each |
-| ![Devices](docs/screenshots/devices.png) **Devices**: the gateway and adopted access points with their uplink (cable or mesh) | ![WiFi settings](docs/screenshots/wifi.png) **WiFi**: SSIDs, radios with live utilisation and noise, wireless mesh, client steering |
+| ![Dashboard](docs/screenshots/dashboard.png) **Dashboard**: gateway health, internet throughput, the last speed test, ports, WiFi, top clients and recent events | ![Review changes](docs/screenshots/apply-review.png) **Every change is reviewed** and applied with a safety timer: if it cuts netui off, the router undoes it |
+| ![Topology](docs/screenshots/topology.png) **Topology**: internet, gateway, ports, radios, access points and the clients on each | ![Devices](docs/screenshots/devices.png) **Devices**: the gateway and adopted access points with their uplink (cable or mesh), and routers ready to adopt |
+| ![An access point's panel](docs/screenshots/access-point.png) **An access point's panel**: its firmware, add-ons, radios (channel and power per access point) and WiFi clients | ![WiFi settings](docs/screenshots/wifi.png) **WiFi**: SSIDs, radios with live utilisation and noise, wireless mesh, client steering |
 | ![Client details](docs/screenshots/client-connections.png) **Client devices**: live activity, usage and open connections per client | ![Insights](docs/screenshots/insights.png) **Insights**: channel utilisation, nearby networks per channel and a channel suggestion |
-| ![Usage history](docs/screenshots/usage.png) **Usage history**: download and upload per device and per application, by month | ![Internet](docs/screenshots/internet.png) **Internet**: the WAN, a second connection for failover, speed tests |
-| ![Ad blocking](docs/screenshots/ad-blocking.png) **Ad blocking and content filtering** for every device on the network | ![System](docs/screenshots/system.png) **System**: firmware updates, backup and restore, admins and read-only users |
-| ![Review changes](docs/screenshots/apply-review.png) **Every change is reviewed** and applied with a safety timer: if it cuts netui off, the router undoes it | <img src="docs/screenshots/mobile.png" alt="On a phone" width="240"> **On a phone**: the same UI with a bottom tab bar |
+| ![Usage history](docs/screenshots/usage.png) **Usage history**: download and upload per device and per application, by month | ![Internet](docs/screenshots/internet.png) **Internet**: the WAN with a warning when the provider shares its address (carrier-grade NAT), a second connection for failover, speed tests |
+| ![VPN](docs/screenshots/vpn.png) **VPN**: a WireGuard server and its clients, Tailscale, and a VPN service for chosen devices that blocks their internet if the tunnel drops | ![Ad blocking](docs/screenshots/ad-blocking.png) **Ad blocking and content filtering** for every device on the network |
+| ![Diagnostics](docs/screenshots/diagnostics.png) **Diagnostics**: a one-click connection check that says what to fix, plus ping, traceroute and DNS lookup from the router | ![System](docs/screenshots/system.png) **System**: firmware updates built with your add-ons, backup and restore |
+| ![Add-ons](docs/screenshots/addons.png) **Add-ons**: optional features installed from netui after a check that there is room; admins and read-only users | <img src="docs/screenshots/mobile.png" alt="On a phone" height="300"> <img src="docs/screenshots/setup.png" alt="First-run setup on a phone" height="300"> **On a phone**: the same UI with a bottom tab bar. On a new router, **Set Up** turns the WiFi on and ends with a QR code to join it |
 
-Captured on a Dynalink DL-WRX36 running OpenWrt 25.12.6, with a Xiaomi AX3600 as an adopted access point.
+Captured from the [live demo](https://msjonker.github.io/netui/demo/), which
+simulates a gateway and an adopted access point running OpenWrt 25.12.
 
 ## Install on a router
 

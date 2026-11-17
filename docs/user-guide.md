@@ -138,6 +138,10 @@ the router itself a password (for `ssh` and LuCI; netui keeps its own
 sign-in). You see every change before it is made, and the last step shows a
 QR code that phones can scan to join the new WiFi.
 
+<img src="screenshots/setup.png" alt="Setting up a new router: the WiFi step, and the QR code at the end" width="520">
+
+The first step is the WiFi name and password; the last shows the QR code.
+
 Your initial in the top right corner opens a small menu: who you are signed in
 as, the **theme** (*System* follows your computer's light or dark setting, or
 pick *Light* or *Dark*; the choice is remembered in this browser), a link to
@@ -166,7 +170,7 @@ try again more carefully, or ask for help.
 
 **Settings → Internet** shows your connection to the internet (the **WAN**).
 
-![The Internet page](screenshots/internet.png)
+![The Internet page, warning that the provider shares its address](screenshots/internet.png)
 
 - **Most connections need no setup.** If your router is plugged into a modem
   or into your internet provider's box, the connection type is usually
@@ -205,6 +209,8 @@ The router downloads it (it needs to be online) and the feature appears when
 it is done, usually within a minute. **Settings → System → Add-ons** lists
 every add-on, installed or not, and can remove one again; its settings stay
 on the router. Nothing switches on by itself just because it was installed.
+
+![Installing an add-on: netui shows its size and the free space first](screenshots/addons.png)
 
 ## 6. WiFi
 
@@ -331,6 +337,14 @@ from your main router, so you set everything up in one place.
 
 ![Devices](screenshots/devices.png)
 
+From then on, every WiFi change you make on the main router is copied to the
+access point. Click it in **Devices** to open its panel: how it is connected,
+the devices on its WiFi, its radios, firmware updates and add-ons. Under
+**Radios**, **Edit** sets the channel, width and power for that access point
+alone, so two access points near each other do not have to share a channel.
+
+![An access point's panel](screenshots/access-point.png)
+
 **Wireless mesh.** Once adopted with a cable, an access point can also
 connect to the main router over WiFi. Turn on **Settings → WiFi → Wireless
 mesh**. Then you can move the access point somewhere without a cable: it
@@ -357,6 +371,8 @@ reach a home server, or to browse safely on hotel WiFi.
    configuration file and import it in the WireGuard app.
 
 (An add-on: **WireGuard VPN**. Restart the router once after installing it.)
+
+![The VPN page: the server and its clients, Tailscale, and a VPN service](screenshots/vpn.png)
 
 **Tailscale** is the easier way in when the VPN server cannot work: if your
 provider uses carrier-grade NAT (netui warns you), or you cannot or do not
@@ -423,7 +439,7 @@ one file. Do this before big changes, and keep the file somewhere safe: it
 contains your WiFi passwords. **Restore…** puts a backup back; the router
 restarts with those settings.
 
-![System settings](screenshots/system.png)
+![System settings, with a firmware update being built](screenshots/system.png)
 
 ## 14. Other people who manage the network
 
@@ -467,6 +483,8 @@ your modem, check the cable between modem and router, then look at
 to* or *look up* any name or address from the router. If the router is online
 but one device is not, open that device in **Client Devices** and check it is
 not blocked.
+
+![The connection check and a traceroute](screenshots/diagnostics.png)
 
 **A website does not work since I turned on ad blocking.** Add the site's
 name under **Never block** (Firewall & Security → Ad Blocking & Filtering).
