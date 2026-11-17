@@ -209,6 +209,8 @@ export class DemoRouter {
     history: [{ at: Math.floor(now() - 86400 * 2), download: 912_400_000, upload: 41_800_000, ping: 9.8, jitter: 1.2, server: 'Example City' }],
   };
   private tailscale = { up: false };
+  /** When each outgoing WireGuard tunnel was first seen, for its handshake and counters. */
+  private tunnelUp: Record<string, number> = {};
   private adblockBusyUntil = 0;
   /** The router is "restarting" until this time; calls fail like a dropped connection. */
   downUntil = 0;
@@ -1064,6 +1066,20 @@ export class DemoRouter {
         listen_port: str(s.listen_port) ?? '51820',
         fwmark: 'off',
         peers: peers.map((p, i) => {
+          // A peer with an endpoint is a tunnel the router dials out on (the VPN service): it comes up at once.
+          if (str(p.endpoint_host)) {
+            const up = t - (this.tunnelUp[name] ??= t);
+            return {
+              name: str(p.description) ?? null,
+              public_key: str(p.public_key) ?? '',
+              endpoint: `198.51.100.200:${str(p.endpoint_port) ?? '51820'}`,
+              allowed_ips: list(p.allowed_ips),
+              latest_handshake: String(t - (up % 120)),
+              transfer_rx: String(up * 182_000 + 92_160),
+              transfer_tx: String(up * 21_500 + 9_216),
+              persistent_keepalive: str(p.persistent_keepalive) ?? 'off',
+            };
+          }
           const live = i === 0 && VPN_PEERS.some((v) => v.key === str(p.public_key));
           return {
             name: str(p.description) ?? null,
