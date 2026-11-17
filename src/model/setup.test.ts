@@ -57,5 +57,11 @@ describe('first-run setup', () => {
     const zones = normalizeTimezones(zonesRec);
     expect(browserZone(zones, 'America/New_York')).toBe('America/New York');
     expect(browserZone(zones, 'Mars/Olympus')).toBeUndefined();
+    expect(browserZone(zones, undefined)).toBeUndefined();
+    // Browsers report CLDR ids, some of them IANA's old names (seen on the bench:
+    // Chrome said America/Indianapolis); the router lists the current names.
+    expect(browserZone(zones, 'America/Indianapolis')).toBe('America/Indiana/Indianapolis');
+    expect(browserZone(zones, 'Asia/Calcutta')).toBe('Asia/Kolkata');
+    expect(browserZone(zones, 'Europe/Kiev')).toBe('Europe/Kyiv');
   });
 });

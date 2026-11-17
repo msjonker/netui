@@ -72,10 +72,27 @@ export function browserCountry(languages: readonly string[]): string {
   return '';
 }
 
-/** The browser's timezone in LuCI's spelling ("America/New_York" -> "America/New York"), if the router knows it. */
+/**
+ * The browser's timezone in LuCI's spelling ("America/New_York" -> "America/New York"),
+ * if the router knows it. Browsers report CLDR's ids, some of which are IANA's
+ * old names ("America/Indianapolis", "Asia/Calcutta", "Europe/Kiev") where the
+ * router lists the current ones; Intl resolves both spellings to the same id.
+ */
 export function browserZone(zones: Timezone[], ianaZone: string | undefined): string | undefined {
-  const name = ianaZone?.replace(/_/g, ' ');
-  return zones.find((z) => z.name === name)?.name;
+  if (!ianaZone) return undefined;
+  const name = ianaZone.replace(/_/g, ' ');
+  const exact = zones.find((z) => z.name === name);
+  if (exact) return exact.name;
+  const want = canonicalZone(ianaZone);
+  return want ? zones.find((z) => canonicalZone(z.name.replace(/ /g, '_')) === want)?.name : undefined;
+}
+
+function canonicalZone(id: string): string | undefined {
+  try {
+    return new Intl.DateTimeFormat('en', { timeZone: id }).resolvedOptions().timeZone;
+  } catch {
+    return undefined; // a name this browser does not know
+  }
 }
 
 export function validateRootPassword(pw: string, again: string): string | undefined {
