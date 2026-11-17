@@ -73,8 +73,8 @@ copy a file to it). Both come with Windows 10 and later, macOS and Linux.
 
    | It says | Download this file |
    |---|---|
-   | `25.12…` or `SNAPSHOT` | `netui-0.3.0-r1.apk` |
-   | `24.10…` | `netui_0.3.0-r1_all.ipk` |
+   | `25.12…` or `SNAPSHOT` | `netui-0.3.1-r1.apk` |
+   | `24.10…` | `netui_0.3.1-r1_all.ipk` |
 
 2. **Download the file** from the
    [releases page](https://github.com/msjonker/netui/releases/latest) into your
@@ -84,16 +84,16 @@ copy a file to it). Both come with Windows 10 and later, macOS and Linux.
    (`cd Downloads`) and type the line for your file:
 
    ```sh
-   scp -O netui-0.3.0-r1.apk root@192.168.1.1:/tmp/       # 25.12 or SNAPSHOT
-   scp -O netui_0.3.0-r1_all.ipk root@192.168.1.1:/tmp/   # 24.10
+   scp -O netui-0.3.1-r1.apk root@192.168.1.1:/tmp/       # 25.12 or SNAPSHOT
+   scp -O netui_0.3.1-r1_all.ipk root@192.168.1.1:/tmp/   # 24.10
    ```
 
 4. **Install it.** Sign in to the router and install:
 
    ```sh
    ssh root@192.168.1.1
-   apk add --allow-untrusted /tmp/netui-0.3.0-r1.apk      # 25.12 or SNAPSHOT
-   opkg install /tmp/netui_0.3.0-r1_all.ipk               # 24.10
+   apk add --allow-untrusted /tmp/netui-0.3.1-r1.apk      # 25.12 or SNAPSHOT
+   opkg install /tmp/netui_0.3.1-r1_all.ipk               # 24.10
    ```
 
    If it reports missing packages, the router needs internet access to fetch
