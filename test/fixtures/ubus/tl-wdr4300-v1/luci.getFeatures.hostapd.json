@@ -1,0 +1,34 @@
+{
+  "hostapd": {
+    "cli": false,
+    "11ac": true,
+    "11ax": true,
+    "11be": true,
+    "11r": true,
+    "acs": true,
+    "eap": false,
+    "mesh": false,
+    "ocv": true,
+    "owe": true,
+    "sae": true,
+    "suiteb192": false,
+    "wep": false,
+    "wps": false
+  },
+  "wpasupplicant": {
+    "cli": false,
+    "11ac": true,
+    "11ax": true,
+    "11be": true,
+    "11r": true,
+    "acs": true,
+    "eap": false,
+    "mesh": false,
+    "ocv": true,
+    "owe": true,
+    "sae": true,
+    "suiteb192": false,
+    "wep": false,
+    "wps": false
+  }
+}

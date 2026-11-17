@@ -8,7 +8,7 @@ import { wireless } from '../../../test/wireless';
 import type { UciConfig, UciGet, UciSection } from '../../api/types';
 import wrxWireless from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.json';
 import wrxSchedule from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wifi_schedule.json';
-import wrxFresh from '../../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.fresh.json';
+import wdrFresh from '../../../test/fixtures/ubus/tl-wdr4300-v1/uci.get.wireless.fresh.json';
 import tlWireless from '../../../test/fixtures/ubus/tl-wr1043nd-v2/uci.get.wireless.bss_transition.json';
 import tlInfo from '../../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.bss_transition.json';
 import tlInfoUp from '../../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.json';
@@ -105,13 +105,8 @@ describe('WiFi', () => {
   });
 
   it('turns the radios on for a new WiFi on a fresh 24.10 install, keeping the open placeholder off', async () => {
-    // 25.12's fresh config (recorded) with `disabled` moved to the radios, as 24.10 writes it.
-    const w: UciConfig = structuredClone((wrxFresh as UciGet).values);
-    for (const s of Object.values(w)) {
-      if (s['.type'] === 'wifi-device') s.disabled = '1';
-      else delete s.disabled;
-    }
-    resetRouter({ wireless: w });
+    // Recorded on a TL-WDR4300 v1 right after flashing 24.10.8.
+    resetRouter({ wireless: structuredClone((wdrFresh as UciGet).values) });
     renderApp('#/settings/wifi');
     const row = (await screen.findByText('OpenWrt')).closest('tr')!;
     expect(row.textContent).toContain('Radio off');
@@ -121,7 +116,7 @@ describe('WiFi', () => {
     const bands = within(drawer).getAllByRole('checkbox', { name: /GHz/ }) as HTMLInputElement[];
     expect(bands.map((b) => b.checked)).toEqual([true, true]);
     expect(within(drawer).getByRole('status').textContent).toBe(
-      'Applying turns on the 5 GHz and 2.4 GHz radios, which are off. The open "OpenWrt" network from the fresh install stays off.',
+      'Applying turns on the 2.4 GHz and 5 GHz radios, which are off. The open "OpenWrt" network from the fresh install stays off.',
     );
     type(drawer, 'Name (SSID)', 'Home');
     type(drawer, 'Password', 'longenough');

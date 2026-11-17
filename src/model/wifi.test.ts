@@ -6,6 +6,7 @@ import wrxWireless from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireles
 import wrxInfo5 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.info.phy0-ap0.json';
 import wrxInfo2 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.info.phy1-ap0.json';
 import wrxFresh from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wireless.fresh.json';
+import wdrFresh from '../../test/fixtures/ubus/tl-wdr4300-v1/uci.get.wireless.fresh.json';
 import tlWireless from '../../test/fixtures/ubus/tl-wr1043nd-v2/uci.get.wireless.bss_transition.json';
 import tlInfo from '../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.bss_transition.json';
 import {
@@ -373,18 +374,12 @@ describe('wifi security and validation', () => {
 
 // ---------------------------------------------------------------------------
 // A fresh install. 25.12 (recorded on the DL-WRX36) disables each "OpenWrt"
-// network and leaves its radio on; 24.10's mac80211.uc writes the same
-// sections with `disabled` on the radio instead, leaving the open network on.
+// network and leaves its radio on; 24.10 (recorded on a TL-WDR4300 v1,
+// 24.10.8: radio0 2.4 GHz, radio1 5 GHz) turns the radios off instead and
+// leaves the open network on.
 
 const freshGet: UciGet = wrxFresh;
-const fresh2410 = (): UciConfig => {
-  const w = structuredClone(freshGet.values);
-  for (const s of Object.values(w)) {
-    if (s['.type'] === 'wifi-device') s.disabled = '1';
-    else delete s.disabled;
-  }
-  return w;
-};
+const fresh2410 = (): UciConfig => structuredClone((wdrFresh as UciGet).values);
 const radioOn = (radio: string) => ({ op: 'unset', config: 'wireless', section: radio, options: ['disabled'] });
 const placeholderOff = (section: string) => ({ op: 'set', config: 'wireless', section, values: { disabled: '1' } });
 

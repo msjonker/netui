@@ -33,6 +33,13 @@ Naming: `<object>.<method>[.<arg>].json`, e.g. `iwinfo.assoclist.phy0-ap0.json`.
 `_ubus_list.txt` is `ubus -v list` for every object the ACL grants, and
 `_openwrt_release.txt` records which release the fixtures came from.
 
+`tl-wdr4300-v1/` is a TL-WDR4300 v1 (ath79, radio0 2.4 GHz, radio1 5 GHz, both
+ath9k, 8 MB flash) right after flashing OpenWrt 24.10.8 over its previous
+firmware: 24.10 turns every radio off and leaves the open "OpenWrt" networks
+enabled (25.12 does the opposite), the stock WiFi package is the basic build
+(`luci.getFeatures.hostapd.json`: no eap, no mesh), and iwinfo lists no
+devices at all while the radios are off.
+
 `tl-wr1043nd-v2/` is a fresh OpenWrt 25.12.6 install on a single-radio
 ath79 router with the stock basic WiFi package (`wpad-basic-mbedtls`),
 recorded over `/ubus` (its ssh was off). The `.bss_transition` files are a
