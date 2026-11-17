@@ -337,6 +337,13 @@ function sync_wifi(dev) {
 				radio_for[b] = name;
 		}
 
+	// hostapd's basic build (what stock images ship) has no 802.11v: it
+	// rejects bss_transition and then starts nothing on that radio. Leave it
+	// out on such an AP, which also removes it there. An agent without
+	// netui.packages (before 0.3) cannot say, and gets it as before.
+	const pk = relay(dev, 'netui.packages', 'status');
+	const basic_wifi = pk.status == 0 && pk.data?.addons?.mesh?.installed === false;
+
 	let changes = 0;
 	const keep = {};
 	const set = (section, values) => { relay(dev, 'uci', 'set', { config: 'wireless', section, values }); changes++; };
@@ -350,7 +357,7 @@ function sync_wifi(dev) {
 		keep[name] = true;
 		const values = { mode: w.mesh ? 'mesh' : 'ap', network: 'lan', device: radio };
 		for (let k, v in w.values)
-			if (substr(k, 0, 1) != '.' && index(SKIP_OPTIONS, k) < 0)
+			if (substr(k, 0, 1) != '.' && index(SKIP_OPTIONS, k) < 0 && !(basic_wifi && k == 'bss_transition'))
 				values[k] = v;
 		if (!ap[name]) {
 			relay(dev, 'uci', 'add', { config: 'wireless', type: 'wifi-iface', name, values });
