@@ -7,6 +7,8 @@
 import type { DeviceStatusMap, UciConfig } from '../api/types';
 import type { DeviceRadio } from '../api/queries';
 import { str, type UciOp } from '../api/uci';
+import { gatewayVlans, meshVlanList } from './apPorts';
+import { normalizeSwitch } from './ports';
 
 export const MESH_SECTION = 'netui_mesh';
 
@@ -65,10 +67,13 @@ export function meshOps(on: boolean, wireless: UciConfig, network: UciConfig, li
   const ops: UciOp[] = [];
   if (on) {
     if (!m.radio) return [];
+    // Every network on the LAN bridge crosses the mesh, the LAN untagged and the rest tagged.
+    const vlans = meshVlanList(gatewayVlans(normalizeSwitch(network, undefined, undefined, undefined)));
     if (!m.channel || m.channel === 'auto')
       ops.push({ op: 'set', config: 'wireless', section: m.radio, values: { channel: String(liveChannel ?? 36) } });
     if (wireless[MESH_SECTION]) {
       ops.push({ op: 'set', config: 'wireless', section: MESH_SECTION, values: { device: m.radio, disabled: '0' } });
+      if (vlans.length) ops.push({ op: 'set', config: 'wireless', section: MESH_SECTION, values: { network_vlan: vlans } });
     } else {
       ops.push({
         op: 'add',
@@ -84,6 +89,7 @@ export function meshOps(on: boolean, wireless: UciConfig, network: UciConfig, li
           network: 'lan',
           mesh_fwding: '1',
           mesh_rssi_threshold: '0',
+          ...(vlans.length ? { network_vlan: vlans } : {}),
         },
       });
     }

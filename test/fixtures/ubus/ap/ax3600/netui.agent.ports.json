@@ -1,0 +1,19 @@
+{
+	"network": {
+		"lan": {
+			"ports": [
+				"lan1",
+				"lan2",
+				"lan3"
+			],
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "wan",
+			"protocol": "dhcp"
+		}
+	},
+	"switch": null,
+	"switch_state": null,
+	"uplink": "phy1-mesh0"
+}

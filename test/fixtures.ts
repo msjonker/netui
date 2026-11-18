@@ -3,6 +3,7 @@
 // compatibility of the JSON against the declared type.
 
 import type {
+  AgentPorts,
   BoardJson,
   DeviceStatusMap,
   DhcpLeases,
@@ -176,4 +177,35 @@ export const wrxFixtures = (name: keyof typeof wrx) => ({
   board: () => clone<BoardJson>(wrx[name].board),
   systemInfo: () => clone<SystemInfo>(wrx[name].systemInfo),
   systemBoard: () => clone<SystemBoard>(wrx[name].systemBoard),
+});
+
+// Adopted access points (test/fixtures/ubus/ap): a DSA AP on the mesh and a
+// switch-chip AP wired to the gateway, both as adoption left them.
+import axNetwork from './fixtures/ubus/ap/ax3600/uci.get.network.json';
+import axWireless from './fixtures/ubus/ap/ax3600/uci.get.wireless.json';
+import axDevices from './fixtures/ubus/ap/ax3600/network.device.status.json';
+import axPorts from './fixtures/ubus/ap/ax3600/netui.agent.ports.json';
+import wdrNetwork from './fixtures/ubus/ap/tl-wdr4300/uci.get.network.json';
+import wdrWireless from './fixtures/ubus/ap/tl-wdr4300/uci.get.wireless.json';
+import wdrDevices from './fixtures/ubus/ap/tl-wdr4300/network.device.status.json';
+import wdrPorts from './fixtures/ubus/ap/tl-wdr4300/netui.agent.ports.json';
+
+interface ApScenario {
+  uci: Record<'network' | 'wireless', UciGet>;
+  deviceStatus: DeviceStatusMap;
+  ports: AgentPorts;
+}
+
+const ap: Record<'ax3600' | 'tl-wdr4300', ApScenario> = {
+  ax3600: { uci: { network: axNetwork, wireless: axWireless }, deviceStatus: axDevices, ports: axPorts as AgentPorts },
+  'tl-wdr4300': { uci: { network: wdrNetwork, wireless: wdrWireless }, deviceStatus: wdrDevices, ports: wdrPorts as AgentPorts },
+};
+
+export const apFixtures = (name: keyof typeof ap) => ({
+  uci: {
+    network: () => clone<UciGet>(ap[name].uci.network).values,
+    wireless: () => clone<UciGet>(ap[name].uci.wireless).values,
+  },
+  deviceStatus: () => clone<DeviceStatusMap>(ap[name].deviceStatus),
+  ports: () => clone<AgentPorts>(ap[name].ports),
 });

@@ -5,7 +5,7 @@
 import type { FakeReadHandler, FakeRouter } from '../fakeRouter';
 import { firmwareCall } from './firmware';
 import { packagesCall } from './packages';
-import type { AssocStation, ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList } from '../../src/api/types';
+import type { AgentPorts, AssocStation, ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList, UciConfig } from '../../src/api/types';
 import listJson from '../fixtures/ubus/bench-v2/netui.devices.list.json';
 import discoverJson from '../fixtures/ubus/bench-v2/netui.devices.discover.json';
 import syncJson from '../fixtures/ubus/bench-v2/netui.devices.sync.json';
@@ -30,6 +30,7 @@ import r1pow from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.txpowerli
 import r2info from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.info.radio2.json';
 import r2freq from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.freqlist.radio2.json';
 import r2pow from '../fixtures/ubus/bench-v2/netui.devices.call.iwinfo.txpowerlist.radio2.json';
+import { apFixtures } from '../fixtures';
 
 const recordedList: ManagedDeviceList = listJson;
 const recordedPending: PendingDeviceList = discoverJson;
@@ -47,6 +48,10 @@ interface State {
   mesh?: boolean;
   /** Stations associated to the AP's 5 GHz WiFi (phy1-ap0); none were recorded on the bench. */
   stations?: AssocStation[];
+  /** The AP's network config (test/fixtures/ubus/ap/ax3600 unless seeded). */
+  apNetwork?: UciConfig;
+  /** netui.agent ports; null for an agent older than 0.4. */
+  agentPorts?: AgentPorts | null;
 }
 
 const states = new WeakMap<FakeRouter, State>();
@@ -122,6 +127,8 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       if (args.object === 'netui.packages') return { status: 0, data: packagesCall(router, known.mac, args.method as string, a) };
       if (key === 'iwinfo.devices' && s.mesh) return structuredClone(iwDevicesMesh);
       if (key === 'uci.get' && a.config === 'wireless') return structuredClone(apWireless);
+      if (key === 'uci.get' && a.config === 'network') return { status: 0, data: { values: structuredClone(s.apNetwork ?? apFixtures('ax3600').uci.network()) } };
+      if (key === 'netui.agent.ports') return s.agentPorts === null ? structuredClone(denied) : { status: 0, data: structuredClone(s.agentPorts ?? apFixtures('ax3600').ports()) };
       if (AP_WRITES.has(key)) return { status: 0 };
       if (key === 'iwinfo.assoclist.phy1-ap0' && s.stations) return { status: 0, data: { results: structuredClone(s.stations) } };
       return key in RELAYED ? structuredClone(RELAYED[key]) : structuredClone(denied);

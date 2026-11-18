@@ -24,7 +24,8 @@
 		"read": {
 			"ubus": {
 				"netui.agent": [
-					"info"
+					"info",
+					"ports"
 				],
 				"netui.firmware": [
 					"status"

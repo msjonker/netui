@@ -154,7 +154,8 @@ export function DevicesPage() {
       void syncDevices(d.mac)
         .then((r) => {
           const o = r[d.mac];
-          setFreshNote(o?.error ? `${d.name} is online, but copying the WiFi failed: ${o.error}` : `${d.name} is online and broadcasting this router's WiFi.`);
+          const failed = o?.error ?? o?.networkError;
+          setFreshNote(failed ? `${d.name} is online, but copying the WiFi failed: ${failed}` : `${d.name} is online and broadcasting this router's WiFi.`);
           void qc.invalidateQueries({ queryKey: deviceKeys.radios(d.mac) });
         })
         .catch((e) => setFreshNote(`${d.name} is online, but copying the WiFi failed: ${e instanceof Error ? e.message : e}`));

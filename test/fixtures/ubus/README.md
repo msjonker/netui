@@ -60,3 +60,13 @@ real upgrade from the UI (`setup` and `building` while the build server works,
 `upgrade-installing.synthetic.json` is HAND-WRITTEN: owut exiting 0 after
 handing the image to sysupgrade, which the recording could not catch before
 the device went down.
+
+`ap/` holds adopted access points as adoption left them (2026-11-18), read
+over ssh: `ax3600/` (OpenWrt 25.12.6, DSA ports `lan1`-`lan3` + `wan`, on the
+gateway's wireless mesh only) and `tl-wdr4300/` (24.10.8, an swconfig switch:
+front ports are switch port numbers, `eth0.1` and `eth0.2` both in a plain
+`br-lan`, wired to the gateway through its WAN port). `netui.agent.ports.json`
+is the agent's own answer: board.json's port roles, the switch's link states
+and the bridge port (or switch port) where the gateway's MAC was learned.
+`board.json` and `swconfig.switch0.show.txt` are the raw sources it reads.
+Passphrases are redacted.

@@ -1,0 +1,152 @@
+{
+	"model": {
+		"id": "xiaomi,ax3600",
+		"name": "Xiaomi AX3600"
+	},
+	"led": {
+		"wan_port_link": {
+			"name": "WAN-PORT-LINK",
+			"sysfs": "90000.mdio-1:01:green:wan",
+			"type": "netdev",
+			"device": "wan",
+			"mode": "tx rx link_10 link_100 link_1000"
+		},
+		"lan1_port_link": {
+			"name": "LAN1-PORT-LINK",
+			"sysfs": "90000.mdio-1:02:green:lan",
+			"type": "netdev",
+			"device": "lan1",
+			"mode": "tx rx link_10 link_100 link_1000"
+		},
+		"lan2_port_link": {
+			"name": "LAN2-PORT-LINK",
+			"sysfs": "90000.mdio-1:03:green:lan",
+			"type": "netdev",
+			"device": "lan2",
+			"mode": "tx rx link_10 link_100 link_1000"
+		},
+		"lan3_port_link": {
+			"name": "LAN3-PORT-LINK",
+			"sysfs": "90000.mdio-1:04:green:lan",
+			"type": "netdev",
+			"device": "lan3",
+			"mode": "tx rx link_10 link_100 link_1000"
+		},
+		"wan": {
+			"name": "WAN",
+			"sysfs": "blue:network",
+			"type": "netdev",
+			"device": "wan",
+			"mode": "link tx rx"
+		}
+	},
+	"network": {
+		"lan": {
+			"ports": [
+				"lan1",
+				"lan2",
+				"lan3"
+			],
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "wan",
+			"protocol": "dhcp"
+		}
+	},
+	"wlan": {
+		"phy0": {
+			"path": "soc@0/20000000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0",
+			"info": {
+				"antenna_rx": 1,
+				"antenna_tx": 1,
+				"bands": {
+					"2G": {
+						"ht": true,
+						"vht": true,
+						"max_width": 80,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"VHT20",
+							"HT40",
+							"VHT40"
+						],
+						"default_channel": 1
+					},
+					"5G": {
+						"ht": true,
+						"vht": true,
+						"max_width": 80,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"VHT20",
+							"HT40",
+							"VHT40",
+							"VHT80"
+						],
+						"default_channel": 36
+					}
+				},
+				"radios": [
+				]
+			}
+		},
+		"phy1": {
+			"path": "platform/soc@0/c000000.wifi",
+			"info": {
+				"antenna_rx": 240,
+				"antenna_tx": 240,
+				"bands": {
+					"5G": {
+						"ht": true,
+						"vht": true,
+						"he": true,
+						"max_width": 160,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"VHT20",
+							"HE20",
+							"HT40",
+							"VHT40",
+							"HE40",
+							"VHT80",
+							"HE80",
+							"VHT160",
+							"HE160"
+						],
+						"default_channel": 36
+					}
+				},
+				"radios": [
+				]
+			}
+		},
+		"phy2": {
+			"path": "platform/soc@0/c000000.wifi+1",
+			"info": {
+				"antenna_rx": 3,
+				"antenna_tx": 3,
+				"bands": {
+					"2G": {
+						"ht": true,
+						"he": true,
+						"max_width": 40,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"HE20",
+							"HT40",
+							"HE40"
+						],
+						"default_channel": 1
+					}
+				},
+				"radios": [
+				]
+			}
+		}
+	}
+}

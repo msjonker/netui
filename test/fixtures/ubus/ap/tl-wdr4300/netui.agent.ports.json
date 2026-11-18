@@ -1,0 +1,112 @@
+{
+	"network": {
+		"lan": {
+			"device": "eth0.1",
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "eth0.2",
+			"protocol": "dhcp",
+			"macaddr": "64:70:02:c2:fc:23"
+		}
+	},
+	"switch": {
+		"switch0": {
+			"enable": true,
+			"reset": true,
+			"ports": [
+				{
+					"num": 0,
+					"device": "eth0",
+					"need_tag": false,
+					"want_untag": false
+				},
+				{
+					"num": 2,
+					"role": "lan",
+					"index": 1
+				},
+				{
+					"num": 3,
+					"role": "lan",
+					"index": 2
+				},
+				{
+					"num": 4,
+					"role": "lan",
+					"index": 3
+				},
+				{
+					"num": 5,
+					"role": "lan",
+					"index": 4
+				},
+				{
+					"num": 1,
+					"role": "wan"
+				}
+			],
+			"roles": [
+				{
+					"role": "lan",
+					"ports": "2 3 4 5 0t",
+					"device": "eth0.1"
+				},
+				{
+					"role": "wan",
+					"ports": "1 0t",
+					"device": "eth0.2"
+				}
+			]
+		}
+	},
+	"switch_state": {
+		"name": "switch0",
+		"ports": [
+			{
+				"num": 0,
+				"up": true,
+				"speed": 1000,
+				"duplex": "full"
+			},
+			{
+				"num": 1,
+				"up": true,
+				"speed": 10,
+				"duplex": "full"
+			},
+			{
+				"num": 2,
+				"up": true,
+				"speed": 1000,
+				"duplex": "full"
+			},
+			{
+				"num": 3,
+				"up": false,
+				"speed": null,
+				"duplex": null
+			},
+			{
+				"num": 4,
+				"up": false,
+				"speed": null,
+				"duplex": null
+			},
+			{
+				"num": 5,
+				"up": false,
+				"speed": null,
+				"duplex": null
+			},
+			{
+				"num": 6,
+				"up": true,
+				"speed": 10,
+				"duplex": "half"
+			}
+		],
+		"uplink": 1
+	},
+	"uplink": "eth0.2"
+}

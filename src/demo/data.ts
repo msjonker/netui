@@ -371,6 +371,34 @@ export const ADDON_CONFIG: Partial<Record<AddonKey, string>> = {
   tunnel: 'cloudflared',
 };
 
+/**
+ * The access point's network config: as adoption leaves it (every port on a
+ * plain br-lan), or as netui's sync leaves it once it carries the gateway's
+ * IoT VLAN, with lan2 moved onto IoT.
+ */
+export function apNetwork(carried: boolean): UciConfig {
+  return config([
+    ['loopback', 'interface', { device: 'lo', proto: 'static', ipaddr: '127.0.0.1/8' }],
+    ['@device', 'device', { name: 'br-lan', type: 'bridge', ports: ['lan1', 'lan2', 'wan'], stp: '1', forward_delay: '4' }],
+    ...(carried
+      ? ([
+          ['@vlan1', 'bridge-vlan', { device: 'br-lan', vlan: '1', ports: ['lan1:u*', 'wan:u*'] }],
+          ['@vlan10', 'bridge-vlan', { device: 'br-lan', vlan: '10', ports: ['lan1:t', 'lan2:u*', 'wan:t'] }],
+          ['lan', 'interface', { device: 'br-lan.1', proto: 'dhcp' }],
+          ['netui_iot', 'interface', { device: 'br-lan.10', proto: 'none' }],
+        ] as [string, string, Record<string, UciValue>][])
+      : ([['lan', 'interface', { device: 'br-lan', proto: 'dhcp' }]] as [string, string, Record<string, UciValue>][])),
+  ]);
+}
+
+/** netui.agent ports on the access point: two LAN ports and the uplink on wan. */
+export const AP_PORTS = {
+  network: { lan: { ports: ['lan1', 'lan2'], protocol: 'static' }, wan: { device: 'wan', protocol: 'dhcp' } },
+  switch: null,
+  switch_state: null,
+  uplink: 'wan',
+};
+
 /** The access point's own wireless config (sync copies the gateway's SSIDs). */
 export function apWireless(): UciConfig {
   return config([

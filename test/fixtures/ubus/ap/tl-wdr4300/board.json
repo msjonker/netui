@@ -1,0 +1,111 @@
+{
+	"model": {
+		"id": "tplink,tl-wdr4300-v1",
+		"name": "TP-Link TL-WDR4300 v1"
+	},
+	"switch": {
+		"switch0": {
+			"enable": true,
+			"reset": true,
+			"ports": [
+				{
+					"num": 0,
+					"device": "eth0",
+					"need_tag": false,
+					"want_untag": false
+				},
+				{
+					"num": 2,
+					"role": "lan",
+					"index": 1
+				},
+				{
+					"num": 3,
+					"role": "lan",
+					"index": 2
+				},
+				{
+					"num": 4,
+					"role": "lan",
+					"index": 3
+				},
+				{
+					"num": 5,
+					"role": "lan",
+					"index": 4
+				},
+				{
+					"num": 1,
+					"role": "wan"
+				}
+			],
+			"roles": [
+				{
+					"role": "lan",
+					"ports": "2 3 4 5 0t",
+					"device": "eth0.1"
+				},
+				{
+					"role": "wan",
+					"ports": "1 0t",
+					"device": "eth0.2"
+				}
+			]
+		}
+	},
+	"network": {
+		"lan": {
+			"device": "eth0.1",
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "eth0.2",
+			"protocol": "dhcp",
+			"macaddr": "64:70:02:c2:fc:23"
+		}
+	},
+	"wlan": {
+		"phy0": {
+			"path": "platform/ahb/18100000.wmac",
+			"info": {
+				"antenna_rx": 3,
+				"antenna_tx": 3,
+				"bands": {
+					"2G": {
+						"ht": true,
+						"max_width": 40,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"HT40"
+						],
+						"default_channel": 1
+					}
+				},
+				"radios": [
+				]
+			}
+		},
+		"phy1": {
+			"path": "pci0000:00/0000:00:00.0",
+			"info": {
+				"antenna_rx": 7,
+				"antenna_tx": 7,
+				"bands": {
+					"5G": {
+						"ht": true,
+						"max_width": 40,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"HT40"
+						],
+						"default_channel": 36
+					}
+				},
+				"radios": [
+				]
+			}
+		}
+	}
+}

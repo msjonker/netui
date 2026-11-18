@@ -15,7 +15,7 @@ import {
   validateNewNetwork,
   type NewNetworkDraft,
 } from "../../model/vlans";
-import { vlanColor } from "./vlanStyle";
+import { vlanColor } from "../../components/vlanStyle";
 import { GuestPortalCard } from "./GuestPortal";
 import {
   attachedSubnets,
@@ -595,7 +595,7 @@ function NetworkForm({
       })),
     ];
     if (vidChanged)
-      ops.push(...renumberOps(sw!, vlan!.vid, Number(draft.vid), network));
+      ops.push(...renumberOps(sw!, vlan!.vid, Number(draft.vid), network, wireless));
     if (n.proto === "static")
       ops.push(
         ...networkExtrasOps(
@@ -638,6 +638,7 @@ function NetworkForm({
                     network,
                     dhcp,
                     firewall: firewall!,
+                    wireless,
                   }),
                   {
                     disruptive: !!vlan,
@@ -891,6 +892,7 @@ function CreateNetworkForm({
   network,
   dhcp,
   firewall,
+  wireless,
   onClose,
 }: {
   sw: Switch;
@@ -898,6 +900,7 @@ function CreateNetworkForm({
   network: UciConfig;
   dhcp: UciConfig;
   firewall: UciConfig;
+  wireless: UciConfig | undefined;
   onClose: () => void;
 }) {
   const apply = useApply();
@@ -920,7 +923,7 @@ function CreateNetworkForm({
   ).length;
 
   const submit = () =>
-    void apply.start(createNetworkOps(draft, { sw, network, firewall }), {
+    void apply.start(createNetworkOps(draft, { sw, network, firewall, wireless }), {
       disruptive: true,
       returnTo: "/settings/networks",
       onConfirmed: onClose,
@@ -1158,6 +1161,7 @@ export function NetworksPage() {
           network={network.data!}
           dhcp={dhcp.data!}
           firewall={firewall.data!}
+          wireless={wireless.data}
           onClose={() => setCreating(false)}
         />
       )}

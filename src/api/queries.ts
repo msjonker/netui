@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { QueryClient, useQueries, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { read, RPC_OBJECT_NOT_FOUND, RpcError, SessionExpiredError, TransportError, UbusError, UbusStatus } from './ubus';
 import { getChanges, getConfig } from './uci';
-import { discoverDevices, listDevices, relay } from './devices';
+import { discoverDevices, listDevices, readDeviceNetwork, relay } from './devices';
 import { AddonMissingError } from './packages';
 import type {
   AssocList,
@@ -555,7 +555,17 @@ export const deviceKeys = {
   pending: ['netui.devices', 'discover'] as const,
   system: (mac: string) => ['netui.devices', 'call', mac, 'system'] as const,
   radios: (mac: string) => ['netui.devices', 'call', mac, 'iwinfo'] as const,
+  network: (mac: string) => ['netui.devices', 'call', mac, 'network'] as const,
 };
+
+/** An access point's ports and the networks on them. */
+export const useDeviceNetwork = (mac: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: deviceKeys.network(mac ?? ''),
+    enabled: !!mac && enabled,
+    refetchInterval: LIVE_MS,
+    queryFn: () => readDeviceNetwork(mac!),
+  });
 
 /** Adopted access points with live online state. */
 export const useManagedDevices = (refetchInterval: number | false = LIVE_MS) =>

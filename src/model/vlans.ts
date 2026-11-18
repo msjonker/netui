@@ -9,6 +9,8 @@ import { diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { hostOffset, networkAddress } from '../lib/ip';
 import { validateNetwork, wanNetworks, wanZoneName, type NetworkDraft, type Subnet } from './network';
 import { currentPlan, inUse, removeVlanPlan, renumberPlan, switchOps, validateVid, vlanOf, type Switch } from './ports';
+import { gatewayVlans, meshVlanOps, withoutVlan, withVlan } from './apPorts';
+import { MESH_SECTION } from './mesh';
 
 export type Isolation = 'trusted' | 'isolated';
 
@@ -68,7 +70,7 @@ function lanZone(fw: UciConfig) {
 
 export function createNetworkOps(
   d: NewNetworkDraft,
-  ctx: { sw: Switch; network: UciConfig; firewall: UciConfig },
+  ctx: { sw: Switch; network: UciConfig; firewall: UciConfig; wireless?: UciConfig },
 ): UciOp[] {
   const { sw, network, firewall } = ctx;
   const vid = Number(d.vid);
@@ -109,6 +111,8 @@ export function createNetworkOps(
   } else {
     ops.push(...isolatedZoneOps(d.name, wanZoneName(firewall)));
   }
+  // Access points on the mesh get the new network through it.
+  ops.push(...meshVlanOps(ctx.wireless, MESH_SECTION, withVlan(gatewayVlans(sw), vid, [d.name])));
   return ops;
 }
 
@@ -157,13 +161,14 @@ export function deleteBlocker(
  */
 export function deleteNetworkOps(
   id: string,
-  ctx: { sw: Switch; network: UciConfig; dhcp: UciConfig; firewall: UciConfig },
+  ctx: { sw: Switch; network: UciConfig; dhcp: UciConfig; firewall: UciConfig; wireless?: UciConfig },
 ): UciOp[] {
   const { sw, network, dhcp, firewall } = ctx;
   const ops: UciOp[] = [];
   const v = vlanOf(sw, id);
   if (v && v.section && v.networks.length === 1) {
     ops.push(...switchOps(sw, removeVlanPlan(currentPlan(sw), v.vid), network));
+    ops.push(...meshVlanOps(ctx.wireless, MESH_SECTION, withoutVlan(gatewayVlans(sw), v.vid)));
   }
   ops.push({ op: 'delete', config: 'network', section: id });
   for (const p of sectionsOfType(dhcp, 'dhcp')) {
@@ -188,7 +193,12 @@ export function deleteNetworkOps(
   return ops;
 }
 
-/** Move a network's VLAN to a new ID; ports keep carrying it. */
-export function renumberOps(sw: Switch, from: number, to: number, network: UciConfig): UciOp[] {
-  return switchOps(sw, renumberPlan(currentPlan(sw), from, to), network);
+/** Move a network's VLAN to a new ID; ports and the mesh keep carrying it. */
+export function renumberOps(sw: Switch, from: number, to: number, network: UciConfig, wireless?: UciConfig): UciOp[] {
+  const gw = gatewayVlans(sw);
+  const moved = withVlan(withoutVlan(gw, from), to, gw.vlans.find((v) => v.vid === from)?.networks);
+  return [
+    ...switchOps(sw, renumberPlan(currentPlan(sw), from, to), network),
+    ...meshVlanOps(wireless, MESH_SECTION, from === gw.lan ? { ...moved, lan: to } : moved),
+  ];
 }

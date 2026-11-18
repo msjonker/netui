@@ -36,7 +36,9 @@ import {
   ROUTER_MAC,
   VPN_PEERS,
   WAN,
+  apNetwork,
   apWireless,
+  AP_PORTS,
   initialConfigs,
   type Band,
   type DemoClient,
@@ -238,7 +240,7 @@ export class DemoRouter {
           agent: '0.3.0',
           adopted_at: Math.floor(this.boot - 86400 * 9),
         },
-        uci: new UciStore({ wireless: apWireless() }, () => true),
+        uci: new UciStore({ wireless: apWireless(), network: apNetwork(true) }, () => true),
         node: this.apNode(() => this.aps[0]!),
       },
     ];
@@ -1000,9 +1002,13 @@ export class DemoRouter {
       'network.device.status': () => {
         const [rx, tx] = this.sum((_c, at) => at?.ap === ap);
         const st = this.stats(rx, tx);
+        const idle = this.stats(0, 0);
         const map: DeviceStatusMap = {
-          lan: { type: 'Network device', devtype: 'ethernet', up: true, present: true, carrier: true, speed: '1000F', macaddr: macPlus(ap.device.mac, 1), statistics: this.stats(tx, rx) },
-          'br-lan': { type: 'bridge', devtype: 'bridge', up: true, present: true, carrier: true, macaddr: ap.device.mac, 'bridge-members': ['lan', ...wlans().map((w) => w.ifname)], statistics: st },
+          // The uplink to the gateway, and a printer on lan2.
+          wan: { type: 'Network device', devtype: 'ethernet', up: true, present: true, carrier: true, speed: '1000F', macaddr: macPlus(ap.device.mac, 1), statistics: this.stats(tx, rx) },
+          lan1: { type: 'Network device', devtype: 'ethernet', up: true, present: true, carrier: false, macaddr: macPlus(ap.device.mac, 2), statistics: idle },
+          lan2: { type: 'Network device', devtype: 'ethernet', up: true, present: true, carrier: true, speed: '100F', macaddr: macPlus(ap.device.mac, 3), statistics: idle },
+          'br-lan': { type: 'bridge', devtype: 'bridge', up: true, present: true, carrier: true, macaddr: ap.device.mac, 'bridge-members': ['lan1', 'lan2', 'wan', ...wlans().map((w) => w.ifname)], statistics: st },
         };
         for (const w of wlans()) {
           const [wrx, wtx] = this.sum((_c, at) => at?.ap === ap && at.wlan?.ifname === w.ifname);
@@ -1018,6 +1024,7 @@ export class DemoRouter {
       'uci.confirm': () => ap.uci.confirm(),
       'uci.revert': () => ap.uci.revert(String(a.config)),
       'uci.changes': () => ap.uci.changes(str(a.config)),
+      'netui.agent.ports': () => clone(AP_PORTS),
       'netui.packages.status': () => this.packagesStatus(ap.node),
       'netui.packages.install': () => this.packagesChange(ap.node, 'install', a.addon as AddonKey),
       'netui.packages.remove': () => this.packagesChange(ap.node, 'remove', a.addon as AddonKey),
@@ -1227,7 +1234,7 @@ export class DemoRouter {
           agent: p.agent,
           adopted_at: Math.floor(now()),
         };
-        const ap: Ap = { device, uci: new UciStore({ wireless: apWireless() }, () => true), node: this.apNode(() => ap) };
+        const ap: Ap = { device, uci: new UciStore({ wireless: apWireless(), network: apNetwork(false) }, () => true), node: this.apNode(() => ap) };
         this.aps.push(ap);
         return { device };
       },

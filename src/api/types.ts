@@ -127,6 +127,29 @@ export interface BoardJson {
   switch?: Record<string, unknown>;
 }
 
+/** One swconfig switch in board.json (test/fixtures/ubus/ap/tl-wdr4300/board.json). */
+export interface BoardSwitch {
+  enable?: boolean;
+  reset?: boolean;
+  /** The CPU port has `device` (eth0); front ports have a role ("lan", "wan") and lan ports an index. */
+  ports: { num: number; device?: string; need_tag?: boolean; want_untag?: boolean; role?: string; index?: number }[];
+  roles?: { role: string; ports: string; device: string }[];
+}
+
+/** netui.agent ports on an access point (netui-agent 0.4+). */
+export interface AgentPorts {
+  network: NonNullable<BoardJson['network']>;
+  switch: Record<string, BoardSwitch> | null;
+  /** Live state of the swconfig switch's ports, and the port where it learned the gateway's MAC. */
+  switch_state: {
+    name: string;
+    ports: { num: number; up: boolean; speed: number | null; duplex?: 'full' | 'half' }[];
+    uplink: number | null;
+  } | null;
+  /** The bridge port behind which the gateway's MAC was learned: a port, a VLAN device or the mesh. */
+  uplink: string | null;
+}
+
 export interface DhcpLease {
   /** Seconds remaining; false for static leases on some releases. */
   expires: number | false;
@@ -537,8 +560,10 @@ export interface SyncOutcome extends DevicePluginError {
   result?: boolean;
   /** WiFi networks mirrored onto the device. */
   networks?: number;
-  /** SSIDs not on the LAN, which need VLANs carried to the AP. */
+  /** SSIDs whose network this access point does not carry. */
   skipped?: string[];
+  /** Why the gateway's networks could not be carried to it (set by syncDevices, not the plugin). */
+  networkError?: string;
 }
 
 export interface SyncResult {

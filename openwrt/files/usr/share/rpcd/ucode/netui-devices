@@ -31,7 +31,7 @@ const ALLOWED = {
 	'hostapd.*': ['get_status', 'get_clients', 'del_client'],
 	'log': ['read'],
 	'uci': ['get', 'state', 'changes', 'set', 'add', 'delete', 'rename', 'order', 'apply', 'confirm', 'rollback', 'revert'],
-	'netui.agent': ['info'],
+	'netui.agent': ['info', 'ports'],
 	'netui.firmware': ['status', 'check', 'upgrade'],
 	'netui.packages': ['status', 'install', 'remove'],
 };
@@ -122,12 +122,42 @@ function lan_hosts() {
 	return hosts;
 }
 
-// Current address of a device: its DHCP lease or neighbour entry by MAC
-// (adoption switches the AP to DHCP), else the last one seen.
+function ip_num(ip) {
+	const o = match(ip ?? '', /^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$/);
+	return o ? ((+o[1] << 24) | (+o[2] << 16) | (+o[3] << 8) | +o[4]) : null;
+}
+
+// Test for an address in the LAN's IPv4 subnet (always true if it is unknown).
+function lan_subnet() {
+	const a = connect()?.call('network.interface.lan', 'status')?.['ipv4-address']?.[0];
+	const base = ip_num(a?.address), bits = +(a?.mask ?? 0);
+	if (base == null || bits < 1 || bits > 32)
+		return () => true;
+	const mask = (0xffffffff << (32 - bits)) & 0xffffffff;
+	return (ip) => ip_num(ip) != null && (ip_num(ip) & mask) == (base & mask);
+}
+
+// Current address of a device: its newest DHCP lease by MAC in the LAN
+// (adoption switches the AP to DHCP; moving its LAN onto a VLAN changes its
+// DHCP client ID, so it can hold two leases for a while; leases on other
+// networks are not where it listens), else its neighbour entry, else the last
+// one seen.
 function address_of(dev) {
-	const hosts = lan_hosts();
-	for (let ip, mac in hosts)
-		if (mac == dev.mac)
+	const in_lan = lan_subnet();
+	let best = null, newest = -1;
+	for (let line in split(readfile('/tmp/dhcp.leases') ?? '', '\n')) {
+		const f = split(line, ' ');
+		// Expiry 0 is a lease that never expires.
+		const exp = +f[0] || 0x7fffffff;
+		if (length(f) >= 3 && lc(f[1]) == dev.mac && exp > newest && in_lan(f[2])) {
+			best = f[2];
+			newest = exp;
+		}
+	}
+	if (best && index(own_addresses(), best) < 0)
+		return best;
+	for (let ip, mac in lan_hosts())
+		if (mac == dev.mac && in_lan(ip))
 			return ip;
 	return dev.ip;
 }
@@ -247,25 +277,46 @@ function is_placeholder(s) {
 	return (s.mode ?? 'ap') == 'ap' && s.ssid == 'OpenWrt' && (s.encryption ?? 'none') == 'none';
 }
 
-function is_lan(net) {
-	return type(net) == 'array' ? index(net, 'lan') >= 0 : index(split(net ?? '', ' '), 'lan') >= 0;
+function first_network(net) {
+	return type(net) == 'array' ? net[0] : split(trim(net ?? ''), ' ')[0];
 }
 
-// The gateway's WiFi networks an AP should broadcast too. Only networks on
-// the LAN bridge: other networks would need VLANs carried to the AP.
+// VLAN of each of the gateway's networks on its LAN bridge (1 for networks on
+// a bridge without VLAN filtering), plus the LAN's own.
+function gateway_vlans() {
+	const uci = cursor();
+	const ifaces = {}, bridges = [];
+	uci.foreach('network', 'device', (s) => { if (s.type == 'bridge' && s.name) push(bridges, s.name); });
+	uci.foreach('network', 'interface', (s) => { ifaces[s['.name']] = s.device ?? ''; });
+	const lan_dev = ifaces.lan ?? '';
+	let br = bridges[0];
+	for (let b in bridges)
+		if (lan_dev == b || index(lan_dev, `${b}.`) == 0)
+			br = b;
+	const vid = {};
+	for (let name, d in ifaces)
+		if (br && d == br)
+			vid[name] = 1;
+		else if (br && index(d, `${br}.`) == 0 && match(substr(d, length(br) + 1), /^[0-9]+$/))
+			vid[name] = +substr(d, length(br) + 1);
+	return { vid, lan: vid.lan ?? 1 };
+}
+
+// The gateway's WiFi networks an AP should broadcast too: those on the LAN
+// bridge. Networks on another VLAN of it reach the AP only once the AP carries
+// that VLAN (netui_<network> on the AP, set up by the UI's network sync), so
+// `network` maps a gateway network to the AP's, or returns null.
 function gateway_wifi() {
 	const uci = cursor();
-	const radios = {}, wlans = [], skipped = [];
+	const vlans = gateway_vlans();
+	const radios = {}, wlans = [];
 	uci.foreach('wireless', 'wifi-device', (s) => { radios[s['.name']] = s; });
 	uci.foreach('wireless', 'wifi-iface', (s) => {
 		// Access points and the mesh backhaul; client (sta) links stay local.
 		if ((s.mode != 'ap' && s.mode != 'mesh') || s.disabled == '1')
 			return;
-		if (!is_lan(s.network)) {
-			push(skipped, s.ssid ?? s.mesh_id);
-			return;
-		}
 		const radio = radios[s.device];
+		const net = first_network(s.network);
 		push(wlans, {
 			section: s['.name'],
 			mesh: s.mode == 'mesh',
@@ -273,10 +324,13 @@ function gateway_wifi() {
 			country: radio?.country,
 			channel: radio?.channel,
 			htmode: radio?.htmode,
+			name: s.ssid ?? s.mesh_id,
+			// On the LAN's VLAN: the AP's lan. Elsewhere on the bridge: its netui_ twin.
+			network: vlans.vid[net] == vlans.lan ? 'lan' : vlans.vid[net] != null ? `netui_${net}` : null,
 			values: s,
 		});
 	});
-	return { wlans, skipped };
+	return { wlans };
 }
 
 // The LAN bridge's spanning tree settings: on whenever a mesh adds a second
@@ -369,6 +423,12 @@ function sync_wifi(dev) {
 	const pk = relay(dev, 'netui.packages', 'status');
 	const basic_wifi = pk.status == 0 && pk.data?.addons?.mesh?.installed === false;
 
+	// Networks the AP carries (netui_<network>, from the UI's network sync).
+	const apnet = relay(dev, 'uci', 'get', { config: 'network' });
+	const has_net = (n) => n == 'lan' || (apnet.status == 0 && apnet.data.values[n]?.['.type'] == 'interface');
+	const skipped = [];
+	let copied = 0;
+
 	let changes = 0;
 	const keep = {};
 	const set = (section, values) => { relay(dev, 'uci', 'set', { config: 'wireless', section, values }); changes++; };
@@ -380,13 +440,18 @@ function sync_wifi(dev) {
 		// join nothing, while pinning the radio's channel and width.
 		if (w.mesh && basic_wifi)
 			continue;
+		if (!w.network || !has_net(w.network)) {
+			push(skipped, w.name);
+			continue;
+		}
 		const radio = radio_for[w.band];
 		if (!radio)
 			continue;
+		copied++;
 		// Sections netui itself created on the gateway keep their name.
 		const name = match(w.section, /^netui_/) ? w.section : `netui_${w.section}`;
 		keep[name] = true;
-		const values = { mode: w.mesh ? 'mesh' : 'ap', network: 'lan', device: radio };
+		const values = { mode: w.mesh ? 'mesh' : 'ap', network: w.mesh ? 'lan' : w.network, device: radio };
 		for (let k, v in w.values)
 			if (substr(k, 0, 1) != '.' && index(SKIP_OPTIONS, k) < 0 && !(basic_wifi && k == 'bss_transition'))
 				values[k] = v;
@@ -460,7 +525,7 @@ function sync_wifi(dev) {
 		if (applied.status != 0 && applied.status != 5)
 			return { error: `apply failed (${applied.status ?? applied.error})` };
 	}
-	return { result: true, networks: length(want.wlans), skipped: want.skipped };
+	return { result: true, networks: copied, skipped };
 }
 
 const methods = {

@@ -64,18 +64,19 @@ export async function runServiceHooks(packages: readonly string[]): Promise<stri
       }
     }
   }
-  // Adopted access points broadcast the gateway's WiFi and steer clients the
-  // same way: copy every WiFi and client steering change.
+  // Adopted access points carry the gateway's networks, broadcast its WiFi
+  // and steer clients the same way: copy every such change.
   // A bridge change (the mesh toggles spanning tree) first takes br-lan through
   // STP listening and learning, so the access points are unreachable for a few
   // seconds: keep trying for half a minute.
-  if (packages.includes('wireless') || packages.includes('usteer')) {
+  // Network changes too: a VLAN network created or deleted here is carried to them.
+  if (packages.includes('wireless') || packages.includes('usteer') || packages.includes('network')) {
     const attempts = packages.includes('network') ? SYNC_ATTEMPTS : 1;
     let ok = false;
     for (let i = 0; i < attempts && !ok; i++) {
       if (i > 0) await new Promise((r) => setTimeout(r, SYNC_RETRY_MS));
       try {
-        ok = !Object.values(await syncDevices()).some((o) => o.error);
+        ok = !Object.values(await syncDevices()).some((o) => o.error || o.networkError);
       } catch {
         ok = false;
       }

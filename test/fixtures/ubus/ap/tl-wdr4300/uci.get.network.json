@@ -1,0 +1,78 @@
+{
+	"values": {
+		"loopback": {
+			".anonymous": false,
+			".type": "interface",
+			".name": "loopback",
+			".index": 0,
+			"device": "lo",
+			"proto": "static",
+			"ipaddr": "127.0.0.1",
+			"netmask": "255.0.0.0"
+		},
+		"globals": {
+			".anonymous": false,
+			".type": "globals",
+			".name": "globals",
+			".index": 1,
+			"ula_prefix": "fd51:f58f:27b2::/48"
+		},
+		"cfg030f15": {
+			".anonymous": true,
+			".type": "device",
+			".name": "cfg030f15",
+			".index": 2,
+			"name": "br-lan",
+			"type": "bridge",
+			"ports": [
+				"eth0.1",
+				"eth0.2"
+			],
+			"stp": "1",
+			"forward_delay": "4"
+		},
+		"lan": {
+			".anonymous": false,
+			".type": "interface",
+			".name": "lan",
+			".index": 3,
+			"device": "br-lan",
+			"proto": "dhcp"
+		},
+		"cfg050f15": {
+			".anonymous": true,
+			".type": "device",
+			".name": "cfg050f15",
+			".index": 4,
+			"name": "eth0.2",
+			"macaddr": "64:70:02:c2:fc:23"
+		},
+		"cfg063777": {
+			".anonymous": true,
+			".type": "switch",
+			".name": "cfg063777",
+			".index": 5,
+			"name": "switch0",
+			"reset": "1",
+			"enable_vlan": "1"
+		},
+		"cfg071ec7": {
+			".anonymous": true,
+			".type": "switch_vlan",
+			".name": "cfg071ec7",
+			".index": 6,
+			"device": "switch0",
+			"vlan": "1",
+			"ports": "2 3 4 5 0t"
+		},
+		"cfg081ec7": {
+			".anonymous": true,
+			".type": "switch_vlan",
+			".name": "cfg081ec7",
+			".index": 7,
+			"device": "switch0",
+			"vlan": "2",
+			"ports": "1 0t"
+		}
+	}
+}

@@ -62,6 +62,14 @@ describe('meshOps', () => {
     expect(v.key).toMatch(/^[0-9a-f]{32}$/);
     expect(v.mesh_id).toMatch(/^netui-[0-9a-f]{8}$/);
     expect(ops).toContainEqual(expect.objectContaining({ op: 'set', config: 'network', values: { stp: '1', forward_delay: '4' } }));
+    // No other networks: the mesh carries only the LAN.
+    expect(v.network_vlan).toBeUndefined();
+  });
+
+  it('carries the VLAN networks over the mesh, tagged', () => {
+    const vlan = wrxFixtures('vlan');
+    const add = meshOps(true, vlan.uci.wireless(), vlan.uci.network(), 36).find((o) => o.op === 'add');
+    expect(add).toMatchObject({ values: { network: 'lan', network_vlan: ['10:t'] } });
   });
 
   it('keeps a fixed channel, and turns off by removing the interface and STP', () => {

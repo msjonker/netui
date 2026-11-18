@@ -1,5 +1,5 @@
-import type { Switch, Vlan } from '../../model/ports';
-import { networkLabel } from '../../model/network';
+import type { Switch, Vlan } from '../model/ports';
+import { networkLabel } from '../model/network';
 
 // One color per VLAN, in VID order, so a network looks the same on the port
 // panel, the port table and the networks table.

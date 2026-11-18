@@ -31,7 +31,7 @@ import {
   Spinner,
   cx,
 } from "../../components/ui";
-import { vlanColor, vlanLabel } from "./vlanStyle";
+import { vlanColor, vlanLabel } from "../../components/vlanStyle";
 
 const LUCI_DEVICES = "/cgi-bin/luci/admin/network/network";
 

@@ -5,10 +5,12 @@
 //   adopt    root only: create the gateway's login, optionally set a new root
 //            password, and turn the device into a bridged access point.
 //   release  the gateway's login: forget the gateway (the device stays an AP).
+//   ports    the gateway's login: this device's ports (board.json), the
+//            switch chip's link states, and the port that leads to the gateway.
 
 'use strict';
 
-import { readfile, writefile, mkdir, unlink, access, popen } from 'fs';
+import { readfile, writefile, mkdir, unlink, access, popen, lsdir } from 'fs';
 import { cursor } from 'uci';
 import { connect } from 'ubus';
 
@@ -35,6 +37,41 @@ function sh(cmd) {
 	const out = p.read('all');
 	p.close();
 	return trim(out);
+}
+
+// The bridge port behind which the bridge learned `mac`: the uplink to the
+// gateway, a port or the mesh interface. From the kernel's forwarding table
+// (struct __fdb_entry, 16 bytes each), so no `bridge` binary is needed.
+function fdb_port(br, mac) {
+	const raw = readfile(`/sys/class/net/${br}/brforward`) ?? '';
+	const no = {};
+	for (let d in lsdir(`/sys/class/net/${br}/brif`) ?? [])
+		no[hex(trim(readfile(`/sys/class/net/${br}/brif/${d}/port_no`) ?? ''))] = d;
+	for (let i = 0; i + 16 <= length(raw); i += 16) {
+		const m = join(':', map([0, 1, 2, 3, 4, 5], (k) => sprintf('%02x', ord(raw, i + k))));
+		if (m == mac && !ord(raw, i + 7))
+			return no[(ord(raw, i + 12) << 8) | ord(raw, i + 6)];
+	}
+	return null;
+}
+
+// Link state of an swconfig switch's ports, and the port on which it learned
+// `mac` (from the address table that ar8xxx switches print; others have none).
+// POSIX regex: no (?:) groups.
+function switch_state(sw, mac) {
+	const out = { name: sw, ports: [], uplink: null };
+	for (let line in split(sh(`swconfig dev ${shellquote(sw)} show 2>/dev/null`) ?? '', '\n')) {
+		let m = match(line, /^Port ([0-9]+): MAC ([0-9a-f:]+)/);
+		if (m) {
+			if (m[2] == mac)
+				out.uplink = +m[1];
+			continue;
+		}
+		m = match(line, /link: port:([0-9]+) link:(up|down)( speed:([0-9]+)base[^ ]*)?( (full|half)-duplex)?/);
+		if (m)
+			push(out.ports, { num: +m[1], up: m[2] == 'up', speed: m[4] ? +m[4] : null, duplex: m[6] });
+	}
+	return out;
 }
 
 const methods = {
@@ -89,6 +126,20 @@ const methods = {
 			// Become a bridged AP after replying: the address may change.
 			system('(sleep 2; /usr/libexec/netui-agent/access-point apply) >/dev/null 2>&1 &');
 			return { result: true };
+		}
+	},
+
+	ports: {
+		call: function() {
+			const board = json(readfile('/etc/board.json') ?? '{}');
+			const gw = lc(adopted()?.gateway ?? '');
+			const sw = board.switch ? keys(board.switch)[0] : null;
+			return {
+				network: board.network ?? {},
+				switch: board.switch ?? null,
+				switch_state: sw ? switch_state(sw, gw) : null,
+				uplink: length(gw) ? fdb_port('br-lan', gw) : null,
+			};
 		}
 	},
 

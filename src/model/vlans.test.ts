@@ -9,9 +9,12 @@ import {
   deleteNetworkOps,
   isolationOf,
   newNetworkDraft,
+  renumberOps,
   validateNewNetwork,
   type NewNetworkDraft,
 } from './vlans';
+import type { UciConfig } from '../api/types';
+import type { UciOp } from '../api/uci';
 
 function ctx(name: 'plain' | 'vlan') {
   const f = vmFixtures(name);
@@ -139,5 +142,31 @@ describe('deleteBlocker', () => {
     };
     expect(deleteBlocker('iot', { ...base, wireless })).toMatch(/"Things"/);
     expect(deleteBlocker('iot', base)).toBeNull();
+  });
+});
+
+describe('the mesh follows the VLAN networks', () => {
+  const withMesh = (name: 'plain' | 'vlan') => {
+    const wireless: UciConfig = {
+      netui_mesh: { '.anonymous': false, '.type': 'wifi-iface', '.name': 'netui_mesh', '.index': 0, mode: 'mesh', network: 'lan' },
+    };
+    return { ...ctx(name), wireless };
+  };
+  const meshList = (ops: UciOp[]) =>
+    ops.filter((o) => o.config === 'wireless').map((o) => (o.op === 'set' ? o.values.network_vlan : o.op === 'unset' ? 'unset' : o.op));
+
+  it('adds a new network to the mesh', () => {
+    const c = withMesh('plain');
+    expect(meshList(createNetworkOps(draft({ vid: '20' }), c))).toEqual([['20:t']]);
+    // Without a mesh there is nothing to change.
+    expect(meshList(createNetworkOps(draft({ vid: '20' }), { ...c, wireless: undefined }))).toEqual([]);
+  });
+
+  it('follows a renumbered network and drops a deleted one', () => {
+    const c = withMesh('vlan');
+    const v = c.sw.vlans.find((x) => x.networks.length === 1 && !x.networks.includes('lan'))!;
+    c.wireless.netui_mesh!.network_vlan = [`${v.vid}:t`];
+    expect(meshList(renumberOps(c.sw, v.vid, 99, c.network, c.wireless))).toEqual([['99:t']]);
+    expect(meshList(deleteNetworkOps(v.networks[0]!, c))).toEqual(['unset']);
   });
 });

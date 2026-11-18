@@ -19,6 +19,7 @@ import { FirmwarePanel } from '../../components/FirmwarePanel';
 import { lazy, Suspense } from 'preact/compat';
 
 const AddonsList = lazy(() => import('../../components/AddonsList').then((m) => ({ default: m.AddonsList })));
+const ApPorts = lazy(() => import('./ApPorts').then((m) => ({ default: m.ApPorts })));
 
 function message(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -82,7 +83,8 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
 
   const syncText = (o: SyncOutcome | undefined) => {
     if (!o || o.error) throw new Error(o?.error ?? 'No answer from the device');
-    const skipped = o.skipped?.length ? ` Not copied (not on the LAN): ${o.skipped.join(', ')}.` : '';
+    if (o.networkError) throw new Error(o.networkError);
+    const skipped = o.skipped?.length ? ` Not copied (its network does not reach this access point): ${o.skipped.join(', ')}.` : '';
     return `Copied ${o.networks} WiFi network${o.networks === 1 ? '' : 's'} from this router.${skipped}`;
   };
 
@@ -142,6 +144,12 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
           <RadioSettings mac={device.mac} online={device.online} />
         </FormSection>
 
+        <FormSection title="Ports">
+          <Suspense fallback={<Spinner />}>
+            <ApPorts mac={device.mac} online={device.online} />
+          </Suspense>
+        </FormSection>
+
         <FormSection title={`Clients (${served.length})`}>
           {served.length === 0 ? (
             <Empty>No WiFi clients on this access point.</Empty>
@@ -181,13 +189,14 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
             )}
           </Field>
           <div class="flex items-center justify-between gap-4 py-2.5">
-            <p class="text-muted">WiFi follows this router automatically after every WiFi change. Copy it now if it drifted.</p>
+            <p class="text-muted">WiFi and networks follow this router automatically after every change. Copy them now if they drifted.</p>
             <Button
               disabled={!!busy || !device.online}
               onClick={() =>
                 void run('sync', async () => {
                   const text = syncText((await syncDevices(device.mac))[device.mac]);
                   await qc.invalidateQueries({ queryKey: deviceKeys.radios(device.mac) });
+                  await qc.invalidateQueries({ queryKey: deviceKeys.network(device.mac) });
                   return text;
                 })
               }
