@@ -6,7 +6,7 @@ import { formatBytes } from '../../lib/format';
 import { useDraft } from '../../lib/useDraft';
 import { Banner, Button, Card, Dot, Field, Spinner, ToggleRow } from '../../components/ui';
 import { PLAN } from './shared';
-import { AddonMissing } from '../../components/InstallAddon';
+import { AddonCard } from '../../components/InstallAddon';
 
 /** `on`: the saved setting, which the running apply is carrying out. */
 function StatusLine({ on }: { on: boolean }) {
@@ -52,13 +52,13 @@ export function AdBlockingCard({ filtered }: { filtered: boolean }) {
   const { draft, dirty, reset, update } = useDraft<AdblockDraft | undefined>(source);
 
   if (cfg.isPending) return null;
-  if (!cfg.data || !draft) {
+  if (!cfg.data) {
     return (
-      <Card title="Ad blocking">
-        <AddonMissing addon="adblock">Block ads and trackers for every device, without apps on them.</AddonMissing>
-      </Card>
+      <AddonCard addon="adblock" title="Ad blocking">Block ads and trackers for every device, without apps on them.</AddonCard>
     );
   }
+  // The draft follows a render later: not "not installed", just not ready.
+  if (!draft) return null;
   const a = readAdblock(cfg.data);
   const errors = validateAdblock(draft);
   const valid = Object.keys(errors).length === 0;

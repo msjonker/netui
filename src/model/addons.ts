@@ -10,6 +10,8 @@ export interface AddonInfo {
   description: string;
   /** Storage needed, MB. */
   mb: number;
+  /** Storage needed by the smaller version a router short of space gets instead, MB. */
+  minMb?: number;
   /** Something the user should know before installing. */
   note?: string;
 }
@@ -34,6 +36,7 @@ export const ADDONS: Record<AddonKey, AddonInfo> = {
     label: 'Speed test',
     description: 'Measures the internet speed from the router.',
     mb: 8.1,
+    minMb: 2.8,
     note: 'Routers with little storage get a smaller version (2.8 MB).',
   },
   firmware: { label: 'Firmware updates', description: 'Updates the firmware from netui, keeping settings and add-ons.', mb: 0.2 },
@@ -53,6 +56,16 @@ export const ADDONS: Record<AddonKey, AddonInfo> = {
     note: 'WiFi restarts once: devices drop off for about a minute and reconnect.',
   },
 };
+
+/**
+ * Whether an add-on fits in `freeKib`, by the same rule the router applies
+ * before installing (what it needs plus 1 MB to spare). Unknown free space
+ * fits: the router still checks.
+ */
+export function fits(info: AddonInfo, freeKib: number | null | undefined): boolean {
+  if (freeKib == null) return true;
+  return freeKib >= (info.minMb ?? info.mb) * 1024 + 1024;
+}
 
 /** The step a job is on: its last log line, without apk's progress noise. */
 export function jobStep(job: PackagesJob): string {

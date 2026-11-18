@@ -157,11 +157,9 @@ export function TunnelCard({ subnets }: { subnets: Subnet[] }) {
       title={
         <span class="inline-flex items-center gap-2">
           Cloudflare Tunnel
-          {state !== 'not-installed' && (
-            <Pill tone={tone}>
-              <Dot tone={tone} /> {LABEL[state]}
-            </Pill>
-          )}
+          <Pill tone={tone}>
+            <Dot tone={tone} /> {LABEL[state]}
+          </Pill>
         </span>
       }
       actions={

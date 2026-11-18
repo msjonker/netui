@@ -11,7 +11,7 @@ vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRoute
 
 async function card() {
   renderApp('#/settings/networks');
-  return (await screen.findByRole('heading', { name: 'Guest portal' })).closest('section') as HTMLElement;
+  return (await screen.findByRole('heading', { name: /^Guest portal/ })).closest('section') as HTMLElement;
 }
 
 describe('guest portal', () => {
@@ -71,6 +71,7 @@ describe('without opennds', () => {
     resetRouter();
     const c = await card();
     expect(c.textContent).toMatch(/sign-in page before they get internet/);
+    expect(within(c).getByRole('heading').textContent).toMatch(/Not installed/);
     expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });

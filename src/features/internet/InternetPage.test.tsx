@@ -147,10 +147,12 @@ describe('Internet', () => {
     resetRouter();
     renderApp('#/settings/internet');
     await card('Primary (WAN1)');
+    // Each its own card, marked as not installed, with Install.
+    for (const title of ['Smart Queues', 'UPnP', 'Dynamic DNS']) {
+      const c = (await screen.findByRole('heading', { name: new RegExp(`^${title}\\s*Not installed`) })).closest('section') as HTMLElement;
+      expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
+    }
     const adv = (await screen.findByRole('heading', { name: 'Advanced' })).closest('section') as HTMLElement;
-    expect(within(adv).getAllByRole('button', { name: 'Install' })).toHaveLength(3);
-    expect(screen.queryByRole('heading', { name: 'Smart Queues' })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'UPnP' })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'Dynamic DNS' })).toBeNull();
+    expect(within(adv).queryByRole('button', { name: 'Install' })).toBeNull();
   });
 });

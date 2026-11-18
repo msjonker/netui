@@ -9,7 +9,7 @@ import { useClients } from '../../model/hooks';
 import { mergeHosts, normalizeUsage, periodLabel } from '../../model/usage';
 import { formatBytes } from '../../lib/format';
 import { Banner, Card, Empty, Meter, Spinner, Stat, ToggleRow } from '../../components/ui';
-import { AddonMissing } from '../../components/InstallAddon';
+import { AddonCard } from '../../components/InstallAddon';
 
 /** Where nlbwmon keeps its database: RAM (the default) or flash. */
 const RAM_DIR = '/var/lib/nlbwmon';
@@ -62,9 +62,7 @@ export function UsageInsights() {
   if (config.isPending) return <Spinner />;
   if (!config.data) {
     return (
-      <Card title="Usage history">
-        <AddonMissing addon="usage">Keep per-device and per-application usage by month.</AddonMissing>
-      </Card>
+      <AddonCard addon="usage" title="Usage history">Keep per-device and per-application usage by month.</AddonCard>
     );
   }
   const own = new Set(Object.values(devices.data ?? {}).flatMap((d) => (d.macaddr ? [d.macaddr.toLowerCase()] : [])));

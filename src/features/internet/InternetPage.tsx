@@ -8,7 +8,7 @@ import { DdnsCard, SqmCard, UpnpCard } from './Services';
 import { WanDrawer, WanStatusCard } from './Wan';
 import { SpeedTestCard } from './SpeedTest';
 import { MultiWanCard } from './MultiWan';
-import { AddonMissing } from '../../components/InstallAddon';
+import { AddonCard } from '../../components/InstallAddon';
 
 const LUCI = '/cgi-bin/luci/admin';
 
@@ -44,9 +44,9 @@ export function InternetPage() {
   // Optional features whose package is missing: offered for install below.
   const missing = (
     [
-      [!sqm.data && !sqm.isPending, 'sqm', 'Smart Queues keep calls and games smooth while the connection is busy.'],
-      [!upnpd.data && !upnpd.isPending, 'upnp', 'UPnP lets game consoles and apps open the ports they need.'],
-      [!ddns.data && !ddns.isPending, 'ddns', 'Dynamic DNS gives your home a name that follows its changing address.'],
+      [!sqm.data && !sqm.isPending, 'sqm', 'Smart Queues', 'Keep calls and games smooth while the connection is busy.'],
+      [!upnpd.data && !upnpd.isPending, 'upnp', 'UPnP', 'Let game consoles and apps open the ports they need.'],
+      [!ddns.data && !ddns.isPending, 'ddns', 'Dynamic DNS', 'Give your home a name that follows its changing address.'],
     ] as const
   ).filter(([gone]) => gone);
 
@@ -72,13 +72,13 @@ export function InternetPage() {
           {sqm.data && l3 && <SqmCard cfg={sqm.data} wanL3={l3} />}
           {upnpd.data && <UpnpCard cfg={upnpd.data} />}
           {ddns.data && wan && <DdnsCard cfg={ddns.data} wan={wan.section} wan6={wan.v6?.section} />}
+          {missing.map(([, addon, title, text]) => (
+            <AddonCard key={addon} addon={addon} title={title}>
+              {text}
+            </AddonCard>
+          ))}
           <Card title="Advanced">
             <div class="space-y-3">
-              {missing.map(([, addon, text]) => (
-                <AddonMissing key={addon} addon={addon}>
-                  {text}
-                </AddonMissing>
-              ))}
               <p class="text-muted">
                 More WAN interfaces and tunnels are managed in LuCI: <LuciLink href="network/network">Interfaces</LuciLink>
               </p>

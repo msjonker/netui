@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PackagesStatus } from '../api/types';
-import { jobError, jobStep } from './addons';
+import { ADDONS, fits, jobError, jobStep } from './addons';
 import installing from '../../test/fixtures/ubus/bench-v2/netui.packages.status.installing.json';
 import installed from '../../test/fixtures/ubus/bench-v2/netui.packages.status.installed.json';
 import noSpace from '../../test/fixtures/ubus/bench-v2/netui.packages.status.no-space.json';
@@ -35,3 +35,22 @@ describe('jobError', () => {
     expect(jobError(j)).toBe('ERROR: unable to select packages:');
   });
 });
+
+describe('fits', () => {
+  it('needs the add-on plus 1 MB to spare, as the router does', () => {
+    expect(fits(ADDONS.tunnel, 26 * 1024)).toBe(true);
+    expect(fits(ADDONS.tunnel, 25.9 * 1024)).toBe(false);
+    expect(fits(ADDONS.wol, 1.2 * 1024)).toBe(true);
+  });
+
+  it('counts the smaller version of an add-on that has one', () => {
+    // The speed test falls back to a 2.8 MB tool when space is short.
+    expect(fits(ADDONS.speedtest, 4 * 1024)).toBe(true);
+    expect(fits(ADDONS.speedtest, 3 * 1024)).toBe(false);
+  });
+
+  it('leaves unknown free space to the router', () => {
+    expect(fits(ADDONS.tailscale, null)).toBe(true);
+  });
+});
+

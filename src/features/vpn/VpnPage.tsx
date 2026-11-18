@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'preact/compat';
 import { firstError, useUci, useWgInstances } from '../../api/queries';
 import type { UciConfig } from '../../api/types';
 import { sectionsOfType } from '../../api/uci';
+import { InstallAddon, NotInstalled } from '../../components/InstallAddon';
 import { useApply } from '../../api/useApply';
 import { useNetworks, useWanExposure } from '../../model/hooks';
 import { NatNotice } from '../../components/NatNotice';
@@ -199,18 +200,26 @@ function ClientsCard({
   );
 }
 
-function EmptyState({ onCreate, disabled }: { onCreate: () => void; disabled: boolean }) {
+function EmptyState({ onCreate, disabled, noWireguard }: { onCreate: () => void; disabled: boolean; noWireguard: boolean }) {
   return (
     <Card>
       <div class="flex flex-col items-center gap-3 py-10 text-center">
         <div class="flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent">
           <IconVpn size={28} />
         </div>
-        <h2 class="text-[15px] font-semibold">WireGuard VPN Server</h2>
-        <p class="max-w-md text-muted">Reach your home network from anywhere. Set up phones by scanning a QR code.</p>
-        <Button variant="primary" onClick={onCreate} disabled={disabled}>
-          <IconPlus size={14} /> Create VPN Server
-        </Button>
+        <h2 class="inline-flex items-center gap-2 text-[15px] font-semibold">
+          WireGuard VPN Server {noWireguard && <NotInstalled />}
+        </h2>
+        <p class="max-w-md text-muted">
+          Reach your home network from anywhere. Set up phones by scanning a QR code.
+          {noWireguard && ' Install WireGuard first, then restart the router.'}
+        </p>
+        <div class="flex gap-2">
+          {noWireguard && <InstallAddon addon="wireguard" />}
+          <Button variant="primary" onClick={onCreate} disabled={disabled || noWireguard}>
+            <IconPlus size={14} /> Create VPN Server
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -265,6 +274,8 @@ function usePendingClient(network: { data?: UciConfig; isFetching: boolean }, bu
 export function VpnPage() {
   const { network, firewall, ifaces, subnets } = useNetworks();
   const wg = useWgInstances();
+  // No luci.wireguard object: the WireGuard package is not installed.
+  const noWireguard = !!wg.error && /not found/i.test(wg.error.message);
   // DDNS is optional (ddns-scripts may not be installed): only a default for the endpoint.
   const ddns = useUci('ddns');
   const apply = useApply();
@@ -331,7 +342,7 @@ export function VpnPage() {
         </div>
       ) : (
         <div class="space-y-4">
-          {model.servers.length === 0 && <EmptyState onCreate={openCreate} disabled={!fw || apply.busy} />}
+          {model.servers.length === 0 && <EmptyState onCreate={openCreate} disabled={!fw || apply.busy} noWireguard={noWireguard} />}
           {model.servers.map((s) => (
             <div key={s.iface} class="space-y-4">
               <ServerCard server={s} onEdit={() => setPanel({ kind: 'edit', iface: s.iface })} />
@@ -360,7 +371,7 @@ export function VpnPage() {
                 firewall={fw}
                 dump={ifaces.data}
                 wg={wg.data}
-                noWireguard={!!wg.error && /not found/i.test(wg.error.message)}
+                noWireguard={noWireguard}
                 nowS={nowS}
               />
             </Suspense>

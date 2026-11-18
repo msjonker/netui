@@ -5,7 +5,7 @@ import { useApply } from '../../api/useApply';
 import type { ManagedDevice } from '../../api/types';
 import { meshOps, readMesh, uplinkLabel, uplinkOf } from '../../model/mesh';
 import { Banner, Card, Dot, ToggleRow } from '../../components/ui';
-import { AddonMissing } from '../../components/InstallAddon';
+import { AddonMissing, NotInstalled, TitleWithPill } from '../../components/InstallAddon';
 import { usePackages } from '../../api/packages';
 
 /** Spanning tree can take most of a minute to settle after the bridge changes. */
@@ -62,7 +62,7 @@ export function MeshCard() {
     });
 
   return (
-    <Card title="Wireless mesh">
+    <Card title={basicWifi ? <TitleWithPill title="Wireless mesh" pill={<NotInstalled label="Needs the full WiFi package" />} /> : 'Wireless mesh'}>
       <ToggleRow
         label="Wireless meshing"
         hint="Access points without a cable connect to this router over WiFi. With a cable they use it and keep the mesh as a backup. Turning it off disconnects access points that have no cable."

@@ -21,7 +21,7 @@ import { Drawer } from '../../components/overlay';
 import { IconGlobe, IconTrash } from '../../components/icons';
 import { Banner, Button, Card, Detail, Dot, Pill, Segmented, Stat, Toggle, ToggleRow } from '../../components/ui';
 import { ConfirmModal, PLAN } from './ServerForms';
-import { InstallAddon } from '../../components/InstallAddon';
+import { InstallAddon, NotInstalled } from '../../components/InstallAddon';
 
 interface Props {
   network: UciConfig;
@@ -54,7 +54,9 @@ export function VpnClientSection({ network, firewall, dump, wg, noWireguard, now
 
   return (
     <>
-      <h2 class="pt-2 text-[15px] font-semibold">VPN service</h2>
+      <h2 class="inline-flex items-center gap-2 pt-2 text-[15px] font-semibold">
+        VPN service {noWireguard && !client && <NotInstalled />}
+      </h2>
       {!client ? (
         <Card>
           <div class="flex flex-wrap items-center gap-4">

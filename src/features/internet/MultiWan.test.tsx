@@ -11,7 +11,7 @@ vi.mock('../../api/ubus', async (orig) => (await import('../../../test/fakeRoute
 
 const mwan3 = () => structuredClone((mwan3Recorded as UciGet).values);
 
-const findCard = async () => (await screen.findByRole('heading', { name: 'Multi-WAN' })).closest('section') as HTMLElement;
+const findCard = async () => (await screen.findByRole('heading', { name: /^Multi-WAN/ })).closest('section') as HTMLElement;
 
 async function card() {
   renderApp('#/settings/internet');
@@ -65,6 +65,7 @@ describe('without mwan3', () => {
     resetRouter({}, 'plain');
     const c = await card();
     expect(c.textContent).toMatch(/second internet connection/);
+    expect(within(c).getByRole('heading').textContent).toMatch(/Not installed/);
     expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });

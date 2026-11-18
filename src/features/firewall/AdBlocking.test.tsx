@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
+import { seedFreeSpace } from '../../../test/fakeReads/packages';
 import { resetRouter, router } from '../../../test/fakeRouter';
 import { renderApp } from '../../../test/renderApp';
 import { applyReviewed } from '../../../test/applyFlow';
@@ -14,7 +15,7 @@ const adblock = () => structuredClone((recorded as UciGet).values);
 async function card(session?: { readOnly: boolean }) {
   renderApp('#/settings/security', undefined, session);
   fireEvent.click(await screen.findByRole('tab', { name: 'Ad Blocking & Filtering' }));
-  return (await screen.findByRole('heading', { name: 'Ad blocking' })).closest('section') as HTMLElement;
+  return (await screen.findByRole('heading', { name: /^Ad blocking/ })).closest('section') as HTMLElement;
 }
 
 describe('ad blocking', () => {
@@ -59,9 +60,20 @@ describe('without adblock-fast', () => {
     expect(await within(dialog).findByText('Ad blocking is installed.', {}, { timeout: 8000 })).toBeTruthy();
     expect(router.calls).toContainEqual(expect.objectContaining({ object: 'netui.packages', method: 'install', args: { addon: 'adblock' } }));
     fireEvent.click(within(dialog).getAllByRole('button', { name: 'Close' }).at(-1)!);
-    const after = (await screen.findByRole('heading', { name: 'Ad blocking' })).closest('section') as HTMLElement;
-    expect(await within(after).findByRole('switch', { name: 'Block ads and trackers' })).toBeTruthy();
+    // The install card gives way to the settings once the package is there.
+    expect(await screen.findByRole('switch', { name: 'Block ads and trackers' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /^Ad blocking/ }).textContent).not.toMatch(/Not installed/);
   }, 12_000);
+
+  it('says up front when the router has no room for it', async () => {
+    resetRouter();
+    seedFreeSpace(router, '', 1536);
+    const c = await card();
+    fireEvent.click(within(c).getByRole('button', { name: 'Install' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Install Ad blocking?' });
+    expect((await within(dialog).findByRole('alert')).textContent).toMatch(/Not enough storage: Ad blocking needs about 1 MB plus 1 MB to spare, and this router has 1.5 MB free/);
+    expect((within(dialog).getByRole('button', { name: 'Install' }) as HTMLButtonElement).disabled).toBe(true);
+  });
 
   it('offers no install to a read-only user', async () => {
     resetRouter();

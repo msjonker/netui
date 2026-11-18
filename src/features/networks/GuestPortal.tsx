@@ -11,7 +11,7 @@ import { portalDraft, portalOps, readPortal, sessionLabel, validatePortal, SESSI
 import { formatBytes, formatDuration } from '../../lib/format';
 import { useDraft } from '../../lib/useDraft';
 import { Banner, Button, Card, Dot, Empty, Field, Spinner, ToggleRow } from '../../components/ui';
-import { AddonMissing } from '../../components/InstallAddon';
+import { AddonCard } from '../../components/InstallAddon';
 
 const PLAN = { returnTo: '/settings/networks' };
 
@@ -101,13 +101,13 @@ export function GuestPortalCard({ networks }: { networks: Network[] }) {
   const { draft, dirty, reset, update } = useDraft<PortalDraft | undefined>(source);
 
   if (cfg.isPending) return null;
-  if (!cfg.data || !draft || !portal) {
+  if (!cfg.data) {
     return (
-      <Card title="Guest portal">
-        <AddonMissing addon="portal">Show guests a sign-in page before they get internet.</AddonMissing>
-      </Card>
+      <AddonCard addon="portal" title="Guest portal">Show guests a sign-in page before they get internet.</AddonCard>
     );
   }
+  // The draft follows a render later: not "not installed", just not ready.
+  if (!draft || !portal) return null;
   const errors = validatePortal(draft);
   const valid = Object.keys(errors).length === 0;
   const s = status.data;

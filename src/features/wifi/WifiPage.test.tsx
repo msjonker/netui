@@ -349,9 +349,12 @@ describe('WiFi', () => {
     );
   });
 
-  it('hides the schedule card without the wifischedule package', async () => {
+  it('offers WiFi schedules and client steering to install when their packages are missing', async () => {
     renderApp('#/settings/wifi');
     await screen.findByText('Home');
-    expect(screen.queryByText('WiFi Schedule')).toBeNull();
+    for (const title of ['WiFi Schedule', 'Client steering']) {
+      const c = (await screen.findByRole('heading', { name: new RegExp(`^${title}\\s*Not installed`) })).closest('section') as HTMLElement;
+      expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
+    }
   });
 });

@@ -14,7 +14,7 @@ beforeEach(() => {
 
 async function card() {
   renderApp('#/settings/internet');
-  return (await screen.findByRole('heading', { name: 'Speed test' })).closest('section') as HTMLElement;
+  return (await screen.findByRole('heading', { name: /^Speed test/ })).closest('section') as HTMLElement;
 }
 
 describe('speed test', () => {
@@ -41,6 +41,7 @@ describe('speed test', () => {
     seedSpeedTest(router, { available: false, tool: null, running: false, started: null, error: null, history: [] });
     const c = await card();
     expect(c.textContent).toMatch(/Test the internet speed from the router/);
+    expect(within(c).getByRole('heading').textContent).toMatch(/Not installed/);
     expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 

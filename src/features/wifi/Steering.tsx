@@ -2,6 +2,7 @@ import { useMemo } from 'preact/hooks';
 import { useUci } from '../../api/queries';
 import { useApply } from '../../api/useApply';
 import { usePackages } from '../../api/packages';
+import { AddonCard } from '../../components/InstallAddon';
 import { MIN_SIGNAL_CHOICES, ROAM_TRIGGER_DBM, readSteering, steeringOps, type Steering } from '../../model/steering';
 import { useDraft } from '../../lib/useDraft';
 import { Button, Card, Field, ToggleRow } from '../../components/ui';
@@ -22,6 +23,13 @@ export function SteeringCard() {
   // hostapd's basic build cannot start a WiFi with BSS transition on.
   const basicWifi = usePackages().data?.addons.mesh?.installed === false;
 
+  if (usteer.error) {
+    return (
+      <AddonCard addon="steering" title="Client steering">
+        Move devices to the best band and the nearest access point.
+      </AddonCard>
+    );
+  }
   if (!usteer.data || !source || !draft) return null;
   const ops = steeringOps(draft, usteer.data, wireless.data, !basicWifi);
 

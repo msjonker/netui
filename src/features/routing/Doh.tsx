@@ -7,7 +7,7 @@ import { switchDoh } from '../../api/services';
 import { DOH_PROVIDERS, dohDraft, dohOps, dohSwitch, normalizeDoh, validateDoh, type DohDraft } from '../../model/doh';
 import { useDraft } from '../../lib/useDraft';
 import { Banner, Button, Card, Dot, Field, Pill, Spinner, ToggleRow } from '../../components/ui';
-import { AddonMissing } from '../../components/InstallAddon';
+import { AddonCard } from '../../components/InstallAddon';
 
 const PLAN = { returnTo: '/settings/routing' };
 
@@ -23,13 +23,13 @@ export function DohCard({ dhcp }: { dhcp: UciConfig }) {
   const [error, setError] = useState<string>();
 
   if (cfg.isPending) return null;
-  if (!doh || !draft || !cfg.data) {
+  if (!cfg.data) {
     return (
-      <Card title="DNS over HTTPS">
-        <AddonMissing addon="doh">Encrypts the router’s DNS lookups so your internet provider cannot see or change them.</AddonMissing>
-      </Card>
+      <AddonCard addon="doh" title="DNS over HTTPS">Encrypts the router’s DNS lookups so your internet provider cannot see or change them.</AddonCard>
     );
   }
+  // The draft follows a render later: not "not installed", just not ready.
+  if (!doh || !draft) return null;
   const errors = validateDoh(draft);
   const ops = dirty ? dohOps(draft, doh, cfg.data, dhcp) : [];
   const flip = dirty ? dohSwitch(draft, doh) : undefined;

@@ -31,6 +31,11 @@ export function seedPackages(r: FakeRouter, mac: string, addons: Partial<Record<
   for (const [k, v] of Object.entries(addons)) s.status.addons[k as AddonKey] = { installed: v };
 }
 
+/** Free storage the router reports, KiB. */
+export function seedFreeSpace(r: FakeRouter, mac: string, kib: number): void {
+  stateOf(r, mac).status.free = kib;
+}
+
 export function packagesCall(router: FakeRouter, mac: string, method: string, args: Record<string, unknown>): unknown {
   const s = stateOf(router, mac);
   const addon = args.addon as AddonKey;

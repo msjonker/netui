@@ -2,11 +2,11 @@ import { useLayoutEffect, useState } from 'preact/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { addonJob, packagesKey, usePackages } from '../api/packages';
 import type { AddonKey } from '../api/types';
-import { ADDONS, jobError, jobStep } from '../model/addons';
+import { ADDONS, fits, jobError, jobStep } from '../model/addons';
 import { Modal } from './overlay';
 import { Banner, Button, Spinner } from './ui';
 
-const mb = (kib: number) => `${Math.round(kib / 1024)} MB`;
+const mb = (kib: number) => (kib < 10 * 1024 ? `${(kib / 1024).toFixed(1)} MB` : `${Math.round(kib / 1024)} MB`);
 
 /**
  * Install or remove one add-on: what it is and what it needs, then the
@@ -58,6 +58,8 @@ export function AddonDialog({
 
   const free = status.data?.free;
   const verb = action === 'install' ? 'Install' : 'Remove';
+  // The router checks again before it installs anything; this says so up front.
+  const noRoom = action === 'install' && !started && !fits(info, free);
   return (
     <Modal
       title={`${verb} ${info.label}${where ? ` on ${where}` : ''}?`}
@@ -71,7 +73,7 @@ export function AddonDialog({
         ) : (
           <>
             <Button onClick={onClose}>Cancel</Button>
-            <Button variant={action === 'install' ? 'primary' : 'danger'} onClick={() => void start()}>
+            <Button variant={action === 'install' ? 'primary' : 'danger'} disabled={noRoom} onClick={() => void start()}>
               {verb}
             </Button>
           </>
@@ -91,10 +93,18 @@ export function AddonDialog({
             ) : (
               <p class="text-muted">Its settings stay on the router, so installing it again brings them back.</p>
             )}
-            {action === 'install' && info.note && (
-              <Banner tone="warn" role="status">
-                {info.note}
+            {noRoom ? (
+              <Banner tone="bad" role="alert">
+                Not enough storage: {info.label} needs about {info.minMb ?? info.mb} MB plus 1 MB to spare, and{' '}
+                {where ?? 'this router'} has {mb(free!)} free. Removing an add-on you do not use makes room.
               </Banner>
+            ) : (
+              action === 'install' &&
+              info.note && (
+                <Banner tone="warn" role="status">
+                  {info.note}
+                </Banner>
+              )
             )}
           </>
         ) : busy ? (

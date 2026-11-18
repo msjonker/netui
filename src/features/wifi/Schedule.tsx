@@ -1,6 +1,7 @@
 import { useMemo } from 'preact/hooks';
 import type { UciConfig } from '../../api/types';
 import { useUci } from '../../api/queries';
+import { AddonCard } from '../../components/InstallAddon';
 import { useApply } from '../../api/useApply';
 import {
   DAYS,
@@ -139,13 +140,19 @@ function ScheduleForm({
 }
 
 /**
- * WiFi Schedule (the wifischedule package). Renders nothing if the package is
- * not installed. `sel` is the open entry's section, or "+new" (not a valid section name) for a new one.
+ * WiFi Schedule (the wifischedule package), or an offer to install it. `sel` is the open entry's section, or "+new" (not a valid section name) for a new one.
  */
 export function ScheduleCard({ sel, setSel }: { sel: string | null; setSel: (s: string | null) => void }) {
   const q = useUci('wifi_schedule');
   const apply = useApply();
   const schedule = useMemo(() => (q.data ? normalizeSchedule(q.data) : undefined), [q.data]);
+  if (q.error) {
+    return (
+      <AddonCard addon="schedule" title="WiFi Schedule">
+        Turn WiFi off and on at set times, for example overnight.
+      </AddonCard>
+    );
+  }
   if (!q.data || !schedule) return null;
   const entry = schedule.entries.find((e) => e.section === sel);
 
