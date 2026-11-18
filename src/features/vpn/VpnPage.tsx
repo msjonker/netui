@@ -4,6 +4,7 @@ import { firstError, useUci, useWgInstances } from '../../api/queries';
 import type { UciConfig } from '../../api/types';
 import { sectionsOfType } from '../../api/uci';
 import { InstallAddon, NotInstalled } from '../../components/InstallAddon';
+import { RPC_OBJECT_NOT_FOUND, RpcError, UbusError, UbusStatus } from '../../api/ubus';
 import { useApply } from '../../api/useApply';
 import { useNetworks, useWanExposure } from '../../model/hooks';
 import { NatNotice } from '../../components/NatNotice';
@@ -214,12 +215,13 @@ function EmptyState({ onCreate, disabled, noWireguard }: { onCreate: () => void;
           Reach your home network from anywhere. Set up phones by scanning a QR code.
           {noWireguard && ' Install WireGuard first, then restart the router.'}
         </p>
-        <div class="flex gap-2">
-          {noWireguard && <InstallAddon addon="wireguard" />}
-          <Button variant="primary" onClick={onCreate} disabled={disabled || noWireguard}>
+        {noWireguard ? (
+          <InstallAddon addon="wireguard" />
+        ) : (
+          <Button variant="primary" onClick={onCreate} disabled={disabled}>
             <IconPlus size={14} /> Create VPN Server
           </Button>
-        </div>
+        )}
       </div>
     </Card>
   );
@@ -275,7 +277,9 @@ export function VpnPage() {
   const { network, firewall, ifaces, subnets } = useNetworks();
   const wg = useWgInstances();
   // No luci.wireguard object: the WireGuard package is not installed.
-  const noWireguard = !!wg.error && /not found/i.test(wg.error.message);
+  const noWireguard =
+    (wg.error instanceof RpcError && wg.error.code === RPC_OBJECT_NOT_FOUND) ||
+    (wg.error instanceof UbusError && wg.error.status === UbusStatus.NOT_FOUND);
   // DDNS is optional (ddns-scripts may not be installed): only a default for the endpoint.
   const ddns = useUci('ddns');
   const apply = useApply();

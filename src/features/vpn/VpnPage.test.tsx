@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/preact';
-import { TransportError } from '../../api/ubus';
+import { RPC_OBJECT_NOT_FOUND, RpcError, TransportError } from '../../api/ubus';
 import { resetRouter, router, stageOn } from '../../../test/fakeRouter';
 import { renderApp } from '../../../test/renderApp';
 import { type } from '../../../test/dom';
@@ -331,3 +331,20 @@ describe('Cloudflare Tunnel', () => {
     expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
   });
 });
+
+describe('without WireGuard', () => {
+  it('offers only Install for the VPN server and the VPN service', async () => {
+    resetRouter();
+    // uhttpd's answer when the luci.wireguard object does not exist.
+    router.overrides.push((c) => (c.object === 'luci.wireguard' ? new RpcError(RPC_OBJECT_NOT_FOUND, 'Object not found') : undefined));
+    renderApp('#/settings/vpn');
+    const server = (await screen.findByRole('heading', { name: /^WireGuard VPN Server\s*Not installed/ })).closest('div') as HTMLElement;
+    expect(within(server).getByRole('button', { name: 'Install' })).toBeTruthy();
+    expect(within(server).queryByRole('button', { name: /Create VPN Server/ })).toBeNull();
+
+    const service = (await screen.findByRole('heading', { name: /^VPN service\s*Not installed/ })).nextElementSibling as HTMLElement;
+    expect(within(service).getByRole('button', { name: 'Install' })).toBeTruthy();
+    expect(within(service).queryByRole('button', { name: 'Set Up' })).toBeNull();
+  });
+});
+

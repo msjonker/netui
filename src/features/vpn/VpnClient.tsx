@@ -65,10 +65,14 @@ export function VpnClientSection({ network, firewall, dump, wg, noWireguard, now
               Your provider gives you a WireGuard configuration file.
               {noWireguard && ' WireGuard is not installed yet: install it, then restart the router.'}
             </p>
-            {noWireguard && <InstallAddon addon="wireguard" />}
-            <Button variant="primary" onClick={() => setOpen(true)} disabled={apply.busy || noWireguard}>
-              Set Up
-            </Button>
+            {/* Until WireGuard is there, installing it is the only thing to do. */}
+            {noWireguard ? (
+              <InstallAddon addon="wireguard" />
+            ) : (
+              <Button variant="primary" onClick={() => setOpen(true)} disabled={apply.busy}>
+                Set Up
+              </Button>
+            )}
           </div>
         </Card>
       ) : (
