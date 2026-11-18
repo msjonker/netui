@@ -79,7 +79,7 @@ simulates a gateway and an adopted access point running OpenWrt 25.12.
 
 netui runs on OpenWrt **24.10** and **25.x / snapshots**, on any router hardware
 (the package contains no compiled code). LuCI stays installed and keeps working
-alongside it. The examples use version `0.3.2` and the router at `192.168.1.1`;
+alongside it. The examples use version `0.4.0` and the router at `192.168.1.1`;
 substitute the latest version from [Releases](https://github.com/msjonker/netui/releases)
 and your router's address.
 
@@ -94,8 +94,8 @@ grep DISTRIB_RELEASE /etc/openwrt_release
 
 | `DISTRIB_RELEASE` | Package manager | Download |
 |---|---|---|
-| `25.12.x` or `SNAPSHOT` | apk | `netui-0.3.2-r1.apk` |
-| `24.10.x` | opkg | `netui_0.3.2-r1_all.ipk` |
+| `25.12.x` or `SNAPSHOT` | apk | `netui-0.4.0-r1.apk` |
+| `24.10.x` | opkg | `netui_0.4.0-r1_all.ipk` |
 
 Older releases (23.05 and before) are not supported.
 
@@ -105,8 +105,8 @@ Download the file from the [latest release](https://github.com/msjonker/netui/re
 on your computer, then copy it to the router's `/tmp` (on Windows, use PowerShell):
 
 ```sh
-scp -O netui-0.3.2-r1.apk root@192.168.1.1:/tmp/        # OpenWrt 25.x / snapshots
-scp -O netui_0.3.2-r1_all.ipk root@192.168.1.1:/tmp/    # OpenWrt 24.10
+scp -O netui-0.4.0-r1.apk root@192.168.1.1:/tmp/        # OpenWrt 25.x / snapshots
+scp -O netui_0.4.0-r1_all.ipk root@192.168.1.1:/tmp/    # OpenWrt 24.10
 ```
 
 `-O` is needed because OpenWrt's SSH server (dropbear) does not support the newer
@@ -114,7 +114,7 @@ SFTP-based copy. If your router already has internet access you can instead
 download on the router itself:
 
 ```sh
-cd /tmp && wget https://github.com/msjonker/netui/releases/download/v0.3.2/netui-0.3.2-r1.apk
+cd /tmp && wget https://github.com/msjonker/netui/releases/download/v0.4.0/netui-0.4.0-r1.apk
 ```
 
 ### 3. Install it
@@ -125,11 +125,11 @@ can be installed) and install the file:
 ```sh
 # OpenWrt 25.x / snapshots
 apk update
-apk add --allow-untrusted /tmp/netui-0.3.2-r1.apk
+apk add --allow-untrusted /tmp/netui-0.4.0-r1.apk
 
 # OpenWrt 24.10
 opkg update
-opkg install /tmp/netui_0.3.2-r1_all.ipk
+opkg install /tmp/netui_0.4.0-r1_all.ipk
 ```
 
 The router needs internet access for this step unless LuCI is already installed
@@ -162,8 +162,8 @@ router itself (`ssh`, LuCI), in one reviewed change.
 Any other OpenWrt router (24.10 or 25.x) can become an access point managed
 from netui's **Devices** page. On that router:
 
-1. Install `netui-agent` the same way as above (`netui-agent-0.3.2-r1.apk` or
-   `netui-agent_0.3.2-r1_all.ipk` from the release).
+1. Install `netui-agent` the same way as above (`netui-agent-0.4.0-r1.apk` or
+   `netui-agent_0.4.0-r1_all.ipk` from the release).
 2. Run `netui-agent prepare` and confirm. It turns the router into a plain
    access point: every port joins one LAN bridge, it gets its address from the
    gateway's DHCP, and its own DHCP server, IPv6 announcements and firewall go off.
@@ -338,10 +338,10 @@ delete that as well: `uci delete rpcd.netui && uci commit rpcd && /etc/init.d/rp
 
 ## Release
 
-Push a tag: `git tag v0.3.2 && git push origin v0.3.2`. The Release workflow
+Push a tag: `git tag v0.4.0 && git push origin v0.4.0`. The Release workflow
 tests and builds the UI, packages it with the official OpenWrt SDK images
 (`.apk` from 25.12, `.ipk` from 24.10) and publishes both. Locally:
-`npm run build && npm run package x86-64-openwrt-25.12 0.3.2` (needs Docker).
+`npm run build && npm run package x86-64-openwrt-25.12 0.4.0` (needs Docker).
 
 ## Develop
 
