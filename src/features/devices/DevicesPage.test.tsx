@@ -309,91 +309,12 @@ describe('client steering', () => {
   });
 });
 
-describe('access point ports', () => {
-  const relayed = (object: string, method: string) =>
-    calls('call').filter((a) => a.object === object && a.method === method).map((a) => a.args as Record<string, unknown>);
-
-  /** The gateway with an IoT network on VLAN 10, and its mesh on. */
-  const vlanGateway = () => {
-    const f = wrxFixtures('vlan');
-    const wireless = f.uci.wireless();
-    wireless.netui_mesh = { '.anonymous': false, '.type': 'wifi-iface', '.name': 'netui_mesh', '.index': 99, device: 'radio0', mode: 'mesh', network: 'lan' };
-    resetRouter({ network: f.uci.network(), firewall: f.uci.firewall(), dhcp: f.uci.dhcp(), wireless });
-  };
-
-  it('lists the ports as on LAN while the gateway has no other network', async () => {
+describe('access point ports in the drawer', () => {
+  it('sums up the ports and links to the Ports page', async () => {
     seedDevices(router, { managed: [recorded.device] });
     renderApp(`#/devices/${recorded.device.mac}`);
     const drawer = await screen.findByRole('complementary', { name: 'Office AP' });
-    const table = await within(drawer).findByRole('table', { name: 'Ports' });
-    // As recorded with a cable in lan1.
-    expect(within(table).getAllByRole('row').slice(1).map((r) => r.textContent)).toEqual([
-      'lan11 GbpsLANNone',
-      'lan2No linkLANNone',
-      'lan3No linkLANNone',
-      'wanNo linkLANNone',
-    ]);
-    expect(within(drawer).getByText(/Every port is on LAN/)).toBeTruthy();
-    expect(within(table).queryByRole('button', { name: /Edit port/ })).toBeNull();
-  });
-
-  it('carries the gateway VLANs to an access point on the mesh, and fixes the mesh', async () => {
-    vlanGateway();
-    seedDevices(router, { managed: [recorded.device] });
-    renderApp(`#/devices/${recorded.device.mac}`);
-    const drawer = await screen.findByRole('complementary', { name: 'Office AP' });
-    await within(drawer).findByRole('table', { name: 'Ports' });
-
-    fireEvent.click(await within(drawer).findByRole('button', { name: /Carry them now/ }));
-    await waitFor(() => expect(relayed('uci', 'apply')).toEqual([{ rollback: true, timeout: 60 }]), { timeout: 5000 });
-    expect(relayed('uci', 'add')).toEqual([
-      expect.objectContaining({ config: 'network', type: 'bridge-vlan', values: expect.objectContaining({ vlan: '1' }) }),
-      expect.objectContaining({ config: 'network', type: 'bridge-vlan', values: { device: 'br-lan', vlan: '10', ports: ['lan1:t', 'lan2:t', 'lan3:t', 'wan:t'] } }),
-      { config: 'network', type: 'interface', name: 'netui_iot', values: { proto: 'none', device: 'br-lan.10' } },
-    ]);
-    await waitFor(() => expect(relayed('uci', 'confirm').length).toBe(1), { timeout: 5000 });
-    // Then the plugin copies the WiFi, IoT's included.
-    await waitFor(() => expect(calls('sync')).toEqual([{ mac: recorded.device.mac }]));
-
-    // The gateway's mesh predates its IoT network.
-    const mesh = await within(drawer).findByText(/The wireless mesh does not carry IOT \(10\)/);
-    fireEvent.click(within(mesh.closest('[role="status"]') as HTMLElement).getByRole('button', { name: 'Fix' }));
-    await applyReviewed();
-    expect(router.configs.wireless!.netui_mesh!.network_vlan).toEqual(['10:t']);
-    // A WiFi change: every access point follows.
-    await waitFor(() => expect(calls('sync')).toEqual([{ mac: recorded.device.mac }, {}]), { timeout: 8000 });
-  }, 20_000);
-
-  it('moves a port of an access point onto IoT', async () => {
-    vlanGateway();
-    // The access point as the first sync leaves it.
-    const { apFixtures } = await import('../../../test/fixtures');
-    const { FakeRouter, stageOn } = await import('../../../test/fakeRouter');
-    const { apSyncOps, gatewayVlans, readApLayout } = await import('../../model/apPorts');
-    const { normalizeSwitch } = await import('../../model/ports');
-    const ap = apFixtures('ax3600');
-    const gw = gatewayVlans(normalizeSwitch(router.configs.network!, undefined, undefined, undefined));
-    const synced = stageOn(new FakeRouter({ network: ap.uci.network() }), apSyncOps(readApLayout(ap.uci.network(), ap.deviceStatus(), ap.ports()), gw, ap.uci.network())).network!;
-    seedDevices(router, { managed: [recorded.device], apNetwork: synced });
-
-    renderApp(`#/devices/${recorded.device.mac}`);
-    const drawer = await screen.findByRole('complementary', { name: 'Office AP' });
-    const table = await within(drawer).findByRole('table', { name: 'Ports' });
-    expect(within(drawer).queryByRole('button', { name: /Carry them now/ })).toBeNull();
-    const row = within(table).getByText('lan3').closest('tr')!;
-    expect(row.textContent).toContain('All others');
-    fireEvent.click(within(table).getByRole('button', { name: 'Edit port lan3' }));
-
-    const dialog = await screen.findByRole('dialog', { name: 'Port lan3' });
-    pick(dialog, 'Network', '10');
-    pick(dialog, 'Also carries', 'none');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Apply' }));
-    await waitFor(() => expect(relayed('uci', 'apply')).toEqual([{ rollback: true, timeout: 30 }]));
-    const sets = relayed('uci', 'set').map((a) => (a.values as { ports?: string[] }).ports);
-    expect(sets).toEqual([
-      ['lan1:u*', 'lan2:u*', 'wan:u*'],
-      ['lan1:t', 'lan2:t', 'lan3:u*', 'wan:t'],
-    ]);
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Port lan3' })).toBeNull(), { timeout: 5000 });
+    expect(await within(drawer).findByText('4 ports · all on LAN')).toBeTruthy();
+    expect(within(drawer).getByRole('link', { name: 'Manage ports' }).getAttribute('href')).toContain(`/settings/ports/${recorded.device.mac}`);
   });
 });

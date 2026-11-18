@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { ApplyPhase, ApplyResult } from '../api/apply';
-import type { UciChange } from '../api/types';
+import type { UciChange, UciSection } from '../api/types';
 import type { ApplyController } from '../api/useApply';
 import { Modal } from './overlay';
 import { Banner, Button, Spinner, cx } from './ui';
@@ -105,6 +105,7 @@ const TYPE_LABEL: Record<string, string> = {
   interface: 'Network',
   device: 'Device',
   'bridge-vlan': 'VLAN',
+  switch_vlan: 'Switch VLAN',
   dhcp: 'DHCP pool',
 };
 
@@ -114,6 +115,17 @@ const NETWORK_TYPE_LABEL: Record<string, string> = { rule: 'Routing rule', route
 /** Friendly name for a UCI section type, e.g. host → "Fixed IP". */
 export function sectionTypeLabel(type: string, pkg?: string): string {
   return (pkg === 'network' ? NETWORK_TYPE_LABEL[type] : undefined) ?? TYPE_LABEL[type] ?? type;
+}
+
+/** How the review names a section: "VLAN 10 on br-lan", 'WiFi network "Home"', or its UCI name. */
+export function sectionLabelFor(s: UciSection | undefined, section: string, pkg: string): string {
+  if (!s) return section;
+  const name = s.name ?? s.ssid;
+  const type = sectionTypeLabel(String(s['.type']), pkg);
+  if (s['.type'] === 'bridge-vlan') return `VLAN ${s.vlan} on ${s.device}`;
+  if (s['.type'] === 'switch_vlan') return `Switch VLAN ${s.vid ?? s.vlan} on ${s.device}`;
+  if (s['.anonymous']) return typeof name === 'string' ? `${type} "${name}"` : type;
+  return section;
 }
 
 const SECRET = /(^|_)(key|password|psk|token)$/;
@@ -200,14 +212,16 @@ function Countdown({ deadline }: { deadline: number }) {
   return <span class="tabular-nums">{Math.max(0, Math.ceil((deadline - now) / 1000))}s</span>;
 }
 
-function phaseText(p: ApplyPhase) {
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+function phaseText(p: ApplyPhase, target: string) {
   switch (p.phase) {
     case 'applying':
-      return 'Sending changes to the router…';
+      return `Sending changes to ${target}…`;
     case 'waiting':
       return (
         <>
-          Router is applying changes. They revert automatically in <Countdown deadline={p.deadline} /> unless confirmed.
+          {cap(target)} is applying changes. They revert automatically in <Countdown deadline={p.deadline} /> unless confirmed.
         </>
       );
     case 'confirming':
@@ -223,11 +237,11 @@ function phaseText(p: ApplyPhase) {
         </>
       );
     case 'reverting':
-      return 'The change was not confirmed in time. Waiting for the router to restore the previous settings…';
+      return `The change was not confirmed in time. Waiting for ${target} to restore the previous settings…`;
   }
 }
 
-function resultView(r: ApplyResult) {
+function resultView(r: ApplyResult, target: string) {
   switch (r.outcome) {
     case 'confirmed':
       return <Banner tone="ok" role="status">Changes applied.</Banner>;
@@ -243,8 +257,8 @@ function resultView(r: ApplyResult) {
       return (
         <Banner tone="warn" role="alert">
           {r.address
-            ? `The router did not answer at ${r.address}, so it reverted to the previous settings. `
-            : 'The router could not be reached after the change, so it reverted to the previous settings. '}
+            ? `${cap(target)} did not answer at ${r.address}, so it reverted to the previous settings. `
+            : `${cap(target)} could not be reached after the change, so it reverted to the previous settings. `}
           Nothing was changed.
         </Banner>
       );
@@ -256,9 +270,12 @@ function resultView(r: ApplyResult) {
 export function ApplyDialog({
   ctl,
   sectionLabel,
+  target = 'the router',
 }: {
   ctl: ApplyController;
   sectionLabel: (pkg: string, section: string) => string;
+  /** What the changes go to, as it reads mid-sentence: "the router", "Office AP". */
+  target?: string;
 }) {
   const s = ctl.state;
 
@@ -304,7 +321,7 @@ export function ApplyDialog({
           <>
             <ChangeList changes={s.changes} label={sectionLabel} />
             <p class="mt-4 text-xs text-muted">
-              The router applies these with a 30 second safety timer and reverts them on its own unless netui can reach it
+              {cap(target)} applies these with a 30 second safety timer and reverts them on its own unless netui can reach it
               afterwards and confirm.
               {s.plan.newAddress && (
                 <>
@@ -324,7 +341,7 @@ export function ApplyDialog({
       <Modal title="Applying changes" onClose={() => {}} locked>
         <div class="flex items-start gap-3 py-3">
           <Spinner class="mt-0.5" />
-          <p role="status">{phaseText(s.phase)}</p>
+          <p role="status">{phaseText(s.phase, target)}</p>
         </div>
       </Modal>
     );
@@ -351,7 +368,7 @@ export function ApplyDialog({
           )
         }
       >
-        <div class="py-2">{resultView(s.result)}</div>
+        <div class="py-2">{resultView(s.result, target)}</div>
         {s.failedServices && (
           <p class="pb-2 text-xs text-warn" role="status">
             Saved, but updating {s.failedServices.join(', ')} failed.{' '}

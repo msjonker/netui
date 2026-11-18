@@ -9,7 +9,7 @@ import { confirm } from '../api/uci';
 import { keys, useStagedChanges } from '../api/queries';
 import { ApplyContext, useApply, useApplyController } from '../api/useApply';
 import type { UciConfig } from '../api/types';
-import { ApplyDialog, sectionTypeLabel } from '../components/ApplyDialog';
+import { ApplyDialog, sectionLabelFor } from '../components/ApplyDialog';
 import { Banner, Button, Spinner } from '../components/ui';
 import { LoginPage } from '../features/auth/LoginPage';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
@@ -40,13 +40,7 @@ function useSectionLabel() {
   const qc = useQueryClient();
   return useCallback(
     (pkg: string, section: string) => {
-      const s = qc.getQueryData<UciConfig>(keys.uci(pkg))?.[section];
-      if (!s) return section;
-      const name = s.name ?? s.ssid;
-      const type = sectionTypeLabel(String(s['.type']), pkg);
-      if (s['.type'] === 'bridge-vlan') return `VLAN ${s.vlan} on ${s.device}`;
-      if (s['.anonymous']) return typeof name === 'string' ? `${type} "${name}"` : type;
-      return section;
+      return sectionLabelFor(qc.getQueryData<UciConfig>(keys.uci(pkg))?.[section], section, pkg);
     },
     [qc],
   );
@@ -164,6 +158,7 @@ function SignedIn({
                   <Route path="/settings/wifi" component={WifiPage} />
                   <Route path="/settings/networks" component={NetworksPage} />
                   <Route path="/settings/ports" component={PortsPage} />
+                  <Route path="/settings/ports/:mac" component={PortsPage} />
                   <Route path="/settings/internet" component={InternetPage} />
                   <Route path="/settings/security" component={FirewallPage} />
                   <Route path="/settings/vpn" component={VpnPage} />

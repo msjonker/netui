@@ -43,6 +43,25 @@ export interface ApplyController extends ApplyApi {
   close(): void;
 }
 
+/**
+ * Where changes go: this router (the default), or an adopted access point
+ * through the gateway's relay (api/devices.ts deviceApplyTarget).
+ */
+export interface ApplyTarget {
+  stage(ops: UciOp[]): Promise<unknown>;
+  changes(): Promise<Record<string, UciChange[]>>;
+  revert(packages: readonly string[]): Promise<void>;
+  /** Follow-up work after a confirmed apply; returns what failed. */
+  after(packages: readonly string[]): Promise<string[]>;
+}
+
+const gatewayTarget: ApplyTarget = {
+  stage,
+  changes: getChanges,
+  revert: (packages) => revert(packages),
+  after: runServiceHooks,
+};
+
 /** Second re-read after a confirmed apply, once service reloads have finished. */
 const SETTLE_MS = 4_000;
 
@@ -50,7 +69,7 @@ function message(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-export function useApplyController(deps: () => ApplyDeps = browserDeps): ApplyController {
+export function useApplyController(deps: () => ApplyDeps = browserDeps, target: ApplyTarget = gatewayTarget): ApplyController {
   const qc = useQueryClient();
   const [state, setState] = useState<ApplyState>({ step: 'idle' });
   const planRef = useRef<ApplyPlan | null>(null);
@@ -58,7 +77,7 @@ export function useApplyController(deps: () => ApplyDeps = browserDeps): ApplyCo
   const refresh = useCallback(() => qc.invalidateQueries(), [qc]);
 
   const openReview = useCallback(async (plan: ApplyPlan) => {
-    const all = await getChanges();
+    const all = await target.changes();
     // Show every staged package, not only the ones just touched: anything
     // staged in this session goes out with the apply.
     const changes = Object.fromEntries(Object.entries(all).filter(([, c]) => c.length > 0));
@@ -73,15 +92,15 @@ export function useApplyController(deps: () => ApplyDeps = browserDeps): ApplyCo
       const packages = [...new Set(ops.map((o) => o.config))];
       setState({ step: 'staging' });
       try {
-        await stage(ops);
+        await target.stage(ops);
         await openReview({ ...extra, packages });
       } catch (err) {
         // Leave nothing half-staged behind.
-        await revert(packages).catch(() => {});
+        await target.revert(packages).catch(() => {});
         setState({ step: 'error', message: message(err), packages });
       }
     },
-    [openReview],
+    [openReview, target],
   );
 
   const review = useCallback<ApplyApi['review']>(
@@ -103,7 +122,7 @@ export function useApplyController(deps: () => ApplyDeps = browserDeps): ApplyCo
     try {
       const result = await runApply(plan, deps(), (phase) => setState({ step: 'running', phase, plan }));
       if (result.outcome === 'redirected' || result.outcome === 'expired') return;
-      const failed = result.outcome === 'confirmed' ? await runServiceHooks(plan.packages) : [];
+      const failed = result.outcome === 'confirmed' ? await target.after(plan.packages) : [];
       setState({ step: 'done', result, plan, ...(failed.length ? { failedServices: failed } : {}) });
       if (result.outcome === 'confirmed') plan.onConfirmed?.();
       if (result.outcome !== 'busy') await refresh();
@@ -114,20 +133,20 @@ export function useApplyController(deps: () => ApplyDeps = browserDeps): ApplyCo
       setState({ step: 'error', message: message(err), packages: [...plan.packages] });
       await refresh();
     }
-  }, [deps, refresh]);
+  }, [deps, refresh, target]);
 
   const discard = useCallback(async () => {
     const packages = planRef.current?.packages ?? (state.step === 'error' ? state.packages : []);
     setState({ step: 'staging' });
     try {
-      await revert(packages);
+      await target.revert(packages);
       planRef.current = null;
       setState({ step: 'idle' });
     } catch (err) {
       setState({ step: 'error', message: message(err), packages: [...packages] });
     }
     await refresh();
-  }, [refresh, state]);
+  }, [refresh, state, target]);
 
   const close = useCallback(() => {
     planRef.current = null;

@@ -5,7 +5,7 @@
 import type { FakeReadHandler, FakeRouter } from '../fakeRouter';
 import { firmwareCall } from './firmware';
 import { packagesCall } from './packages';
-import type { AgentPorts, AssocStation, ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList, UciConfig } from '../../src/api/types';
+import type { AgentPorts, AssocStation, ManagedDevice, ManagedDeviceList, PendingDevice, PendingDeviceList, UciChange, UciConfig } from '../../src/api/types';
 import listJson from '../fixtures/ubus/bench-v2/netui.devices.list.json';
 import discoverJson from '../fixtures/ubus/bench-v2/netui.devices.discover.json';
 import syncJson from '../fixtures/ubus/bench-v2/netui.devices.sync.json';
@@ -52,6 +52,8 @@ interface State {
   apNetwork?: UciConfig;
   /** netui.agent ports; null for an agent older than 0.4. */
   agentPorts?: AgentPorts | null;
+  /** Changes staged on the AP through the relay, as `uci changes` lists them. */
+  apStaged?: Record<string, UciChange[]>;
 }
 
 const states = new WeakMap<FakeRouter, State>();
@@ -86,6 +88,17 @@ const RELAYED: Record<string, unknown> = {
 
 /** Staging and applying on the AP itself (per-device radio settings) succeeds. */
 const AP_WRITES = new Set(['uci.set', 'uci.delete', 'uci.add', 'uci.apply', 'uci.confirm', 'uci.revert']);
+
+/** Keep a `uci changes` list of what was staged on the AP (one entry per option is enough for the review). */
+function stageOnAp(s: State, key: string, a: Record<string, unknown>): void {
+  const config = String(a.config ?? '');
+  const add = (c: UciChange) => ((s.apStaged ??= {})[config] ??= []).push(c);
+  if (key === 'uci.set') for (const [k, v] of Object.entries((a.values ?? {}) as Record<string, unknown>)) add(['set', String(a.section), k, Array.isArray(v) ? v.join(' ') : String(v)]);
+  else if (key === 'uci.add') add(['add', String(a.name ?? 'cfgnew'), String(a.type)]);
+  else if (key === 'uci.delete') add(['remove', String(a.section)]);
+  else if (key === 'uci.revert' || key === 'uci.apply') delete s.apStaged?.[config];
+  if (key === 'uci.apply') s.apStaged = {};
+}
 
 export const handle: FakeReadHandler = (object, method, args, router) => {
   if (object !== 'netui.devices') return undefined;
@@ -129,7 +142,11 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       if (key === 'uci.get' && a.config === 'wireless') return structuredClone(apWireless);
       if (key === 'uci.get' && a.config === 'network') return { status: 0, data: { values: structuredClone(s.apNetwork ?? apFixtures('ax3600').uci.network()) } };
       if (key === 'netui.agent.ports') return s.agentPorts === null ? structuredClone(denied) : { status: 0, data: structuredClone(s.agentPorts ?? apFixtures('ax3600').ports()) };
-      if (AP_WRITES.has(key)) return { status: 0 };
+      if (AP_WRITES.has(key)) {
+        stageOnAp(s, key, a);
+        return { status: 0 };
+      }
+      if (key === 'uci.changes') return { status: 0, data: { changes: structuredClone(s.apStaged ?? {}) } };
       if (key === 'iwinfo.assoclist.phy1-ap0' && s.stations) return { status: 0, data: { results: structuredClone(s.stations) } };
       return key in RELAYED ? structuredClone(RELAYED[key]) : structuredClone(denied);
     }

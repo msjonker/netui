@@ -2,7 +2,7 @@
 // calls to them. Its methods report failures as { error } data, which these
 // wrappers turn into thrown errors like any other ubus failure.
 
-import { call, read, UbusError } from './ubus';
+import { call, getSession, read, TransportError, UbusError } from './ubus';
 import { APPLY_TIMEOUT_S, getConfig, type UciOp } from './uci';
 import type {
   AdoptResult,
@@ -15,8 +15,12 @@ import type {
   RelayResult,
   SyncOutcome,
   SyncResult,
+  UciChange,
+  UciChangesAll,
   UciGet,
 } from './types';
+import type { ApplyDeps } from './apply';
+import type { ApplyTarget } from './useApply';
 import { AP_UNSUPPORTED, apSyncOps, gatewayVlans, hasVlans, readApLayout, type ApLayout, type GatewayVlans } from '../model/apPorts';
 import { normalizeSwitch } from '../model/ports';
 
@@ -143,13 +147,7 @@ const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function applyOnDevice(mac: string, ops: UciOp[], timeout = APPLY_TIMEOUT_S): Promise<void> {
   const configs = [...new Set(ops.map((o) => o.config))];
   try {
-    for (const o of ops) {
-      if (o.op === 'set') await relay(mac, 'uci', 'set', { config: o.config, section: o.section, values: o.values }, true);
-      else if (o.op === 'unset') await relay(mac, 'uci', 'delete', { config: o.config, section: o.section, options: o.options }, true);
-      else if (o.op === 'add')
-        await relay(mac, 'uci', 'add', { config: o.config, type: o.type, ...(o.name ? { name: o.name } : {}), values: o.values }, true);
-      else await relay(mac, 'uci', 'delete', { config: o.config, section: o.section }, true);
-    }
+    await stageOnDevice(mac, ops);
     await relay(mac, 'uci', 'apply', { rollback: true, timeout }, true);
   } catch (e) {
     for (const config of configs) await relay(mac, 'uci', 'revert', { config }, true).catch(() => {});
@@ -169,3 +167,67 @@ export async function applyOnDevice(mac: string, ops: UciOp[], timeout = APPLY_T
   }
   throw new DeviceError(`Could not confirm the change; the access point reverts it within ${timeout} seconds.`);
 }
+
+/** Stage ops on an access point, in the gateway's session there. */
+export async function stageOnDevice(mac: string, ops: UciOp[]): Promise<void> {
+  for (const o of ops) {
+    if (o.op === 'set') {
+      if (Object.keys(o.values).length) await relay(mac, 'uci', 'set', { config: o.config, section: o.section, values: o.values }, true);
+    } else if (o.op === 'unset') {
+      if (o.options.length) await relay(mac, 'uci', 'delete', { config: o.config, section: o.section, options: o.options }, true);
+    } else if (o.op === 'add') {
+      await relay(mac, 'uci', 'add', { config: o.config, type: o.type, ...(o.name ? { name: o.name } : {}), values: o.values }, true);
+    } else await relay(mac, 'uci', 'delete', { config: o.config, section: o.section }, true);
+  }
+}
+
+/**
+ * The access point not answering (the gateway reports it unreachable) is to
+ * the apply flow what a dropped connection is on the gateway: maybe the
+ * change took its network down for a moment, so keep trying until the deadline.
+ */
+async function relayed<T>(mac: string, object: string, method: string, args: object = {}): Promise<T> {
+  try {
+    return await relay<T>(mac, object, method, args, true);
+  } catch (e) {
+    if (e instanceof DeviceError) throw new TransportError(e.message, { cause: e });
+    throw e;
+  }
+}
+
+/**
+ * Review, apply and confirm on an access point with the same flow and dialog
+ * as on the gateway (useApplyController(deviceApplyDeps(mac), deviceApplyTarget(mac))).
+ * The access point's own rollback timer is the safety net: a change that cuts
+ * it off from the gateway is never confirmed.
+ */
+export function deviceApplyDeps(mac: string): ApplyDeps {
+  return {
+    apply: (timeout) => relayed(mac, 'uci', 'apply', { rollback: true, timeout }),
+    confirm: () => relayed(mac, 'uci', 'confirm'),
+    revert: async (packages) => {
+      for (const config of packages) await relayed(mac, 'uci', 'revert', { config });
+    },
+    // Access points never move the UI; nothing to probe or navigate to.
+    probe: async () => false,
+    sleep: async (ms) => {
+      await pause(ms);
+    },
+    now: () => Date.now(),
+    navigate: () => {},
+    session: getSession,
+    location: window.location,
+  };
+}
+
+export function deviceApplyTarget(mac: string): ApplyTarget {
+  return {
+    stage: (ops) => stageOnDevice(mac, ops),
+    changes: async () => (await relay<UciChangesAll>(mac, 'uci', 'changes')).changes ?? ({} as Record<string, UciChange[]>),
+    revert: async (packages) => {
+      for (const config of packages) await relay(mac, 'uci', 'revert', { config }, true);
+    },
+    after: async () => [],
+  };
+}
+

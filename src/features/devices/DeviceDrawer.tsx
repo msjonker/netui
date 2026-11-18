@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'preact/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { deviceCredentials, forgetDevice, relay, renameDevice, syncDevices } from '../../api/devices';
-import { deviceKeys, useDeviceLinks, useDeviceRadios, useDeviceSystem } from '../../api/queries';
+import { deviceKeys, useDeviceLinks, useDeviceNetwork, useDeviceRadios, useDeviceSystem } from '../../api/queries';
+import { gatewayVlans, hasVlans } from '../../model/apPorts';
+import { vlanLabel } from '../../components/vlanStyle';
 import type { DeviceCredentials, ManagedDevice, SyncOutcome } from '../../api/types';
 import { firmwareVersion } from '../../model/devices';
 import { displayName } from '../../model/clients';
-import { useClients } from '../../model/hooks';
+import { useClients, useSwitch } from '../../model/hooks';
 import { Link } from 'wouter-preact';
 import { uplinkLabel, uplinkOf } from '../../model/mesh';
 import { formatDuration, formatPercent } from '../../lib/format';
@@ -19,7 +21,6 @@ import { FirmwarePanel } from '../../components/FirmwarePanel';
 import { lazy, Suspense } from 'preact/compat';
 
 const AddonsList = lazy(() => import('../../components/AddonsList').then((m) => ({ default: m.AddonsList })));
-const ApPorts = lazy(() => import('./ApPorts').then((m) => ({ default: m.ApPorts })));
 
 function message(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -41,6 +42,38 @@ function ForgetText({ mac }: { mac: string }) {
         Adopting it again, or logging in to it, needs its root password. Keep it now: this router forgets it.{' '}
         {creds?.password ? <span class="font-mono text-fg">{creds.password}</span> : creds ? 'Not available.' : <Spinner />}
       </p>
+    </div>
+  );
+}
+
+/** One line about the access point's ports; they are edited on the Ports page. */
+function PortsSummary({ mac, online }: { mac: string; online: boolean }) {
+  const net = useDeviceNetwork(mac, online);
+  const { sw } = useSwitch();
+  const ap = net.data?.layout;
+  let text: string;
+  if (!online) text = 'The device is offline.';
+  else if (!ap || !sw) text = 'Reading its ports…';
+  else {
+    const gw = gatewayVlans(sw);
+    const moved = ap.ports.filter((p) => p.profile.native !== gw.lan);
+    const notCarried = hasVlans(gw) && gw.vlans.some((v) => !ap.vids.includes(v.vid));
+    text = [
+      `${ap.ports.length} port${ap.ports.length === 1 ? '' : 's'}`,
+      moved.length
+        ? moved.map((p) => `${p.name} ${p.profile.native === undefined ? 'not in use' : `on ${vlanLabel(sw, p.profile.native)}`}`).join(', ')
+        : 'all on LAN',
+      notCarried && !ap.unsupported && "not carrying all of this router's networks yet",
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  }
+  return (
+    <div class="flex items-center justify-between gap-4 py-2.5">
+      <p class="text-muted">{text}</p>
+      <Link href={`/settings/ports/${mac}`} class="shrink-0 font-medium text-accent hover:underline">
+        Manage ports
+      </Link>
     </div>
   );
 }
@@ -145,9 +178,7 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
         </FormSection>
 
         <FormSection title="Ports">
-          <Suspense fallback={<Spinner />}>
-            <ApPorts mac={device.mac} online={device.online} />
-          </Suspense>
+          <PortsSummary mac={device.mac} online={device.online} />
         </FormSection>
 
         <FormSection title={`Clients (${served.length})`}>
