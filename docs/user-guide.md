@@ -348,12 +348,15 @@ alone, so two access points near each other do not have to share a channel.
 **Your other networks on access points.** Networks you create under
 **Settings → Networks** (an IoT network, a guest network) reach every access
 point too, over its cable or the mesh. Their WiFi is copied like the main
-WiFi, so a smart plug can join the IoT WiFi upstairs. The access point's
-panel lists its **Ports**: click **Edit** on a port to put it on another
-network. For example, plug a camera into an access point's port and put
-that port on the IoT network. The port that leads to the main router is
-marked **To this router** and always carries every network. If a change cuts
-the access point off, it undoes the change by itself after 30 seconds.
+WiFi, so a smart plug can join the IoT WiFi upstairs. **Settings → Ports**
+has a row of devices: pick the access point to see its ports, and click a
+port to put it on another network. For example, plug a camera into an access
+point's port and put that port on the IoT network. The port that leads to the
+main router is marked **To this router** and always carries every network.
+Changes are reviewed and applied like any other: if one cuts the access point
+off, it undoes the change by itself after 30 seconds.
+
+![An access point's ports](screenshots/ports.png)
 
 The first time netui carries these networks to an access point, the access
 point restarts its network for a few seconds and may get a new address from
