@@ -27,7 +27,7 @@ import { traffic } from '../../model/traffic';
 import type { UciConfig } from '../../api/types';
 import { formatBitrate, formatBytes, formatDuration } from '../../lib/format';
 import { normalizeMac } from '../../lib/mac';
-import { vendorLabel, type DeviceKind } from '../../lib/oui';
+import { useFullOuiTable, vendorLabel, type DeviceKind } from '../../lib/oui';
 import { useDraft } from '../../lib/useDraft';
 import { Drawer, Modal } from '../../components/overlay';
 import { TimeSeriesChart } from '../../components/TimeSeriesChart';
@@ -548,6 +548,7 @@ const FILTERS: [ClientFilter, string][] = [
 
 export function ClientsPage() {
   const { clients, subnets, dhcp, firewall, isPending, error } = useClientDetails();
+  useFullOuiTable();
   const [filter, setFilter] = useState<ClientFilter>('all');
   const [query, setQuery] = useState('');
   const params = useParams<{ mac?: string }>();

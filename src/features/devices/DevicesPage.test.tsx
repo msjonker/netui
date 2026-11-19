@@ -218,7 +218,8 @@ describe('clients on access points', () => {
 
     renderApp('#/clients/02:4e:55:00:01:10');
     const drawer = await screen.findAllByRole('complementary').then((d) => d.at(-1)!);
-    expect(await within(drawer).findByText('Office AP')).toBeTruthy();
+    const link = await within(drawer).findByRole('link', { name: 'Office AP' });
+    expect(link.getAttribute('href')).toBe(`#/devices/${recorded.device.mac}`);
     fireEvent.click(within(drawer).getByRole('button', { name: /Reconnect/ }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /Reconnect/ }));
     await waitFor(() =>

@@ -5,12 +5,12 @@ import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
 
 // Modules only the lazily loaded screens use (import() in App, SystemPage,
-// VpnPage): whole folders for Diagnostics, Setup, System, VPN and Routing & DNS. Everything else goes into the one entry chunk: left alone,
+// VpnPage, lib/oui): whole folders for Diagnostics, Setup, System, VPN and Routing & DNS. Everything else goes into the one entry chunk: left alone,
 // rolldown splits the modules the entry shares with lazy chunks into a
 // common chunk that loads up front anyway and compresses worse (+2 KB).
 // A module missing here still works; it just loads with the entry.
 const LAZY =
-  /src\/(features\/(diagnostics|setup|system|vpn|routing)\/|model\/(diagnostics|vpnClient|tailscale|tunnel|addons|backup|doh|routing|system|vpn)\.ts|api\/(diagnostics|tailscale|tunnel|backup)\.ts|components\/(AddonDialog|AddonsList)\.tsx|features\/networks\/ApPortsView\.tsx)/;
+  /src\/(features\/(diagnostics|setup|system|vpn|routing)\/|model\/(diagnostics|vpnClient|tailscale|tunnel|addons|backup|doh|routing|system|vpn)\.ts|api\/(diagnostics|tailscale|tunnel|backup)\.ts|lib\/ouiFull\.ts|components\/(AddonDialog|AddonsList)\.tsx|features\/networks\/ApPortsView\.tsx)/;
 
 // The demo build's simulated router (src/demo and the fixtures it reads):
 // its own chunk, so the entry does not carry ~45 KB of fixtures.
