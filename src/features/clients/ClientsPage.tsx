@@ -1,7 +1,7 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
-import { useLocation, useParams } from 'wouter-preact';
-import { reconnectClient, stationRate, useInterfaces, useUci, wakeClient } from '../../api/queries';
+import { Link, useLocation, useParams } from 'wouter-preact';
+import { reconnectClient, stationRate, useInterfaces, useSystemBoard, useUci, wakeClient } from '../../api/queries';
 import { useUsage } from '../../api/usage';
 import { AddonMissingError } from '../../api/packages';
 import { AddonMissing } from '../../components/InstallAddon';
@@ -75,11 +75,25 @@ function lease(c: Client): string | undefined {
   return c.leaseExpires > 0 ? `${formatDuration(c.leaseExpires)} left` : 'Expired';
 }
 
-function connection(c: Client): string {
-  if (c.block?.enabled) return 'Blocked';
+/**
+ * Blocked, wired or offline as text; WiFi as SSID, band and channel plus a link
+ * to the device it is associated with (an access point's panel, or the gateway).
+ */
+function Connection({ c }: { c: Client }) {
+  const board = useSystemBoard();
+  if (c.block?.enabled) return <>Blocked</>;
   const w = c.wireless;
-  if (w) return [w.ssid ?? w.ifname, w.band, w.channel && `Ch ${w.channel}`, w.ap?.name].filter(Boolean).join(' · ');
-  return isOffline(c) ? 'Offline' : 'Wired';
+  if (!w) return <>{isOffline(c) ? 'Offline' : 'Wired'}</>;
+  const text = [w.ssid ?? w.ifname, w.band, w.channel && `Ch ${w.channel}`].filter(Boolean).join(' · ');
+  const [href, name] = w.ap ? [`/devices/${w.ap.mac}`, w.ap.name] : ['/', board.data?.hostname ?? 'Gateway'];
+  return (
+    <>
+      {text} ·{' '}
+      <Link href={href} class="text-accent hover:underline" onClick={(e: MouseEvent) => e.stopPropagation()}>
+        {name}
+      </Link>
+    </>
+  );
 }
 
 const KIND_ICON: Record<DeviceKind, (p: { size?: number; class?: string }) => preact.JSX.Element> = {
@@ -152,7 +166,9 @@ function ClientRow({ c, selected, onSelect }: { c: Client; selected: boolean; on
         </span>
       </td>
       <td class={c.randomMac ? 'text-faint' : 'text-muted'}>{vendor ?? '—'}</td>
-      <td class="text-muted">{connection(c)}</td>
+      <td class="text-muted">
+        <Connection c={c} />
+      </td>
       <td>{c.network ? networkLabel(c.network) : <span class="text-faint">—</span>}</td>
       <td class="font-mono text-xs">{c.ip ?? <span class="text-faint">—</span>}</td>
       <td class="font-mono text-xs text-muted">{c.mac}</td>
@@ -303,7 +319,7 @@ function Overview({ c }: { c: Client }) {
             ),
           ],
           ['Vendor', vendor],
-          ['Connection', connection(c)],
+          ['Connection', <Connection c={c} />],
           ['Network', c.network && networkLabel(c.network)],
           ['IP address', c.ip && <span class="font-mono text-xs">{c.ip}</span>],
           ...(c.otherAddresses ?? []).map((o): [string, ComponentChildren] => [
