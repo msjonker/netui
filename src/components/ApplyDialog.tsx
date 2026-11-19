@@ -107,6 +107,9 @@ const TYPE_LABEL: Record<string, string> = {
   'bridge-vlan': 'VLAN',
   switch_vlan: 'Switch VLAN',
   dhcp: 'DHCP pool',
+  netui_person: 'Person',
+  netui_limit: 'Speed limit',
+  include: 'Firewall script',
 };
 
 /** Types that mean something else in the network package. */

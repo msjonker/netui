@@ -208,7 +208,7 @@ describe('speed limits', () => {
     fireEvent.input(await within(drawer).findByLabelText('Download (Mbit/s)'), { target: { value: '10' } });
     fireEvent.input(within(drawer).getByLabelText('Upload (Mbit/s)'), { target: { value: '2' } });
     fireEvent.click(within(drawer).getByRole('button', { name: 'Apply Limit' }));
-    expect((await review()).textContent).toMatch(/netui_limit/);
+    expect((await review()).textContent).toMatch(/New speed limit/);
     await applyReviewed();
     expect(limits()).toEqual([expect.objectContaining({ mac: '02:4E:55:00:01:10', name: 'laptop', download: '10', upload: '2' })]);
     expect(router.configs.firewall!.netui_limits).toMatchObject({ '.type': 'include', type: 'script', path: '/usr/share/netui/limits.sh' });

@@ -44,6 +44,9 @@ access points and more, step by step.
   the provider shares one public address between customers (carrier-grade
   NAT) or another router sits in front, where port forwards and the VPN
   server cannot work.
+- **Pause the internet for a person.** Group devices by who uses them, then
+  pause all of someone's devices with one button (for an hour, until the
+  morning, or until resumed) or give them a bedtime on school nights.
 - **A health check of your settings.** netui looks over the router's settings
   for what is risky (services open to the internet, a common WiFi password,
   old WiFi encryption, WPS, a guest network that can reach the LAN) or quietly
@@ -212,6 +215,20 @@ cable first, then move them where you want them. Turning the mesh on fixes the
 
 `prepare` is a separate step on purpose: installing the package on your main
 router by mistake changes nothing.
+
+### People: pause and bedtime
+
+**People** groups devices by who uses them. **Pause Internet** turns the
+internet off for all of a person's devices at once (for a while, or until
+resumed), and **Bedtime** does it on chosen nights. Like speed limits these
+are firewall config (`netui_person` sections) that the same script include
+turns into nftables rules: a forward chain ahead of the firewall's own, so
+connections already open stop too, and a pause with an end time ends by
+itself with nothing running in between. The router itself (DHCP, DNS) and
+devices on the same network stay reachable. With flow offloading on, a
+connection already open when bedtime starts can last until it closes. After a
+daylight saving change, bedtime is an hour off until the firewall next reloads
+(any change, or a restart).
 
 ### Speed limits
 

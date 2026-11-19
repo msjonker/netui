@@ -84,12 +84,18 @@ export function limitOps(fw: UciConfig, mac: string, name: string, d: LimitDraft
   const first = mine[0];
   if (first) ops.push(...diffSection('firewall', first.section, fw[first.section], { ...values, enabled: '' }));
   else ops.push({ op: 'add', config: 'firewall', type: LIMIT_TYPE, values: Object.fromEntries(Object.entries(values).filter(([, v]) => v !== '')) });
-  if (!includeOk(fw)) {
-    const include = { type: 'script', path: LIMIT_SCRIPT, enabled: '' };
-    if (fw[LIMIT_INCLUDE]) ops.push(...diffSection('firewall', LIMIT_INCLUDE, fw[LIMIT_INCLUDE], include));
-    else ops.push({ op: 'add', config: 'firewall', type: 'include', name: LIMIT_INCLUDE, values: { type: 'script', path: LIMIT_SCRIPT } });
-  }
-  return ops;
+  return [...ops, ...includeOps(fw)];
+}
+
+/**
+ * Ops that put the script include in place (shared with People's pause and
+ * bedtime, which the same script applies); empty when it already is.
+ */
+export function includeOps(fw: UciConfig): UciOp[] {
+  if (includeOk(fw)) return [];
+  const include = { type: 'script', path: LIMIT_SCRIPT, enabled: '' };
+  if (fw[LIMIT_INCLUDE]) return diffSection('firewall', LIMIT_INCLUDE, fw[LIMIT_INCLUDE], include);
+  return [{ op: 'add', config: 'firewall', type: 'include', name: LIMIT_INCLUDE, values: { type: 'script', path: LIMIT_SCRIPT } }];
 }
 
 /** "10 down, 2 up" style summary, Mbit/s. */

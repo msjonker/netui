@@ -289,6 +289,25 @@ Click a device to:
 - **Block** it: it can no longer reach the internet or your network until you
   unblock it (under **Firewall & Security → Blocked Devices**).
 
+### People
+
+**People** groups devices by who uses them, so you can act on all of them at
+once. **Add Person**, give them a name and tick their devices (a device
+belongs to one person).
+
+- **Pause Internet** turns the internet off for all of their devices right
+  away, including anything already streaming: for 30 minutes, an hour, two
+  hours, until the morning, or until you press **Resume Internet**. A pause
+  with an end time ends on its own, even if nobody opens netui.
+- **Bedtime** turns it off every chosen night, for example school nights from
+  21:00 to 07:00. "Sun" is the night from Sunday into Monday. Times are the
+  router's (set its time zone under **Settings → System**).
+
+Paused devices stay on the WiFi and can still reach other devices on the same
+network; they just cannot reach the internet or your other networks. Devices
+are recognised by their MAC address: a phone that uses a private address for
+your WiFi keeps it as long as it does not forget the network.
+
 ## 9. Safety: ad blocking, filtering and the firewall
 
 **Settings → Firewall & Security.**

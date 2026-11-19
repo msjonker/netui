@@ -13,6 +13,7 @@ import {
   IconInsights,
   IconLog,
   IconLogout,
+  IconPeople,
   IconSettings,
   IconTopology,
 } from '../components/icons';
@@ -25,6 +26,7 @@ const NAV = [
   { href: '/topology', label: 'Topology', icon: IconTopology, match: (p: string) => p.startsWith('/topology') },
   { href: '/devices', label: 'Devices', icon: IconAccessPoint, match: (p: string) => p.startsWith('/devices') },
   { href: '/clients', label: 'Client Devices', icon: IconClients, match: (p: string) => p.startsWith('/clients') },
+  { href: '/people', label: 'People', icon: IconPeople, match: (p: string) => p.startsWith('/people') },
   { href: '/insights', label: 'Insights', icon: IconInsights, match: (p: string) => p.startsWith('/insights') },
   { href: '/logs', label: 'System Log', icon: IconLog, match: (p: string) => p.startsWith('/logs') },
   { href: '/settings', label: 'Settings', icon: IconSettings, match: (p: string) => p.startsWith('/settings') },

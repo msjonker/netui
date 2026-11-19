@@ -27,6 +27,7 @@ const PAGE_LIST: [string, string, string][] = [
   ['Client Devices', '/clients', 'devices'],
   ['Topology', '/topology', 'map tree'],
   ['Devices', '/devices', 'access points adopt mesh'],
+  ['People', '/people', 'pause bedtime family kids parental schedule'],
   ['Insights', '/insights', 'traffic rf statistics'],
   ['System Log', '/logs', 'events syslog'],
   ['WiFi', 'wifi', 'wireless ssid radio'],

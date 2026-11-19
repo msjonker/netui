@@ -96,8 +96,10 @@ define Package/netui/postrm
 #!/bin/sh
 # opkg leaves the emptied directories behind; apk removes them itself.
 rmdir "$${IPKG_INSTROOT}/www/netui/assets" "$${IPKG_INSTROOT}/www/netui" "$${IPKG_INSTROOT}/usr/share/netui" 2>/dev/null
-# Speed limits end with the script that sets them (the firewall then skips its include).
+# Speed limits, pauses and bedtimes end with the script that sets them (the
+# firewall then skips its include).
 [ -n "$${IPKG_INSTROOT}" ] || nft delete table bridge netui 2>/dev/null
+[ -n "$${IPKG_INSTROOT}" ] || nft delete table inet netui 2>/dev/null
 [ -n "$${IPKG_INSTROOT}" ] || /etc/init.d/rpcd restart
 exit 0
 endef

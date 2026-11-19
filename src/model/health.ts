@@ -8,6 +8,7 @@ import type { UciConfig } from '../api/types';
 import { bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { networkLabel } from './network';
 import { cellOps, policyMatrix, ROUTER, wanInputRules, zoneList } from './policy';
+import { normalizePeople } from './people';
 import { normalizeLimits } from './speedLimit';
 import { securityOf } from './wifi';
 import { normalizeDmz } from './firewall';
@@ -306,18 +307,19 @@ function offload(fw: UciConfig, sqm: UciConfig | undefined): Check {
   if (d && bool(d.flow_offloading, false) && bool(d.flow_offloading_hw, false)) {
     const shaping = !!sqm && sectionsOfType(sqm, 'queue').some((q) => bool(q.enabled, false));
     const limits = normalizeLimits(fw).some((l) => l.enabled && (l.download || l.upload));
-    const what = [shaping && 'Smart Queues', limits && 'speed limits'].filter(Boolean) as string[];
+    const people = normalizePeople(fw).some((p) => p.macs.length && (p.paused || p.bedtimeOn));
+    const what = [shaping && 'Smart Queues', limits && 'speed limits', people && 'pauses and bedtimes'].filter(Boolean) as string[];
     if (what.length) {
       findings.push({
         id: 'hw-offload',
         severity: 'warn',
-        title: `Hardware offloading bypasses ${what.join(' and ')}`,
-        detail: 'Connections the hardware handles skip the queue and the limits, so they have no effect on them. Software offloading keeps most of the speed.',
+        title: `Hardware offloading bypasses ${what.length > 1 ? `${what.slice(0, -1).join(', ')} and ${what.at(-1)}` : what[0]}`,
+        detail: 'Connections the hardware takes over skip them, so they have little or no effect. Software offloading keeps most of the speed.',
         fix: { label: 'Use Software Offloading', ops: diffSection('firewall', d['.name'], d, { flow_offloading_hw: '0' }) },
       });
     }
   }
-  return { id: 'offload', label: 'Traffic shaping is not bypassed by hardware offloading', findings };
+  return { id: 'offload', label: 'Traffic shaping, speed limits and pauses are not bypassed by hardware offloading', findings };
 }
 
 function time(system: UciConfig | undefined): Check {
