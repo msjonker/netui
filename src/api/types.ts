@@ -562,6 +562,8 @@ export interface SyncOutcome extends DevicePluginError {
   networks?: number;
   /** SSIDs whose network this access point does not carry. */
   skipped?: string[];
+  /** "SSID: label" of extra passwords left out: their network does not reach it, or its radio cannot do per-password networks. */
+  skipped_passwords?: string[];
   /** Why the gateway's networks could not be carried to it (set by syncDevices, not the plugin). */
   networkError?: string;
 }
@@ -729,6 +731,17 @@ export interface TunnelStatus {
   locations?: string[];
   /** The last error cloudflared logged since it started. */
   error?: string | null;
+}
+
+// --- netui.wifi --------------------------------------------------------------
+
+/**
+ * `netui.wifi caps` (dl-wrx36/plain/netui.wifi.caps.json: ath11k, no AP/VLAN;
+ * tl-wdr4300-v1/netui.wifi.caps.json: ath9k, both phys can). Keyed by phy
+ * name; iwinfo info on a radio section says which phy it is.
+ */
+export interface WifiCaps {
+  phys: Record<string, { ap_vlan: boolean }>;
 }
 
 // --- netui.users -------------------------------------------------------------

@@ -25,6 +25,7 @@ import survey0 from '../fixtures/ubus/dl-wrx36/plain/iwinfo.survey.phy0-ap0.json
 import survey1 from '../fixtures/ubus/dl-wrx36/plain/iwinfo.survey.phy1-ap0.json';
 import assoc0 from '../fixtures/ubus/dl-wrx36/plain/iwinfo.assoclist.phy0-ap0.json';
 import assoc1 from '../fixtures/ubus/dl-wrx36/plain/iwinfo.assoclist.phy1-ap0.json';
+import caps from '../fixtures/ubus/dl-wrx36/plain/netui.wifi.caps.json';
 
 interface Phy {
   freqlist: IwinfoFreqList;
@@ -41,6 +42,8 @@ const twoG: Phy = { freqlist: freq1, txpowerlist: tx1, countrylist: cl1, info: i
 export const wifiFixtures = { fiveG, twoG };
 
 export const handle: FakeReadHandler = (object, method, args, router) => {
+  // ath11k: no per-password networks. Tests that want them override caps.
+  if (object === 'netui.wifi') return method === 'caps' ? structuredClone(caps) : method === 'vlans' ? { result: true } : undefined;
   if (object !== 'iwinfo' || !['freqlist', 'txpowerlist', 'countrylist', 'info', 'survey', 'assoclist'].includes(method)) {
     return undefined;
   }

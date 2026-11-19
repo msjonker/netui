@@ -118,7 +118,10 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
     if (!o || o.error) throw new Error(o?.error ?? 'No answer from the device');
     if (o.networkError) throw new Error(o.networkError);
     const skipped = o.skipped?.length ? ` Not copied (its network does not reach this access point): ${o.skipped.join(', ')}.` : '';
-    return `Copied ${o.networks} WiFi network${o.networks === 1 ? '' : 's'} from this router.${skipped}`;
+    const passwords = o.skipped_passwords?.length
+      ? ` Passwords left out (this access point cannot put devices on their network, so they cannot join with them here): ${o.skipped_passwords.join(', ')}.`
+      : '';
+    return `Copied ${o.networks} WiFi network${o.networks === 1 ? '' : 's'} from this router.${skipped}${passwords}`;
   };
 
   const info = system.data?.info;

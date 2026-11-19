@@ -6,6 +6,9 @@
 //   adblock-fast  ignores being switched off and reuses cached lists on reload;
 //                 netui.services adblock_apply downloads/starts or stops it
 //   opennds       no reload trigger; netui.services portal_apply restarts or stops it
+//   wireless      24.10 does not bring up the network a new WiFi password puts
+//                 devices on until the radio restarts; netui.wifi vlans does
+//                 that when needed (a no-op on 25.12)
 //   https-dns-proxy  no on/off option: switchDoh() below, run after the apply
 //                 (model/doh explains why not as a hook here). Its reload
 //                 trigger handles resolver changes.
@@ -26,10 +29,11 @@ const HOOKS: Record<string, [command: string, params: string[]][]> = {
   wifi_schedule: [['/usr/bin/wifi_schedule.sh', ['cron']]],
 };
 
-/** Packages whose follow-up runs in the netui.services plugin, in the background. */
-const PLUGIN_HOOKS: [pkg: string, method: string, label: string][] = [
-  ['adblock-fast', 'adblock_apply', 'ad blocking'],
-  ['opennds', 'portal_apply', 'guest portal'],
+/** Packages whose follow-up runs in a netui plugin, in the background. */
+const PLUGIN_HOOKS: [pkg: string, object: string, method: string, label: string][] = [
+  ['adblock-fast', 'netui.services', 'adblock_apply', 'ad blocking'],
+  ['opennds', 'netui.services', 'portal_apply', 'guest portal'],
+  ['wireless', 'netui.wifi', 'vlans', 'WiFi password networks'],
 ];
 
 const SYNC_ATTEMPTS = 7;
@@ -45,10 +49,10 @@ export const SERVICE_COMMANDS = [...new Set([...Object.values(HOOKS).flatMap((h)
  */
 export async function runServiceHooks(packages: readonly string[]): Promise<string[]> {
   const failed: string[] = [];
-  for (const [pkg, method, label] of PLUGIN_HOOKS) {
+  for (const [pkg, object, method, label] of PLUGIN_HOOKS) {
     if (!packages.includes(pkg)) continue;
     try {
-      const r = await call<{ error?: string }>('netui.services', method, {}, { permissionDeniedIsAuth: false });
+      const r = await call<{ error?: string }>(object, method, {}, { permissionDeniedIsAuth: false });
       if (r?.error) failed.push(label);
     } catch {
       failed.push(label);

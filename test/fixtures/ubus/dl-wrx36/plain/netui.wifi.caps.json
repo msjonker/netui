@@ -1,0 +1,10 @@
+{
+	"phys": {
+		"phy0": {
+			"ap_vlan": false
+		},
+		"phy1": {
+			"ap_vlan": false
+		}
+	}
+}

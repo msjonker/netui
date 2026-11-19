@@ -34,6 +34,7 @@ const ALLOWED = {
 	'netui.agent': ['info', 'ports'],
 	'netui.firmware': ['status', 'check', 'upgrade'],
 	'netui.packages': ['status', 'install', 'remove'],
+	'netui.wifi': ['caps', 'vlans'],
 };
 
 function shellquote(s) {
@@ -309,7 +310,18 @@ function gateway_vlans() {
 function gateway_wifi() {
 	const uci = cursor();
 	const vlans = gateway_vlans();
+	// On the LAN's VLAN: the AP's lan. Elsewhere on the bridge: its netui_ twin.
+	const ap_network = (net) => vlans.vid[net] == vlans.lan ? 'lan' : vlans.vid[net] != null ? `netui_${net}` : null;
 	const radios = {}, wlans = [];
+	// Extra passwords (wifi-station) and the networks they put devices on
+	// (wifi-vlan), by the wifi-iface they belong to: the first in their `iface`.
+	const extra = {};
+	for (let t in ['wifi-station', 'wifi-vlan'])
+		uci.foreach('wireless', t, (s) => {
+			const owner = type(s.iface) == 'array' ? s.iface[0] : s.iface;
+			if (owner)
+				push((extra[owner] ??= { 'wifi-station': [], 'wifi-vlan': [] })[t], s);
+		});
 	uci.foreach('wireless', 'wifi-device', (s) => { radios[s['.name']] = s; });
 	uci.foreach('wireless', 'wifi-iface', (s) => {
 		// Access points and the mesh backhaul; client (sta) links stay local.
@@ -325,9 +337,10 @@ function gateway_wifi() {
 			channel: radio?.channel,
 			htmode: radio?.htmode,
 			name: s.ssid ?? s.mesh_id,
-			// On the LAN's VLAN: the AP's lan. Elsewhere on the bridge: its netui_ twin.
-			network: vlans.vid[net] == vlans.lan ? 'lan' : vlans.vid[net] != null ? `netui_${net}` : null,
+			network: ap_network(net),
 			values: s,
+			stations: extra[s['.name']]?.['wifi-station'] ?? [],
+			vlans: map(extra[s['.name']]?.['wifi-vlan'] ?? [], (v) => ({ ...v, ap_network: ap_network(first_network(v.network)) })),
 		});
 	});
 	return { wlans };
@@ -426,12 +439,50 @@ function sync_wifi(dev) {
 	// Networks the AP carries (netui_<network>, from the UI's network sync).
 	const apnet = relay(dev, 'uci', 'get', { config: 'network' });
 	const has_net = (n) => n == 'lan' || (apnet.status == 0 && apnet.data.values[n]?.['.type'] == 'interface');
-	const skipped = [];
+	const skipped = [], skipped_passwords = [];
 	let copied = 0;
+
+	// Whether a radio can put a password's devices on another network
+	// (netui.wifi, netui-agent 0.5+; unknown counts as no).
+	const caps = relay(dev, 'netui.wifi', 'caps');
+	const vlan_ok = {};
+	const can_vlan = (radio) => {
+		if (vlan_ok[radio] == null) {
+			const info = caps.status == 0 ? relay(dev, 'iwinfo', 'info', { device: radio }) : null;
+			vlan_ok[radio] = info?.status == 0 && caps.data?.phys?.[info.data?.phy]?.ap_vlan === true;
+		}
+		return vlan_ok[radio];
+	};
 
 	let changes = 0;
 	const keep = {};
 	const set = (section, values) => { relay(dev, 'uci', 'set', { config: 'wireless', section, values }); changes++; };
+	// Make section `name` of `type` hold exactly `values`, adding it if needed.
+	const put = (type, name, values) => {
+		keep[name] = true;
+		if (!ap[name]) {
+			relay(dev, 'uci', 'add', { config: 'wireless', type, name, values });
+			changes++;
+			return;
+		}
+		if (ap[name]['.type'] != type) {
+			relay(dev, 'uci', 'delete', { config: 'wireless', section: name });
+			relay(dev, 'uci', 'add', { config: 'wireless', type, name, values });
+			changes++;
+			return;
+		}
+		const differs = filter(keys(values), (k) => sprintf('%J', values[k]) != sprintf('%J', ap[name][k]));
+		if (length(differs))
+			set(name, values);
+		// Options switched off on the gateway are removed there, so remove them here too.
+		const gone = filter(keys(ap[name]), (k) => substr(k, 0, 1) != '.' && !exists(values, k));
+		if (length(gone)) {
+			relay(dev, 'uci', 'delete', { config: 'wireless', section: name, options: gone });
+			changes++;
+		}
+	};
+	const ap_name = (section) => match(section, /^netui_/) ? section : `netui_${section}`;
+	let password_networks = false;
 	// Settings per radio this sync uses, applied once after all networks.
 	const radio_values = {};
 
@@ -468,6 +519,33 @@ function sync_wifi(dev) {
 				changes++;
 			}
 		}
+
+		// Its extra passwords. One that puts devices on another network needs
+		// that network here and a radio that can do it; without, it is left
+		// out, so its devices are turned away rather than let onto this WiFi's
+		// network.
+		const usable = {};
+		for (let v in w.vlans)
+			if (v.vid && v.ap_network && has_net(v.ap_network) && can_vlan(radio)) {
+				usable[v.vid] = true;
+				const vals = {};
+				for (let k, x in v)
+					if (substr(k, 0, 1) != '.' && k != 'iface' && k != 'network' && k != 'ap_network')
+						vals[k] = x;
+				put('wifi-vlan', ap_name(v['.name']), { ...vals, iface: name, network: v.ap_network });
+				password_networks = true;
+			}
+		for (let st in w.stations) {
+			if (st.vid && !usable[st.vid]) {
+				push(skipped_passwords, `${w.name}: ${st.label ?? 'a password'}`);
+				continue;
+			}
+			const vals = {};
+			for (let k, x in st)
+				if (substr(k, 0, 1) != '.' && k != 'iface')
+					vals[k] = x;
+			put('wifi-station', ap_name(st['.name']), { ...vals, iface: name });
+		}
 		const rv = (radio_values[radio] ??= { disabled: '0' });
 		if (w.country)
 			rv.country = w.country;
@@ -497,7 +575,7 @@ function sync_wifi(dev) {
 				set(name, { disabled: '1' });
 	}
 	for (let name, s in ap)
-		if (s['.type'] == 'wifi-iface' && match(name, /^netui_/) && !keep[name]) {
+		if (index(['wifi-iface', 'wifi-station', 'wifi-vlan'], s['.type']) >= 0 && match(name, /^netui_/) && !keep[name]) {
 			relay(dev, 'uci', 'delete', { config: 'wireless', section: name });
 			changes++;
 		}
@@ -524,8 +602,11 @@ function sync_wifi(dev) {
 		const applied = relay(dev, 'uci', 'apply', { rollback: false });
 		if (applied.status != 0 && applied.status != 5)
 			return { error: `apply failed (${applied.status ?? applied.error})` };
+		// 24.10 brings a password's new network up only on a radio restart.
+		if (password_networks)
+			relay(dev, 'netui.wifi', 'vlans');
 	}
-	return { result: true, networks: copied, skipped };
+	return { result: true, networks: copied, skipped, skipped_passwords };
 }
 
 const methods = {
