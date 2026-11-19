@@ -2,7 +2,9 @@
 // 25.12 with a LAN, a smart-home VLAN, a VPN server and one access point.
 // Config shapes follow the recordings in test/fixtures/ubus/; everything
 // identifying (names, addresses, keys) is invented. Addresses come from the
-// documentation ranges (RFC 5737, RFC 3849, RFC 7042) or are private.
+// documentation ranges (RFC 5737, RFC 3849, RFC 7042) or are private, except
+// the clients' MACs: a real maker prefix (so the Vendor column has something
+// to show) with an invented device part.
 
 import type { AddonKey, UciConfig, UciSection, UciValue } from '../api/types';
 import sqm from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.sqm.json';
@@ -68,19 +70,19 @@ const K = 1e3;
 const M = 1e6;
 
 export const CLIENTS: DemoClient[] = [
-  { mac: '00:00:5e:00:53:11', name: 'desktop-pc', host: 101, net: 'lan', link: { wired: 'lan1' }, down: 12 * M, up: 1.5 * M, apps: ['HTTPS', 'QUIC', 'SSH'] },
-  { mac: '00:00:5e:00:53:12', name: 'nas', host: 102, net: 'lan', link: { wired: 'lan2' }, down: 2 * M, up: 6 * M, apps: ['HTTPS', 'NTP'] },
-  { mac: '00:00:5e:00:53:13', name: 'game-console', host: 103, net: 'lan', link: { wired: 'lan3' }, down: 18 * M, up: 0.8 * M, apps: ['HTTPS', 'QUIC'] },
-  { mac: '00:00:5e:00:53:21', name: 'living-room-tv', host: 110, net: 'lan', link: { band: '5g', signal: -52 }, down: 22 * M, up: 0.4 * M, apps: ['HTTPS', 'QUIC'] },
+  { mac: '1c:99:57:00:53:11', name: 'desktop-pc', host: 101, net: 'lan', link: { wired: 'lan1' }, down: 12 * M, up: 1.5 * M, apps: ['HTTPS', 'QUIC', 'SSH'] },
+  { mac: '90:09:d0:00:53:12', name: 'nas', host: 102, net: 'lan', link: { wired: 'lan2' }, down: 2 * M, up: 6 * M, apps: ['HTTPS', 'NTP'] },
+  { mac: '5c:0c:e6:00:53:13', name: 'game-console', host: 103, net: 'lan', link: { wired: 'lan3' }, down: 18 * M, up: 0.8 * M, apps: ['HTTPS', 'QUIC'] },
+  { mac: 'ac:ae:19:00:53:21', name: 'living-room-tv', host: 110, net: 'lan', link: { band: '5g', signal: -52 }, down: 22 * M, up: 0.4 * M, apps: ['HTTPS', 'QUIC'] },
   { mac: '3a:61:0c:5d:9e:21', name: 'sams-phone', host: 121, net: 'lan', link: { band: '5g', signal: -58 }, down: 3 * M, up: 0.6 * M, apps: ['HTTPS', 'QUIC', 'IMAPS'] },
   { mac: '5e:22:91:af:03:7c', name: 'alex-laptop', host: 122, net: 'lan', link: { band: '5g', signal: -61, ap: true }, down: 8 * M, up: 2 * M, apps: ['HTTPS', 'QUIC', 'SSH'] },
   { mac: '7a:10:4e:8b:c2:55', name: 'tablet', host: 123, net: 'lan', link: { band: '5g', signal: -66 }, down: 4 * M, up: 0.3 * M, apps: ['HTTPS', 'QUIC'], cycle: 420 },
   { mac: '9e:3b:57:01:da:40', name: 'office-phone', host: 124, net: 'lan', link: { band: '5g', signal: -55, ap: true }, down: 1.2 * M, up: 0.4 * M, apps: ['HTTPS'] },
-  { mac: '00:00:5e:00:53:31', name: 'printer', host: 130, net: 'lan', link: { band: '2g', signal: -63 }, down: 2 * K, up: 1 * K, apps: ['HTTPS'] },
-  { mac: '00:00:5e:00:53:41', name: 'thermostat', host: 101, net: 'iot', link: { band: '2g', signal: -60 }, down: 6 * K, up: 4 * K, apps: ['HTTPS', 'NTP'] },
-  { mac: '00:00:5e:00:53:42', name: 'doorbell-camera', host: 102, net: 'iot', link: { band: '2g', signal: -67 }, down: 40 * K, up: 1.8 * M, apps: ['HTTPS', 'RTP'] },
-  { mac: '00:00:5e:00:53:43', name: 'smart-plug', host: 103, net: 'iot', link: { band: '2g', signal: -71 }, down: 1 * K, up: 1 * K, apps: ['HTTPS'] },
-  { mac: '00:00:5e:00:53:44', name: 'kitchen-speaker', host: 104, net: 'iot', link: { band: '2g', signal: -57 }, down: 320 * K, up: 12 * K, apps: ['HTTPS', 'QUIC'] },
+  { mac: '3c:2a:f4:00:53:31', name: 'printer', host: 130, net: 'lan', link: { band: '2g', signal: -63 }, down: 2 * K, up: 1 * K, apps: ['HTTPS'] },
+  { mac: '44:61:32:00:53:41', name: 'thermostat', host: 101, net: 'iot', link: { band: '2g', signal: -60 }, down: 6 * K, up: 4 * K, apps: ['HTTPS', 'NTP'] },
+  { mac: '64:9a:63:00:53:42', name: 'doorbell-camera', host: 102, net: 'iot', link: { band: '2g', signal: -67 }, down: 40 * K, up: 1.8 * M, apps: ['HTTPS', 'RTP'] },
+  { mac: '84:00:ec:00:53:43', name: 'smart-plug', host: 103, net: 'iot', link: { band: '2g', signal: -71 }, down: 1 * K, up: 1 * K, apps: ['HTTPS'] },
+  { mac: '5c:aa:fd:00:53:44', name: 'kitchen-speaker', host: 104, net: 'iot', link: { band: '2g', signal: -57 }, down: 320 * K, up: 12 * K, apps: ['HTTPS', 'QUIC'] },
 ];
 
 /** The application names nlbwmon reports for the demo's traffic. */
@@ -229,8 +231,8 @@ function dhcp(): UciConfig {
     ['iot', 'dhcp', { interface: 'iot', start: '100', limit: '150', leasetime: '12h' }],
     ['wan', 'dhcp', { interface: 'wan', ignore: '1' }],
     ['odhcpd', 'odhcpd', { maindhcp: '0', leasefile: '/tmp/hosts/odhcpd', leasetrigger: '/usr/sbin/odhcpd-update', loglevel: '4' }],
-    ['@host', 'host', { name: 'nas', mac: ['00:00:5E:00:53:12'], ip: '192.168.1.102' }],
-    ['@host', 'host', { name: 'game-console', mac: ['00:00:5E:00:53:13'], ip: '192.168.1.103' }],
+    ['@host', 'host', { name: 'nas', mac: ['90:09:D0:00:53:12'], ip: '192.168.1.102' }],
+    ['@host', 'host', { name: 'game-console', mac: ['5C:0C:E6:00:53:13'], ip: '192.168.1.103' }],
     // A name only, as netui's client settings write it: the tablet stays known while it is away.
     ['@host', 'host', { name: 'tablet', mac: ['7A:10:4E:8B:C2:55'] }],
   ]);
