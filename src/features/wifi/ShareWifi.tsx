@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { HIDDEN_VALUE } from '../../api/uci';
 import { needsKey, wifiQrPayload, type Wlan } from '../../model/wifi';
 import { Modal } from '../../components/overlay';
 import { QrCode } from '../../components/QrCode';
@@ -47,6 +48,14 @@ function CopyRow({ label, value, mono }: { label: string; value: string; mono?: 
 /** Share WiFi: a QR code phones can scan to join, plus the name and password. */
 export function ShareWifi({ wlan, onClose }: { wlan: Wlan; onClose: () => void }) {
   const hasKey = needsKey(wlan.security) || (wlan.security === 'other' && !!wlan.key);
+  // Read-only users get the config without passwords (netui.config).
+  if (hasKey && wlan.key === HIDDEN_VALUE) {
+    return (
+      <Modal title={`Share "${wlan.ssid}"`} onClose={onClose} footer={<Button onClick={onClose}>Done</Button>}>
+        <p class="text-muted">Only an admin can see this WiFi's password and share it.</p>
+      </Modal>
+    );
+  }
   return (
     <Modal title={`Share "${wlan.ssid}"`} onClose={onClose} footer={<Button onClick={onClose}>Done</Button>}>
       <div class="flex flex-col items-center gap-2 py-2">

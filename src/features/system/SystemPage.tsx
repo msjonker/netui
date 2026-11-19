@@ -28,6 +28,7 @@ import { BusyOverlay, PHASE_TEXT } from './BusyOverlay';
 import { BackupCard } from './Backup';
 import { AdminsCard } from './Admins';
 import { RootPasswordCard } from './RootPassword';
+import { HttpsCard } from './Https';
 import { AboutCard } from './About';
 
 // Loaded on demand: few people install firmware by hand.
@@ -347,6 +348,7 @@ export function SystemPage() {
           <Restart />
           {!getSession()?.readOnly && <BackupCard />}
           <AdminsCard />
+          <HttpsCard />
           <RootPasswordCard />
         </div>
         <div class="space-y-4">

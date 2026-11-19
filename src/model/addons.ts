@@ -49,6 +49,12 @@ export const ADDONS: Record<AddonKey, AddonInfo> = {
     mb: 25,
     note: 'Needs a Cloudflare account. Installed switched off.',
   },
+  https: {
+    label: 'Secure access (HTTPS)',
+    description: 'Lets you open netui and LuCI over an encrypted connection.',
+    mb: 0.2,
+    note: 'The web server restarts once; reload the page if it stops answering.',
+  },
   mesh: {
     label: 'Full WiFi package (mesh)',
     description: 'Replaces the basic WiFi software with the full one, which wireless mesh needs.',

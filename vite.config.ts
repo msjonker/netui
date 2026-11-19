@@ -3,6 +3,30 @@ import { readFileSync } from 'node:fs';
 import { defineConfig, loadEnv } from 'vite';
 import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
+import type { Plugin } from 'vite';
+
+// Content Security Policy for built pages (the dev server injects inline
+// scripts, so not there). Scripts and styles only from the router itself;
+// inline style attributes are needed by the charts and components. Requests
+// may go to other addresses: after a change that moves the router, netui
+// checks its new address (and the demo build fetches nothing else). uhttpd
+// cannot send headers, so this is a <meta>; framing is refused in main.tsx.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "connect-src 'self' http: https:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+
+const csp = (): Plugin => ({
+  name: 'netui-csp',
+  apply: 'build',
+  transformIndexHtml: (html) => html.replace('<head>', `<head>\n    <meta http-equiv="Content-Security-Policy" content="${CSP}" />`),
+});
 
 // Modules only the lazily loaded screens use (import() in App, SystemPage,
 // VpnPage, lib/oui): whole folders for Diagnostics, Setup, System, VPN and Routing & DNS. Everything else goes into the one entry chunk: left alone,
@@ -27,7 +51,7 @@ export default defineConfig(({ mode }) => {
     // Served from /www/netui/ on the router; relative base keeps assets working
     // whatever path uhttpd exposes it under.
     base: './',
-    plugins: [preact(), tailwindcss()],
+    plugins: [preact(), tailwindcss(), csp()],
     define: { __NETUI_VERSION__: JSON.stringify(version) },
     server: {
       proxy: {

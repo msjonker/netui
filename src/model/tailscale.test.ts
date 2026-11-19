@@ -30,6 +30,12 @@ describe('normalizeTailscale (recorded, never signed in)', () => {
     });
   });
 
+  it('drops a sign-in link that is not a web address', () => {
+    for (const AuthURL of ['javascript:alert(1)', 'http://example.com/a', 'data:text/html,x', 'https://a b']) {
+      expect(normalizeTailscale(status({ ...rec.authUrl, AuthURL }))?.authUrl).toBeUndefined();
+    }
+  });
+
   it('tells a missing package from a stopped daemon', () => {
     expect(normalizeTailscale({ installed: false })?.state).toBe('not-installed');
     expect(

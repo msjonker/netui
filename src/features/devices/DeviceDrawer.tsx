@@ -142,6 +142,14 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
       }
     >
       <div class="px-5">
+        {device.verified === false && device.online && (
+          <div class="mt-4">
+            <Banner tone="warn">
+              This access point runs an older netui-agent, which cannot prove its identity. Another device on your network
+              could pose as it and receive its login. Install the current netui-agent on it.
+            </Banner>
+          </div>
+        )}
         {notice && (
           <div class="mt-4">
             <Banner tone={notice.tone} role={notice.tone === 'bad' ? 'alert' : 'status'}>

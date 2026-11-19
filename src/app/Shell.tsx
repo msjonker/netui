@@ -20,6 +20,7 @@ import {
 import { Dot, Segmented, cx } from '../components/ui';
 import { Notifications } from './Notifications';
 import { Search } from './Search';
+import { InsecureBanner } from './InsecureBanner';
 
 const NAV = [
   { href: '/', label: 'Dashboard', icon: IconDashboard, match: (p: string) => p === '/' },
@@ -174,6 +175,7 @@ export function Shell({
             Read-only access: you can look at everything, but changes are left to an admin.
           </div>
         )}
+        <InsecureBanner />
         {banner}
         <main class="min-h-0 flex-1 overflow-y-auto pb-14 md:pb-0">{children}</main>
       </div>

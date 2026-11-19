@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
+import { acceptHandoff,
   buildHandoffUrl,
   completeHandoff,
   runApply,
@@ -8,6 +8,7 @@ import {
   type ApplyDeps,
   type ApplyPhase,
 } from './apply';
+import { getSession } from './ubus';
 import { onSessionExpired, SessionExpiredError, TransportError, UbusError, type Session } from './ubus';
 
 const session: Session = { id: 'sid', username: 'netui', timeoutMs: 300_000, expiresAt: 0 };
@@ -189,10 +190,19 @@ describe('handoff', () => {
     return win as unknown as Window & typeof win;
   }
 
+  const sid = '0123456789abcdef0123456789abcdef';
+  const valid = (now: number) => ({
+    session: { ...session, id: sid },
+    from: '192.168.1.1',
+    deadline: now + 20_000,
+    packages: ['network'],
+    returnTo: '/settings/networks',
+  });
+
   it('round-trips through the URL fragment and strips itself from the address bar', () => {
     const now = 1_000;
     const url = buildHandoffUrl(loc, '10.0.0.1', {
-      session,
+      session: { ...session, id: sid },
       from: '192.168.1.1',
       deadline: now + 20_000,
       packages: ['network'],
@@ -202,7 +212,7 @@ describe('handoff', () => {
 
     const h = takeHandoff(win, now);
 
-    expect(h).toMatchObject({ session: { id: 'sid' }, packages: ['network'] });
+    expect(h).toMatchObject({ session: { id: sid }, packages: ['network'] });
     expect(win.location.hash).toBe('#/settings/networks');
     expect(win.history.replaceState).toHaveBeenCalledOnce();
   });
@@ -212,6 +222,33 @@ describe('handoff', () => {
     const win = fakeWindow(url);
     expect(takeHandoff(win, 1_000)).toBeNull();
     expect(win.location.hash).toBe('#/');
+  });
+
+  it('refuses links that could not come from netui', () => {
+    const now = 1_000;
+    const take = (h: object) => takeHandoff(fakeWindow(buildHandoffUrl(loc, '10.0.0.1', h as never)), now);
+    expect(take(valid(now))).not.toBeNull();
+    // A made-up session id, a far-off deadline, somewhere else to send the user back to.
+    expect(take({ ...valid(now), session: { ...session, id: 'sid' } })).toBeNull();
+    expect(take({ ...valid(now), deadline: now + 10 * 60_000 })).toBeNull();
+    expect(take({ ...valid(now), from: 'evil.example/phish?x=' })).toBeNull();
+    expect(take({ ...valid(now), from: 'javascript:alert(1)' })).toBeNull();
+    expect(take({ ...valid(now), packages: ['network; rm'] })).toBeNull();
+    // The role is not taken from the link.
+    expect(take({ ...valid(now), session: { ...session, id: sid, readOnly: true } })?.session.readOnly).toBeUndefined();
+  });
+
+  it('takes the session only if the router lets it confirm, and never over a live session', async () => {
+    const h = takeHandoff(fakeWindow(buildHandoffUrl(loc, '10.0.0.1', valid(Date.now()))))!;
+    sessionStorage.clear();
+    expect(await acceptHandoff(h, async () => false)).toBe(false);
+    expect(getSession()).toBeNull();
+    expect(await acceptHandoff(h, async (id) => id === sid)).toBe(true);
+    expect(getSession()).toMatchObject({ id: sid, readOnly: false });
+    // A tab that already has a session keeps it.
+    expect(await acceptHandoff({ ...h, session: { ...h.session, id: 'f'.repeat(32) } }, async () => true)).toBe(false);
+    expect(getSession()?.id).toBe(sid);
+    sessionStorage.clear();
   });
 
   it('ignores a garbled handoff', () => {

@@ -12,7 +12,7 @@
 //   - an invalid session is -32002 (SessionExpiredError), never a bare 6.
 
 import * as uci from './uci';
-import { expireSession, getSession, SessionExpiredError, TransportError, UbusError, UbusStatus, type Session } from './ubus';
+import { canConfirm, expireSession, getSession, saveSession, SessionExpiredError, TransportError, UbusError, UbusStatus, type Session } from './ubus';
 
 export interface ApplyPlan {
   /** Packages that were staged; reverted if the router rolls back. */
@@ -238,26 +238,67 @@ export function buildHandoffUrl(loc: ApplyDeps['location'], address: string, h: 
   return `${loc.protocol}//${host}${port}${loc.pathname}#${h.returnTo}?${HANDOFF_PARAM}=${payload}`;
 }
 
+// A handoff arrives in a URL, which any web page can link to, so nothing in
+// it is trusted beyond its shape: the session must also pass acceptHandoff().
+
+/** The longest apply window (the mesh's 90 s) plus room for the new page to load. */
+export const HANDOFF_MAX_MS = 120_000;
+const SID = /^[0-9a-f]{32}$/;
+// host[:port]: an IPv4 address, a bracketed IPv6 address or a host name.
+const HOST = /^(\[[0-9A-Fa-f:.]+\]|[A-Za-z0-9.-]{1,253})(:\d{1,5})?$/;
+const ROUTE = /^\/[A-Za-z0-9/_.:-]{0,200}$/;
+const PKG = /^[a-z0-9_-]{1,32}$/;
+
+/** A handoff rebuilt from only the fields that check out, or null. */
+function cleanHandoff(raw: unknown, now: number): Handoff | null {
+  const h = raw as Partial<Handoff> | null;
+  const s = h?.session;
+  if (!s || typeof s.id !== 'string' || !SID.test(s.id)) return null;
+  if (typeof h.deadline !== 'number' || h.deadline <= now || h.deadline > now + HANDOFF_MAX_MS) return null;
+  if (typeof h.from !== 'string' || !HOST.test(h.from)) return null;
+  if (!Array.isArray(h.packages) || !h.packages.every((p) => typeof p === 'string' && PKG.test(p))) return null;
+  const returnTo = typeof h.returnTo === 'string' && ROUTE.test(h.returnTo) ? h.returnTo : '/';
+  const timeoutMs = typeof s.timeoutMs === 'number' && s.timeoutMs >= 60_000 && s.timeoutMs <= 3_600_000 ? s.timeoutMs : 300_000;
+  const username = typeof s.username === 'string' && /^[a-z0-9_]{1,32}$/.test(s.username) ? s.username : '';
+  return {
+    // The role comes from the router (acceptHandoff), never from the link.
+    session: { id: s.id, username, timeoutMs, expiresAt: now + timeoutMs },
+    from: h.from,
+    deadline: h.deadline,
+    packages: [...h.packages],
+    returnTo,
+  };
+}
+
 /**
  * Read and remove a handoff from the current URL. Returns null when there is
- * none or it is malformed or past its deadline.
+ * none, or it is malformed, implausible or past its deadline.
  */
 export function takeHandoff(win: Pick<Window, 'location' | 'history'> = window, now = Date.now()): Handoff | null {
   const hash = win.location.hash;
   const at = hash.indexOf(`${HANDOFF_PARAM}=`);
   if (at < 0) return null;
   const route = hash.slice(1, hash.lastIndexOf('?', at)) || '/';
-  win.history.replaceState(null, '', `${win.location.pathname}${win.location.search}#${route}`);
+  win.history.replaceState(null, '', `${win.location.pathname}${win.location.search}#${ROUTE.test(route) ? route : '/'}`);
   try {
-    const h = JSON.parse(atob(decodeURIComponent(hash.slice(at + HANDOFF_PARAM.length + 1)))) as Handoff;
-    if (typeof h.session?.id !== 'string' || typeof h.deadline !== 'number' || !Array.isArray(h.packages)) {
-      return null;
-    }
-    if (h.deadline <= now) return null;
-    return h;
+    return cleanHandoff(JSON.parse(atob(decodeURIComponent(hash.slice(at + HANDOFF_PARAM.length + 1)))), now);
   } catch {
     return null;
   }
+}
+
+/**
+ * Whether to take over the handed-over session: only in a tab without a live
+ * session of its own, and only if the router says the session exists and may
+ * confirm changes, which only an admin's session can. A link carrying anyone
+ * else's session (a viewer's, a made-up one) is dropped, so a web page cannot
+ * sign the tab into another account or put up a fake rollback notice.
+ */
+export async function acceptHandoff(h: Handoff, check: (sid: string) => Promise<boolean> = canConfirm): Promise<boolean> {
+  if (getSession()) return false;
+  if (!(await check(h.session.id))) return false;
+  saveSession({ ...h.session, readOnly: false });
+  return true;
 }
 
 /**

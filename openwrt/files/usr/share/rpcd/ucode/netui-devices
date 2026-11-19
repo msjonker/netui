@@ -55,18 +55,25 @@ function load_registry() {
 
 function save_registry(reg) {
 	mkdir('/etc/netui', 0700);
-	writefile(REGISTRY, sprintf('%.J\n', reg));
+	// Created private before the credentials go in.
+	if (!readfile(REGISTRY))
+		writefile(REGISTRY, '');
 	chmod(REGISTRY, 0600);
+	writefile(REGISTRY, sprintf('%.J\n', reg));
 }
 
 function sessions() {
 	return json(readfile(`${RUN}/sessions.json`) ?? '{}');
 }
 
+// { mac: { sid, ip } }: a session and the address that proved it is that
+// device (see verified()). Anything else (an older format) counts as none.
 function save_sessions(s) {
 	mkdir(RUN, 0700);
-	writefile(`${RUN}/sessions.json`, sprintf('%J', s));
+	if (!readfile(`${RUN}/sessions.json`))
+		writefile(`${RUN}/sessions.json`, '');
 	chmod(`${RUN}/sessions.json`, 0600);
+	writefile(`${RUN}/sessions.json`, sprintf('%J', s));
 }
 
 // Whatever answers on port 80 may not be rpcd: a bad reply is no reply.
@@ -83,14 +90,21 @@ function random_secret(n) {
 	return sh(`tr -dc 'A-Za-z0-9' </dev/urandom | head -c ${n}`);
 }
 
-// One JSON-RPC call to http://ip/ubus. The body goes through a 0600 temp file
-// so passwords never show up in a process list.
-function ubus_at(ip, sid, object, method, args, timeout) {
+const IPV4 = /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/;
+
+// One JSON-RPC call to http://ip/ubus (https:// with `tls`, without checking
+// the certificate: access points have self-signed ones; it keeps what is sent
+// from anyone just listening). The body goes through a 0600 temp file so
+// passwords never show up in a process list.
+function ubus_at(ip, sid, object, method, args, timeout, tls) {
+	if (!match(ip ?? '', IPV4))
+		return { error: 'invalid address' };
 	mkdir(RUN, 0700);
 	const body = sh(`mktemp ${RUN}/req.XXXXXX`);
-	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [sid, object, method, args ?? {}] }));
 	chmod(body, 0600);
-	const out = sh(`uclient-fetch -q -T ${timeout ?? 3} -O - --header='Content-Type: application/json' --post-file=${body} ${shellquote(`http://${ip}/ubus`)} 2>/dev/null`);
+	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [sid, object, method, args ?? {}] }));
+	const url = tls ? `https://${ip}/ubus` : `http://${ip}/ubus`;
+	const out = sh(`uclient-fetch -q -T ${timeout ?? 3} -O - ${tls ? '--no-check-certificate ' : ''}--header='Content-Type: application/json' --post-file=${body} ${shellquote(url)} 2>/dev/null`);
 	unlink(body);
 	const r = parse(out);
 	if (type(r?.result) != 'array')
@@ -164,6 +178,7 @@ function address_of(dev) {
 
 // Probe many hosts at once for netui-agent; returns { ip: info }.
 function probe(ips) {
+	ips = filter(ips, (ip) => match(ip ?? '', IPV4));
 	if (!length(ips))
 		return {};
 	mkdir(RUN, 0700);
@@ -196,7 +211,55 @@ function public_view(dev, live, ip) {
 		release: live?.release ?? dev.release,
 		agent: live?.agent,
 		adopted_at: dev.adopted_at,
+		// It holds a key and proves itself before the gateway sends it anything.
+		verified: !!dev.key,
 	};
+}
+
+// Hex SHA-256 of a string (ucode's digest module, else sha256sum on a private file).
+function sha256(text) {
+	try {
+		const d = require('digest');
+		if (d?.sha256)
+			return d.sha256(text);
+	}
+	catch (e) {}
+	mkdir(RUN, 0700);
+	const f = sh(`mktemp ${RUN}/hash.XXXXXX`);
+	chmod(f, 0600);
+	writefile(f, text);
+	const out = sh(`sha256sum < ${f}`);
+	unlink(f);
+	return match(out ?? '', /^[0-9a-f]{64}/)?.[0];
+}
+
+// Whether the device answering at `ip` holds this access point's key (see
+// netui.agent prove). Asked before the gateway sends its password or a
+// session to an address, so whatever else answers there (a device that
+// copied the access point's MAC to get its DHCP lease) learns nothing.
+function proves(dev, ip) {
+	const nonce = random_secret(32);
+	const r = ubus_at(ip, NULL_SID, 'netui.agent', 'prove', { nonce });
+	if (r.status != 0 || type(r.data?.proofs) != 'array')
+		return false;
+	const want = sha256(`netui-prove:${dev.key}:${nonce}:${ip}`);
+	return want != null && index(r.data.proofs, want) >= 0;
+}
+
+// An access point adopted before keys existed gets one (trusting this login's
+// address once), if its agent is new enough to keep it; it has to prove
+// itself from then on. An older agent stays unverified (see public_view).
+function give_key(dev, ip, sid) {
+	const key = random_secret(48);
+	const r = ubus_at(ip, sid, 'netui.agent', 'set_key', { key });
+	if (r.status != 0 || !r.data?.result)
+		return;
+	const reg = load_registry();
+	if (!reg.devices[dev.mac])
+		return;
+	reg.devices[dev.mac].key = key;
+	save_registry(reg);
+	dev.key = key;
 }
 
 function login(dev, ip) {
@@ -204,10 +267,13 @@ function login(dev, ip) {
 	if (r.status != 0)
 		return null;
 	const s = sessions();
-	s[dev.mac] = r.data.ubus_rpc_session;
+	s[dev.mac] = { sid: r.data.ubus_rpc_session, ip };
 	save_sessions(s);
-	return s[dev.mac];
+	if (!dev.key)
+		give_key(dev, ip, s[dev.mac].sid);
+	return s[dev.mac].sid;
 }
+
 
 function allowed(object, method) {
 	const key = match(object, /^hostapd\./) ? 'hostapd.*' : object;
@@ -215,9 +281,17 @@ function allowed(object, method) {
 }
 
 // Relay one call to an adopted AP, logging in again once if the session expired.
+// A session is only used at the address that proved itself for it; at any
+// other address the device proves itself again before anything is sent.
 function relay(dev, object, method, args) {
 	const ip = address_of(dev);
-	let sid = sessions()[dev.mac] ?? login(dev, ip);
+	const known = sessions()[dev.mac];
+	let sid = type(known) == 'object' && known.ip == ip ? known.sid : null;
+	if (!sid) {
+		if (dev.key && !proves(dev, ip))
+			return { error: `the device at ${ip} could not prove it is ${dev.name}; nothing was sent to it`, ip: ip };
+		sid = login(dev, ip);
+	}
 	if (!sid)
 		return { error: 'login failed', ip: ip };
 	let r = ubus_at(ip, sid, object, method, args);
@@ -564,13 +638,20 @@ const methods = {
 			const a = request.args;
 			if (!match(a.ip, /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/))
 				return { error: 'invalid address' };
-			const root = ubus_at(a.ip, NULL_SID, 'session', 'login', { username: 'root', password: a.password ?? '' });
+			// HTTPS where the device serves it (stock images with LuCI do), so its
+			// root password and the new credentials are not sent in the clear.
+			let tls = true;
+			let root = ubus_at(a.ip, NULL_SID, 'session', 'login', { username: 'root', password: a.password ?? '' }, 6, true);
+			if (root.error == 'unreachable') {
+				tls = false;
+				root = ubus_at(a.ip, NULL_SID, 'session', 'login', { username: 'root', password: a.password ?? '' });
+			}
 			if (root.error)
 				return { error: root.error };
 			if (root.status != 0)
 				return { error: 'wrong root password' };
 			const sid = root.data.ubus_rpc_session;
-			const info = ubus_at(a.ip, sid, 'netui.agent', 'info', {});
+			const info = ubus_at(a.ip, sid, 'netui.agent', 'info', {}, 6, tls);
 			if (info.status != 0)
 				return { error: 'netui-agent is not installed on that device' };
 
@@ -585,13 +666,17 @@ const methods = {
 				username: AP_LOGIN,
 				password: random_secret(32),
 				root_password: random_secret(20),
+				key: random_secret(48),
 				adopted_at: time(),
 			};
 			const r = ubus_at(a.ip, sid, 'netui.agent', 'adopt', {
-				gateway: me, username: dev.username, password: dev.password, root_password: dev.root_password,
-			});
+				gateway: me, username: dev.username, password: dev.password, root_password: dev.root_password, key: dev.key,
+			}, 6, tls);
 			if (r.status != 0 || r.data?.error)
 				return { error: r.data?.error ?? r.error ?? `adopt failed (${r.status})` };
+			// An agent from before keys ignores it: then it stays unverified.
+			if (!proves(dev, a.ip))
+				delete dev.key;
 
 			const reg = load_registry();
 			reg.devices[dev.mac] = dev;

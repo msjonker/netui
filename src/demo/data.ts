@@ -13,6 +13,7 @@ import ddns from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.ddns.json';
 import wifiSchedule from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.wifi_schedule.json';
 import doh from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.https-dns-proxy.json';
 import cloudflared from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.cloudflared.json';
+import uhttpd from '../../test/fixtures/ubus/dl-wrx36/plain/uci.get.uhttpd.json';
 import usteer from '../../test/fixtures/ubus/bench-v2/gateway.uci.get.usteer.json';
 import adblock from '../../test/fixtures/ubus/bench-v2/gateway.uci.get.adblock-fast.json';
 import mwan3 from '../../test/fixtures/ubus/bench-v2/gateway.uci.get.mwan3.json';
@@ -334,6 +335,7 @@ export function initialConfigs(): Record<string, UciConfig> {
     mwan3: fixture(mwan3),
     opennds: fixture(opennds),
     cloudflared: fixture(cloudflared),
+    uhttpd: fixture(uhttpd),
   };
 }
 
@@ -356,6 +358,7 @@ export const INSTALLED: Record<AddonKey, boolean> = {
   tailscale: false,
   tunnel: false,
   mesh: false,
+  https: true,
 };
 
 /** The UCI config each add-on brings. */

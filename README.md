@@ -161,9 +161,12 @@ It asks for a password twice (at least 8 characters) and creates the user
 
 ### 5. Open netui
 
-Browse to **http://192.168.1.1/netui/** and sign in as `netui`. If LuCI is
-installed with HTTPS (`luci-ssl`), use **https://192.168.1.1/netui/** instead:
-the login session is a bearer token, so HTTPS is recommended.
+Browse to **https://192.168.1.1/netui/** and sign in as `netui`. The first
+time, your browser warns about the certificate: the router made it itself,
+which is normal for a home router; accept it. Plain **http://** works too, but
+unencrypted, so netui suggests the HTTPS address and can make it the only one
+(**Settings → System → Secure access**). Routers without HTTPS get it as an
+add-on there.
 
 On a freshly installed OpenWrt the Dashboard offers **Set Up**: WiFi on with a
 name and password, the internet connection, time zone, and a password for the
@@ -323,8 +326,36 @@ keep it private.
 
 **Settings → System → Admins** adds people who can sign in to netui: an
 **Admin** changes settings; **Read only** sees everything netui shows but
-changes nothing and cannot download a backup. Each user is a login on the
-router, like the one `netui-passwd` creates.
+changes nothing, cannot download a backup and never sees a password or key
+(WiFi, VPN, internet login, Dynamic DNS). Each user is a login on the router,
+like the one `netui-passwd` creates.
+
+### Security
+
+- **Logins.** netui signs in with its own rpcd logins, never root. An admin can
+  do anything root can (restore a backup, set root's password); a read-only
+  user cannot change anything, and reads the configuration through netui's
+  `netui.config`, which leaves out every password and key. Signing out ends
+  the session on the router. Changing someone's password signs them out
+  everywhere else.
+- **HTTPS.** The session is a bearer token. Use HTTPS (see above); with
+  **Always use HTTPS** on, plain HTTP visits are redirected. netui refuses to
+  run inside another site's frame and ships a Content Security Policy that
+  allows only its own scripts.
+- **After a change that moves the router** to a new address, netui carries
+  the session to the new address in the link. The new page takes it only if
+  the router confirms it is an admin's session that may confirm the change,
+  and never over a session the tab already has.
+- **Access points.** The gateway keeps each access point's login in
+  `/etc/netui/devices.json` (root only). At adoption it also gives the access
+  point a secret key; before sending a password or session to an address, it
+  asks the device there to prove it holds that key, bound to that address. A
+  device that copies an access point's MAC address to get its DHCP lease
+  gets nothing. Adoption uses HTTPS where the access point serves it. Access
+  points with an older netui-agent cannot prove themselves; their panel says
+  so. Update netui-agent on them.
+- **Releases** list a SHA256SUMS file; check a package against it before
+  installing.
 
 ### Updating
 
@@ -498,7 +529,7 @@ On the router: `apk add --allow-untrusted netui-*.apk` (or `opkg install` on
 3. Deploy: `ssh root@$ROUTER_HOST mkdir -p /www/netui && ROUTER_HOST=... npm run deploy`,
    then open `http(s)://<router>/netui/`.
 
-Serve over HTTPS where possible; the session id is a bearer token.
+Serve over HTTPS where possible; the session id is a bearer token (see Security).
 
 ## License and trademarks
 

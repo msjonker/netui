@@ -21,13 +21,14 @@
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
 				"uci": [ "get", "state", "changes" ],
+				"netui.config": [ "get" ],
 				"file": [ "exec" ],
-				"session": [ "access" ],
+				"session": [ "access", "destroy" ],
 				"netui.users": [ "list", "root" ],
 				"netui.packages": [ "status" ],
 				"netui.history": [ "list" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared" ],
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared", "uhttpd" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			},
@@ -64,7 +65,7 @@
 				"/etc/init.d/https-dns-proxy": [ "exec" ]
 			},
 			"cgi-io": [ "upload" ],
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared" ]
+			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared", "uhttpd" ]
 		}
 	},
 	"netui-viewer": {
@@ -88,13 +89,12 @@
 				"netui.tailscale": [ "status" ],
 				"log": [ "read" ],
 				"system": [ "board", "info" ],
-				"uci": [ "get", "state", "changes" ],
+				"netui.config": [ "get" ],
 				"file": [ "exec" ],
-				"session": [ "access" ],
+				"session": [ "access", "destroy" ],
 				"netui.packages": [ "status" ],
 				"netui.history": [ "list" ]
 			},
-			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ],
 			"file": {
 				"/usr/sbin/nlbw": [ "exec" ]
 			}

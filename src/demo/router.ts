@@ -44,6 +44,7 @@ import {
   type Band,
   type DemoClient,
 } from './data';
+import { CONFIG_PACKAGES, maskConfig } from './configMask';
 import timezones from '../../test/fixtures/ubus/dl-wrx36/plain/luci.getTimezones.json';
 import countries from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.countrylist.phy0-ap0.json';
 import freq5 from '../../test/fixtures/ubus/dl-wrx36/plain/iwinfo.freqlist.phy0-ap0.json';
@@ -269,6 +270,10 @@ export class DemoRouter {
       return [0, args.function ? { access: !session.readOnly || !WRITES.has(`${args.object}.${args.function}`) } : {}];
     }
     if (!session) return [UbusStatus.PERMISSION_DENIED];
+    if (object === 'session' && method === 'destroy') {
+      this.sessions.delete(sid);
+      return [0];
+    }
     if (session.readOnly && WRITES.has(`${object}.${method}`)) return [UbusStatus.PERMISSION_DENIED];
     const handler = this.handler(object, method);
     if (!handler) return [UbusStatus.NOT_FOUND];
@@ -1174,6 +1179,13 @@ export class DemoRouter {
       },
       'iwinfo.scan': (a) => scan(this.bandOf(String(a.device))),
       'uci.get': (a) => u.get(String(a.config)),
+      // What read-only sessions read instead: credentials masked, committed values.
+      'netui.config.get': (a) => {
+        const config = String(a.config);
+        if (!CONFIG_PACKAGES.includes(config)) return { error: 'not available' };
+        const cfg = u.committed(config);
+        return Object.keys(cfg).length ? { values: maskConfig(cfg) } : { error: 'not found' };
+      },
       'uci.set': (a) => u.set(String(a.config), String(a.section), (a.values ?? {}) as Record<string, UciValue>),
       'uci.add': (a) => ({ section: u.add(String(a.config), String(a.type), str(a.name), (a.values ?? {}) as Record<string, UciValue>) }),
       'uci.delete': (a) => u.delete(String(a.config), String(a.section), a.options ? list(a.options) : str(a.option) ? [str(a.option)!] : undefined),
@@ -1472,6 +1484,7 @@ const PACKAGE_NAMES: Record<AddonKey, string> = {
   tailscale: 'tailscale',
   tunnel: 'cloudflared',
   mesh: 'wpad-mbedtls',
+  https: 'luci-ssl',
 };
 
 /** Neighbouring networks: a handful, at the strengths and channels of a block of flats. */

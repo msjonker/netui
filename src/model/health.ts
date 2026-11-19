@@ -5,7 +5,7 @@
 // apply/rollback flow.
 
 import type { UciConfig } from '../api/types';
-import { bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
+import { HIDDEN_VALUE, bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { networkLabel } from './network';
 import { cellOps, policyMatrix, ROUTER, wanInputRules, zoneList } from './policy';
 import { normalizePeople } from './people';
@@ -265,7 +265,8 @@ function wifiSecurity(wireless: UciConfig): Check[] {
       });
     }
     const k = str(s.key) ?? '';
-    if (security !== 'owe' && security !== 'other' && k && (k.length < MIN_KEY || COMMON_KEYS.has(k.toLowerCase()))) {
+    // A read-only login sees the password masked (netui.config): nothing to judge.
+    if (security !== 'owe' && security !== 'other' && k && k !== HIDDEN_VALUE && (k.length < MIN_KEY || COMMON_KEYS.has(k.toLowerCase()))) {
       keys.push({
         id: `wifi-key:${key}`,
         severity: COMMON_KEYS.has(k.toLowerCase()) ? 'risk' : 'warn',

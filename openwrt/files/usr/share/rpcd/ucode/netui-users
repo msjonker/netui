@@ -68,19 +68,26 @@ function hash(password) {
 	return match(out, /^\$/) ? out : null;
 }
 
-// End a user's sessions so a new role (or no login) applies at once. In the
-// background: rpcd answers `session list` only after this call returns.
-function sign_out_later(username) {
+// End a user's sessions so a new role, password (or no login) applies at
+// once, except `keep` (the session making the change). In the background:
+// rpcd answers `session list` only after this call returns.
+function sign_out_later(username, keep) {
+	const k = match(keep ?? '', /^[0-9a-f]{32}$/) ? keep : '';
 	system(`(sleep 1; ubus -S call session list | while read -r l; do ` +
-		`[ "$(echo "$l" | jsonfilter -e '@.data.username')" = ${shellquote(username)} ] && ` +
-		`ubus call session destroy "{\\"ubus_rpc_session\\":\\"$(echo "$l" | jsonfilter -e '@.ubus_rpc_session')\\"}"; ` +
+		`s="$(echo "$l" | jsonfilter -e '@.ubus_rpc_session')"; ` +
+		`[ "$(echo "$l" | jsonfilter -e '@.data.username')" = ${shellquote(username)} ] && [ "$s" != '${k}' ] && ` +
+		`ubus call session destroy "{\\"ubus_rpc_session\\":\\"$s\\"}"; ` +
 		`done) >/dev/null 2>&1 &`);
 }
 
 const USERNAME = /^[a-z][a-z0-9_]{0,31}$/;
 
+// Printable characters only: a newline would split what passwd reads, and
+// control characters cannot be typed at a sign-in prompt anyway.
+const PASSWORD_RULE = 'Use a password of 8 to 128 characters, without line breaks or tabs.';
+
 function check_password(p) {
-	return type(p) == 'string' && length(p) >= 8 && length(p) <= 128;
+	return type(p) == 'string' && length(p) >= 8 && length(p) <= 128 && !match(p, /[[:cntrl:]]/);
 }
 
 function find(username) {
@@ -125,7 +132,7 @@ const methods = {
 			if (!ROLES[a.role])
 				return { error: 'unknown role' };
 			if (!check_password(a.password))
-				return { error: 'Use a password of at least 8 characters.' };
+				return { error: PASSWORD_RULE };
 			const uci = cursor();
 			let taken = !!uci.get('rpcd', a.username);
 			uci.foreach('rpcd', 'login', (s) => { if (s.username == a.username) taken = true; });
@@ -168,13 +175,18 @@ const methods = {
 			if (!l)
 				return { error: 'no such netui user' };
 			if (!check_password(request.args.password))
-				return { error: 'Use a password of at least 8 characters.' };
+				return { error: PASSWORD_RULE };
 			const h = hash(request.args.password);
 			if (!h)
 				return { error: 'could not hash the password' };
 			const uci = cursor();
 			uci.set('rpcd', l.section, 'password', h);
-			return uci.commit('rpcd') ? { result: true } : { error: 'could not save' };
+			if (!uci.commit('rpcd'))
+				return { error: 'could not save' };
+			// Whoever knew the old password is signed out; the caller stays (uhttpd
+			// passes the calling session as ubus_rpc_session).
+			sign_out_later(l.username, request.args.ubus_rpc_session);
+			return { result: true };
 		}
 	},
 
@@ -210,7 +222,7 @@ const methods = {
 		args: { password: 'password' },
 		call: function(request) {
 			if (!check_password(request.args.password))
-				return { error: 'Use a password of at least 8 characters.' };
+				return { error: PASSWORD_RULE };
 			return set_system_password('root', request.args.password) ? { result: true } : { error: 'could not set the password' };
 		}
 	},

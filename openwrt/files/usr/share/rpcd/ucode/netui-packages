@@ -32,6 +32,10 @@ const BASIC_WPAD = ['wpad-basic', 'wpad-basic-mbedtls', 'wpad-basic-openssl', 'w
 
 // addon: packages to install; `check` overrides which packages mean
 // "installed" (any of them); `after` is a shell snippet run once installed.
+// uhttpd's TLS module, by any name a release gives it.
+const TLS_LIBS = ['libustream-mbedtls', 'libustream-openssl', 'libustream-wolfssl',
+	'libustream-mbedtls20201210', 'libustream-openssl20201210', 'libustream-wolfssl20201210'];
+
 const ADDONS = {
 	adblock: { packages: ['adblock-fast'] },
 	portal: { packages: ['opennds'], before: 'portal-off', after: 'rm -f /etc/config/opennds-opkg /etc/config/opennds.apk-new' },
@@ -52,6 +56,10 @@ const ADDONS = {
 	// Removing the basic build stops the wpad service and installing the full one
 	// does not start it again: restart it, then bring the radios back.
 	mesh: { packages: ['wpad-mbedtls'], check: FULL_WPAD, replaces: BASIC_WPAD, after: '/etc/init.d/wpad restart; sleep 2; wifi', keep: true },
+	// HTTPS for uhttpd (netui, LuCI): TLS support and px5g, which makes the
+	// router's own certificate when uhttpd restarts. Not removable from netui:
+	// with "Always use HTTPS" on, that would leave no way in.
+	https: { packages: ['luci-ssl'], check: ['luci-ssl', ...TLS_LIBS], after: '/etc/init.d/uhttpd restart', keep: true },
 };
 
 // librespeed-cli is 8 MB; below this much free space take speedtestcpp.

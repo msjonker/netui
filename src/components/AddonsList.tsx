@@ -7,7 +7,7 @@ import { AddonDialog } from './AddonDialog';
 import { Button, Pill, Spinner } from './ui';
 
 /** Never offered for removal: netui would break (mesh) or lose its updates. */
-const KEEP: AddonKey[] = ['mesh'];
+const KEEP: AddonKey[] = ['mesh', 'https'];
 
 /**
  * Every optional feature and whether its package is installed, with Install

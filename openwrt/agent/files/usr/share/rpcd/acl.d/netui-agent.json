@@ -1,10 +1,11 @@
 {
 	"unauthenticated": {
-		"description": "netui gateway discovery: what this device is, no secrets",
+		"description": "netui gateway discovery: what this device is, and proof of its identity; no secrets",
 		"read": {
 			"ubus": {
 				"netui.agent": [
-					"info"
+					"info",
+					"prove"
 				]
 			}
 		}
@@ -77,7 +78,8 @@
 		"write": {
 			"ubus": {
 				"netui.agent": [
-					"release"
+					"release",
+					"set_key"
 				],
 				"netui.firmware": [
 					"check",

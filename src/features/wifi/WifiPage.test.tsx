@@ -358,3 +358,18 @@ describe('WiFi', () => {
     }
   });
 });
+
+describe('read-only users', () => {
+  it('read configs without passwords, never through uci, and cannot share a WiFi password', async () => {
+    resetRouter({ wireless: wireless() });
+    renderApp('#/settings/wifi', fastDeps(), { readOnly: true });
+    const home = (await screen.findByText('Home')).closest('tr')!;
+    expect(router.calls.some((c) => c.object === 'uci')).toBe(false);
+    expect(router.calls.some((c) => c.object === 'netui.config' && c.args.config === 'wireless')).toBe(true);
+    fireEvent.click(within(home).getByRole('button', { name: /Share/ }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog.textContent).toMatch(/Only an admin/);
+    expect(dialog.textContent).not.toContain('hunter22');
+    expect(within(dialog).queryByRole('img')).toBeNull();
+  });
+});

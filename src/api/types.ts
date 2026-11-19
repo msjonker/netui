@@ -517,6 +517,8 @@ export interface ManagedDevice {
   agent?: string;
   /** Unix seconds. */
   adopted_at?: number;
+  /** It proves its identity before the gateway sends it anything (agent 0.5+; false: an older agent). Absent from older gateways. */
+  verified?: boolean;
 }
 
 /** An access point running netui-agent that no gateway here has adopted. */
@@ -801,7 +803,8 @@ export type AddonKey =
   | 'doh'
   | 'tailscale'
   | 'tunnel'
-  | 'mesh';
+  | 'mesh'
+  | 'https';
 
 export interface PackagesJob {
   action: 'install' | 'remove';

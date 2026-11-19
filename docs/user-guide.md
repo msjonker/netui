@@ -114,8 +114,12 @@ copy a file to it). Both come with Windows 10 and later, macOS and Linux.
 
 ## 3. Sign in and find your way around
 
-Open a browser and go to **http://192.168.1.1/netui/**. Sign in as `netui`
-with the password you just chose.
+Open a browser and go to **https://192.168.1.1/netui/**. The first time, the
+browser warns about the router's certificate: the router made it itself, which
+is normal for a home router, so accept it. (If that address does not answer,
+your router has no HTTPS yet: use **http://192.168.1.1/netui/** and add it
+under **Settings → System → Secure access**.) Sign in as `netui` with the
+password you just chose.
 
 ![The dashboard](screenshots/dashboard.png)
 
@@ -385,6 +389,11 @@ the devices on its WiFi, its radios, firmware updates and add-ons. Under
 **Radios**, **Edit** sets the channel, width and power for that access point
 alone, so two access points near each other do not have to share a channel.
 
+The main router only talks to an access point after it proves who it is, with
+a secret the two share since adoption, so another device on your network cannot
+pose as it. An access point with an older `netui-agent` cannot do that: its
+panel says so, and installing the current `netui-agent` on it fixes it.
+
 ![An access point's panel](screenshots/access-point.png)
 
 **Your other networks on access points.** Networks you create under
@@ -521,11 +530,23 @@ restarts with those settings.
 
 - **Admin** can change everything.
 - **Read only** can look at everything (devices, usage, settings) but change
-  nothing, and cannot download backups. Good for a family member who wants to
-  see what is going on, or for helping someone remotely without risk.
+  nothing, cannot download backups, and never sees passwords or keys (WiFi,
+  VPN, the internet login). Good for a family member who wants to see what is
+  going on, or for helping someone remotely without risk. (So a read-only
+  user cannot share the WiFi with a QR code either.)
 
 Each person signs in with their own name and password. You cannot remove
-yourself, and there is always at least one admin.
+yourself, and there is always at least one admin. **Sign out** (under your name,
+top right) ends the session on the router too. Giving someone a new password
+signs them out everywhere they were signed in.
+
+**Use the secure address.** Open netui as **https://** (for example
+https://192.168.1.1/netui/). The first time, the browser warns about the
+router's certificate: the router made it itself, which is normal at home.
+netui shows a reminder while you use plain http://. **Settings → System →
+Secure access → Always use HTTPS** then sends every plain visit to the secure
+address (it can only be switched on from the secure address, so it cannot
+lock you out). A router without HTTPS offers it there as an add-on.
 
 ## 15. On your phone
 
@@ -538,7 +559,7 @@ your WiFi. The sections move to a bar along the bottom.
 
 **I cannot open netui.**
 - Make sure your computer is connected to the router (WiFi or cable) and try
-  **http://192.168.1.1/netui/** again.
+  **https://192.168.1.1/netui/** (or **http://192.168.1.1/netui/**) again.
 - If you changed the router's address under **Networks**, use the new one.
 
 **netui says the router undid my change.** That is the safety timer at work

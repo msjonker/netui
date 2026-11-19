@@ -2,15 +2,26 @@
 //
 //   info     anyone on the LAN (unauthenticated ACL): what this device is and
 //            whether a gateway has adopted it. No secrets.
-//   adopt    root only: create the gateway's login, optionally set a new root
-//            password, and turn the device into a bridged access point.
+//   prove    anyone on the LAN: answer the gateway's challenge {nonce} with
+//            sha256("netui-prove:" key ":" nonce ":" address) for each of this
+//            device's IPv4 addresses, key being the secret the gateway gave it
+//            at adoption. The gateway asks before it sends its password or a
+//            session to an address it has not verified, so a device that took
+//            over this one's address (or its DHCP lease, by copying its MAC)
+//            learns nothing. Tied to the address, so an impostor cannot pass
+//            the challenge on to this device and replay the answer.
+//   adopt    root only: create the gateway's login, store its key, optionally
+//            set a new root password, and turn the device into a bridged
+//            access point.
+//   set_key  the gateway's login, once: the key, for a device adopted before
+//            keys existed.
 //   release  the gateway's login: forget the gateway (the device stays an AP).
 //   ports    the gateway's login: this device's ports (board.json), the
 //            switch chip's link states, and the port that leads to the gateway.
 
 'use strict';
 
-import { readfile, writefile, mkdir, unlink, access, popen, lsdir } from 'fs';
+import { readfile, writefile, mkdir, unlink, access, popen, lsdir, chmod } from 'fs';
 import { cursor } from 'uci';
 import { connect } from 'ubus';
 
@@ -21,15 +32,6 @@ function shellquote(s) {
 	return `'${replace(s, "'", "'\\''")}'`;
 }
 
-function adopted() {
-	const raw = readfile(STATE);
-	return raw ? json(raw) : null;
-}
-
-function lan_mac() {
-	return trim(readfile('/sys/class/net/br-lan/address') ?? '') || null;
-}
-
 function sh(cmd) {
 	const p = popen(cmd);
 	if (!p)
@@ -38,6 +40,51 @@ function sh(cmd) {
 	p.close();
 	return trim(out);
 }
+
+function adopted() {
+	const raw = readfile(STATE);
+	return raw ? json(raw) : null;
+}
+
+// The state holds the key: root only.
+function save_state(state) {
+	mkdir('/etc/netui-agent', 0700);
+	writefile(STATE, '');
+	chmod(STATE, 0600);
+	writefile(STATE, sprintf('%J\n', state));
+}
+
+const KEY = /^[A-Za-z0-9]{32,64}$/;
+const NONCE = /^[A-Za-z0-9]{16,64}$/;
+
+// Hex SHA-256 of a string: ucode's digest module where installed, else
+// busybox sha256sum on a private temp file (never on a command line).
+function sha256(text) {
+	try {
+		const d = require('digest');
+		if (d?.sha256)
+			return d.sha256(text);
+	}
+	catch (e) {}
+	mkdir('/tmp/netui-agent', 0700);
+	const f = '/tmp/netui-agent/hash';
+	writefile(f, '');
+	chmod(f, 0600);
+	writefile(f, text);
+	const out = sh(`sha256sum < ${f}`);
+	unlink(f);
+	return match(out ?? '', /^[0-9a-f]{64}/)?.[0];
+}
+
+function own_ipv4() {
+	return filter(split(sh("ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1") ?? '', '\n'),
+		(ip) => match(ip, /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/) && ip != '127.0.0.1');
+}
+
+function lan_mac() {
+	return trim(readfile('/sys/class/net/br-lan/address') ?? '') || null;
+}
+
 
 // The bridge port behind which the bridge learned `mac`: the uplink to the
 // gateway, a port or the mesh interface. From the kernel's forwarding table
@@ -93,7 +140,7 @@ const methods = {
 	},
 
 	adopt: {
-		args: { gateway: 'gateway', username: 'username', password: 'password', root_password: 'root_password' },
+		args: { gateway: 'gateway', username: 'username', password: 'password', root_password: 'root_password', key: 'key' },
 		call: function(request) {
 			const a = request.args;
 			// The username doubles as the UCI section name: letters, digits, underscore.
@@ -120,11 +167,41 @@ const methods = {
 			    system(`(echo ${shellquote(a.root_password)}; sleep 1; echo ${shellquote(a.root_password)}) | /bin/busybox passwd root >/dev/null 2>&1`) != 0)
 				return { error: 'could not set the root password' };
 
-			mkdir('/etc/netui-agent', 0700);
-			writefile(STATE, sprintf('%J\n', { gateway: a.gateway, username: a.username, at: time() }));
+			const state = { gateway: a.gateway, username: a.username, at: time() };
+			if (match(a.key ?? '', KEY))
+				state.key = a.key;
+			save_state(state);
 
 			// Become a bridged AP after replying: the address may change.
 			system('(sleep 2; /usr/libexec/netui-agent/access-point apply) >/dev/null 2>&1 &');
+			return { result: true };
+		}
+	},
+
+	prove: {
+		args: { nonce: 'nonce' },
+		call: function(request) {
+			const key = adopted()?.key;
+			const nonce = request.args.nonce ?? '';
+			if (!key || !match(nonce, NONCE))
+				return { error: 'nothing to prove' };
+			return { proofs: map(own_ipv4(), (ip) => sha256(`netui-prove:${key}:${nonce}:${ip}`)) };
+		}
+	},
+
+	set_key: {
+		args: { key: 'key' },
+		call: function(request) {
+			const state = adopted();
+			if (!state)
+				return { error: 'not adopted' };
+			// Once: a stolen gateway login must not be able to take the device over.
+			if (state.key)
+				return { error: 'this device already has a key' };
+			if (!match(request.args.key ?? '', KEY))
+				return { error: 'invalid key' };
+			state.key = request.args.key;
+			save_state(state);
 			return { result: true };
 		}
 	},

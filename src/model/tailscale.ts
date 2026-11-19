@@ -71,7 +71,8 @@ export function normalizeTailscale(r: TailscaleStatus | undefined): Tailscale | 
   return {
     ...base,
     state,
-    authUrl: s.AuthURL || undefined,
+    // Only a web address: the link is clicked as is (no javascript: or the like).
+    authUrl: typeof s.AuthURL === 'string' && /^https:\/\/[^\s"<>]+$/.test(s.AuthURL) ? s.AuthURL : undefined,
     ip: (s.Self?.TailscaleIPs ?? s.TailscaleIPs ?? [])[0],
     tailnet: s.CurrentTailnet?.Name || undefined,
     hostName: s.Self?.HostName,

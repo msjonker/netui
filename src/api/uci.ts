@@ -4,7 +4,7 @@
 // by api/apply.ts. There is deliberately no commit() and no apply without
 // rollback here.
 
-import { call, read, UbusError, UbusStatus, type CallOptions } from './ubus';
+import { call, getSession, read, UbusError, UbusStatus, type CallOptions } from './ubus';
 import type { UciChange, UciChangesAll, UciConfig, UciGet, UciSection, UciValue } from './types';
 
 export const APPLY_TIMEOUT_S = 30;
@@ -26,14 +26,29 @@ export type UciPackage =
   | 'adblock-fast'
   | 'opennds'
   | 'https-dns-proxy'
-  | 'cloudflared';
+  | 'cloudflared'
+  | 'uhttpd';
 
+/**
+ * A whole config. Read-only users have no `uci` access: they read through
+ * netui.config, which leaves out passwords and keys (shown as HIDDEN_VALUE).
+ */
 export async function getConfig(config: string): Promise<UciConfig> {
+  if (getSession()?.readOnly) {
+    const r = await read<{ values?: UciConfig; error?: string }>('netui.config', 'get', { config });
+    if (!r.values) throw new UbusError(UbusStatus.NOT_FOUND, 'netui.config', 'get');
+    return r.values;
+  }
   const r = await read<UciGet>('uci', 'get', { config });
   return r.values;
 }
 
+/** What netui.config shows instead of a password or key. */
+export const HIDDEN_VALUE = '********';
+
+/** Changes staged in this session; a read-only session cannot stage any. */
 export async function getChanges(): Promise<Record<string, UciChange[]>> {
+  if (getSession()?.readOnly) return {};
   const r = await read<UciChangesAll>('uci', 'changes');
   return r.changes ?? {};
 }

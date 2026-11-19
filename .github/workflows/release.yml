@@ -23,7 +23,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Version from tag
         id: version
         env:
@@ -34,7 +34,7 @@ jobs:
           # apk and opkg both need a plain dotted version.
           [[ "$v" =~ ^[0-9]+(\.[0-9]+)*$ ]] || { echo "Tag $GITHUB_REF_NAME is not vX.Y.Z" >&2; exit 1; }
           echo "version=$v" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 24
           cache: npm
@@ -45,7 +45,7 @@ jobs:
         env:
           NETUI_VERSION: ${{ steps.version.outputs.version }}
       - run: npm run check:budget
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: dist
           path: dist/
@@ -60,13 +60,13 @@ jobs:
           - x86-64-openwrt-25.12 # .apk, OpenWrt 25.x and snapshots
           - x86-64-openwrt-24.10 # .ipk, OpenWrt 24.10
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v8
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: dist
           path: dist/
       - run: scripts/build-package.sh ${{ matrix.sdk }} ${{ needs.web.outputs.version }}
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: package-${{ matrix.sdk }}
           path: out/${{ matrix.sdk }}/*
@@ -78,7 +78,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           pattern: package-*
           merge-multiple: true
@@ -88,6 +88,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.web.outputs.version }}
         run: |
+          # Checksums of everything published, so a download can be checked.
+          (cd packages && sha256sum -- * > SHA256SUMS)
           cat > notes.md <<EOF
           ## Install
 
@@ -96,11 +98,13 @@ jobs:
           - OpenWrt 25.x / snapshots: \`apk add --allow-untrusted netui-${VERSION}-r1.apk\`
           - OpenWrt 24.10: \`opkg install netui_${VERSION}-r1_all.ipk\`
 
-          Then run \`netui-passwd\` once to create the login and open \`http://<router>/netui/\`.
+          Then run \`netui-passwd\` once to create the login and open \`https://<router>/netui/\`
+          (\`http://\` works too, unencrypted; netui can switch the router to HTTPS only).
 
           To manage another OpenWrt router as an access point, install \`netui-agent\` on it,
           run \`netui-agent prepare\`, plug it into the gateway's LAN and adopt it from Devices.
-          The packages are unsigned, hence \`--allow-untrusted\` for apk.
+          The packages are unsigned, hence \`--allow-untrusted\` for apk. Check a download against
+          \`SHA256SUMS\` first: \`sha256sum -c SHA256SUMS --ignore-missing\`.
           EOF
           # A re-pushed tag (e.g. after a history rewrite) replaces the packages
           # on the existing release and keeps its notes.

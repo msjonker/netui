@@ -24,18 +24,25 @@
 'use strict';
 
 import { cursor } from 'uci';
-import { readfile, writefile, rename, unlink, mkdir, stat, lsdir, access } from 'fs';
+import { readfile, writefile, rename, unlink, mkdir, stat, lsdir, access, chmod } from 'fs';
 
 const DIR = '/etc/netui/history';
 const BLOBS = `${DIR}/blobs`;
 const INDEX = `${DIR}/index.json`;
-const PENDING = '/tmp/netui-history-pending.json';
+// Holds whole configs (keys included) between begin and record: private.
+const PENDING_DIR = '/tmp/netui-history';
+const PENDING = `${PENDING_DIR}/pending.json`;
 const EMPTY_SAVEDIR = '/var/run/netui-history-nosave';
 const MAX_ENTRIES = 100;
 const MAX_BYTES = 393216;
 // A begin older than this is from an apply that never confirmed.
 const PENDING_TTL = 600;
 const PKG = /^[a-z0-9_-]{1,32}$/;
+// Only what netui itself may change (the uci write list in netui.json):
+// never, say, rpcd's logins.
+const MANAGED = ['network', 'wireless', 'dhcp', 'firewall', 'system', 'sqm', 'upnpd', 'ddns', 'wifi_schedule',
+	'usteer', 'nlbwmon', 'mwan3', 'adblock-fast', 'opennds', 'https-dns-proxy', 'cloudflared', 'uhttpd'];
+const managed = (p) => type(p) == 'string' && match(p, PKG) && index(MANAGED, p) >= 0;
 
 function read_pkg(name) {
 	if (!access(`/etc/config/${name}`, 'r'))
@@ -128,7 +135,7 @@ const methods = {
 	begin: {
 		args: { packages: [] },
 		call: function(request) {
-			const pkgs = filter(request.args.packages ?? [], (p) => type(p) == 'string' && match(p, PKG));
+			const pkgs = filter(request.args.packages ?? [], managed);
 			ensure_dirs();
 			const idx = load_index();
 			const last = latest(idx);
@@ -147,6 +154,10 @@ const methods = {
 				prune(idx);
 				save(INDEX, sprintf('%J', idx));
 			}
+			mkdir(PENDING_DIR, 0o700);
+			unlink(PENDING);
+			writefile(PENDING, '');
+			chmod(PENDING, 0o600);
 			writefile(PENDING, sprintf('%J', { time: time(), packages: before }));
 			return { result: true };
 		}
@@ -163,7 +174,7 @@ const methods = {
 			const idx = load_index();
 			const packages = {};
 			for (let p, cfg in pending.packages) {
-				if (!match(p, PKG))
+				if (!managed(p))
 					continue;
 				const now = read_pkg(p);
 				if (now == null)

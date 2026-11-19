@@ -139,6 +139,23 @@ export function clearSession(): void {
   sessionStorage.removeItem(STORAGE_KEY);
 }
 
+/**
+ * Sign out: end the session on the router too, so a copy of its id (from a
+ * shared computer, a proxy log) is worthless at once rather than at the idle
+ * timeout. uhttpd fills in the caller's own session id, so this cannot end
+ * anyone else's. Best effort: the local session goes either way.
+ */
+export async function signOut(): Promise<void> {
+  const s = getSession();
+  clearSession();
+  if (!s) return;
+  try {
+    await post(makeRequest(s.id, 'session', 'destroy', {}), DEFAULT_TIMEOUT_MS);
+  } catch {
+    // Unreachable router: the session times out there by itself.
+  }
+}
+
 /** Subscribe to forced session loss (status 6, -32002, or local expiry). */
 export function onSessionExpired(listener: ExpiredListener): () => void {
   expiredListeners.add(listener);
@@ -418,6 +435,20 @@ export async function cgiUpload(
   form.append('filemode', mode);
   form.append('filedata', file);
   return (await cgi('cgi-upload', form)).json();
+}
+
+/** Whether a session exists and may confirm an apply (an admin's; never a viewer's or an unknown one). */
+export async function canConfirm(sid: string): Promise<boolean> {
+  try {
+    const raw = (await post(
+      makeRequest(sid, 'session', 'access', { scope: 'ubus', object: 'uci', function: 'confirm' }),
+      DEFAULT_TIMEOUT_MS,
+    )) as RpcResponse;
+    const data = raw.result?.[1] as { access?: boolean } | undefined;
+    return raw.result?.[0] === UbusStatus.OK && data?.access === true;
+  } catch {
+    return false;
+  }
 }
 
 /** Whether a session may not change config. An ACL without `session access` (older netui) means an admin. */

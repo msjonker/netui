@@ -107,8 +107,8 @@ export const useBoardJson = () =>
     refetchOnWindowFocus: false,
   });
 
-export const useUci = (config: string) =>
-  useQuery<UciConfig>({ queryKey: keys.uci(config), queryFn: () => getConfig(config) });
+export const useUci = (config: string, enabled = true) =>
+  useQuery<UciConfig>({ queryKey: keys.uci(config), queryFn: () => getConfig(config), enabled });
 
 /** Changes staged in this session but not applied (e.g. after an interrupted apply). */
 export const useStagedChanges = (enabled = true) =>

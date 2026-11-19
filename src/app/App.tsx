@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'preact/compat';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, Router, Switch } from 'wouter-preact';
 import { useHashLocation } from 'wouter-preact/use-hash-location';
-import { clearSession, getSession, onSessionExpired, type Session } from '../api/ubus';
+import { getSession, onSessionExpired, signOut, type Session } from '../api/ubus';
 import { browserDeps, completeHandoff, takeRollbackNotice, type ApplyDeps, type ApplyResult, type Handoff } from '../api/apply';
 import { confirm } from '../api/uci';
 import { historyRecord } from '../api/history';
@@ -216,7 +216,7 @@ export function App({ handoff, applyDeps = browserDeps }: { handoff?: Handoff; a
   );
 
   const logout = () => {
-    clearSession();
+    void signOut();
     queryClient.clear();
     setNotice(null);
     setSession(null);

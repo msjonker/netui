@@ -1,0 +1,48 @@
+{
+	"values": {
+		"main": {
+			".anonymous": false,
+			".type": "uhttpd",
+			".name": "main",
+			".index": 0,
+			"listen_http": [
+				"0.0.0.0:80",
+				"[::]:80"
+			],
+			"listen_https": [
+				"0.0.0.0:443",
+				"[::]:443"
+			],
+			"redirect_https": "0",
+			"home": "/www",
+			"rfc1918_filter": "1",
+			"max_requests": "3",
+			"max_connections": "100",
+			"cert": "/etc/uhttpd.crt",
+			"key": "/etc/uhttpd.key",
+			"cgi_prefix": "/cgi-bin",
+			"lua_prefix": [
+				"/cgi-bin/luci=/usr/lib/lua/luci/sgi/uhttpd.lua"
+			],
+			"script_timeout": "60",
+			"network_timeout": "30",
+			"http_keepalive": "20",
+			"tcp_keepalive": "1",
+			"ubus_prefix": "/ubus"
+		},
+		"defaults": {
+			".anonymous": false,
+			".type": "cert",
+			".name": "defaults",
+			".index": 1,
+			"days": "397",
+			"key_type": "ec",
+			"bits": "2048",
+			"ec_curve": "P-256",
+			"country": "ZZ",
+			"state": "Somewhere",
+			"location": "Unknown",
+			"commonname": "OpenWrt"
+		}
+	}
+}

@@ -54,6 +54,18 @@ function loggingIn() {
 	return length(pid) > 0 && !!access(`/proc/${pid}`);
 }
 
+// Viewers read status too: leave out the node's persisted state (its keys)
+// and anything else that looks like a credential, whatever this version prints.
+function public_prefs(p) {
+	if (type(p) != 'object')
+		return null;
+	const out = {};
+	for (let k, v in p)
+		if (k != 'Persist' && !match(k, /key|secret|token|password/i))
+			out[k] = v;
+	return out;
+}
+
 const isCidr = (r) => match(r, /^[0-9]{1,3}(\.[0-9]{1,3}){3}\/[0-9]{1,2}$/) || match(r, /^[0-9a-fA-F:]+\/[0-9]{1,3}$/);
 
 function cli(args) {
@@ -73,7 +85,7 @@ const methods = {
 			return {
 				installed: true,
 				status: s.code == 0 ? parse(s.out) : null,
-				prefs: p.code == 0 ? parse(p.out) : null,
+				prefs: p.code == 0 ? public_prefs(parse(p.out)) : null,
 				error: s.code == 0 ? null : s.out,
 				loggingIn: loggingIn(),
 			};
