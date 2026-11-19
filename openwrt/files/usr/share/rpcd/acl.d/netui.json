@@ -24,8 +24,7 @@
 				"file": [ "exec" ],
 				"session": [ "access" ],
 				"netui.users": [ "list", "root" ],
-				"netui.packages": [ "status" ],
-				"netui.wifi": [ "caps" ]
+				"netui.packages": [ "status" ]
 			},
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy", "cloudflared" ],
 			"file": {
@@ -46,8 +45,7 @@
 				"netui.services": [ "adblock_apply", "portal_apply", "portal_auth", "portal_deauth" ],
 				"netui.tailscale": [ "login", "up", "down", "logout", "set" ],
 				"netui.users": [ "add", "remove", "password", "role", "root_password" ],
-				"netui.packages": [ "install", "remove" ],
-				"netui.wifi": [ "vlans" ]
+				"netui.packages": [ "install", "remove" ]
 			},
 			"file": {
 				"/etc/init.d/sqm": [ "exec" ],
@@ -91,8 +89,7 @@
 				"uci": [ "get", "state", "changes" ],
 				"file": [ "exec" ],
 				"session": [ "access" ],
-				"netui.packages": [ "status" ],
-				"netui.wifi": [ "caps" ]
+				"netui.packages": [ "status" ]
 			},
 			"uci": [ "network", "wireless", "dhcp", "firewall", "system", "sqm", "upnpd", "ddns", "wifi_schedule", "usteer", "nlbwmon", "mwan3", "adblock-fast", "opennds", "https-dns-proxy" ],
 			"file": {

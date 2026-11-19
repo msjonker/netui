@@ -13,7 +13,6 @@ import tlWireless from '../../../test/fixtures/ubus/tl-wr1043nd-v2/uci.get.wirel
 import tlInfo from '../../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.bss_transition.json';
 import tlInfoUp from '../../../test/fixtures/ubus/tl-wr1043nd-v2/iwinfo.info.phy0-ap0.json';
 import tlHostapd from '../../../test/fixtures/ubus/tl-wr1043nd-v2/hostapd.phy0-ap0.get_status.json';
-import wdrCaps from '../../../test/fixtures/ubus/tl-wdr4300-v1/netui.wifi.caps.json';
 import { seedPackages } from '../../../test/fakeReads/packages';
 import { RpcError } from '../../api/ubus';
 
@@ -357,71 +356,5 @@ describe('WiFi', () => {
       const c = (await screen.findByRole('heading', { name: new RegExp(`^${title}\\s*Not installed`) })).closest('section') as HTMLElement;
       expect(within(c).getByRole('button', { name: 'Install' })).toBeTruthy();
     }
-  });
-});
-
-describe('more passwords', () => {
-  const stations = () => Object.values(router.configs.wireless!).filter((s) => s['.type'] === 'wifi-station');
-  const vlans = () => Object.values(router.configs.wireless!).filter((s) => s['.type'] === 'wifi-vlan');
-
-  beforeEach(() => {
-    resetRouter({ wireless: wrx() });
-    // An IoT network on VLAN 10 of the LAN bridge.
-    router.configs.network!.iot = section('iot', 'interface', { proto: 'static', device: 'br-lan.10', ipaddr: '192.168.10.1/24' });
-  });
-
-  it('adds a named password on every band, on the WiFi network where the radios cannot do others', async () => {
-    const drawer = await open('netui-test');
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Add Password' }));
-    type(drawer, 'Password name', 'Kids');
-    type(drawer, 'Password for Kids', 'kidspass1');
-    expect(within(drawer).queryByLabelText('Network for Kids')).toBeNull();
-    expect(await within(drawer).findByText(/cannot put devices on another network/)).toBeTruthy();
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Apply Changes' }));
-    expect((await review()).textContent).not.toContain('kidspass1');
-    await applyReviewed();
-    expect(stations().map((s) => [s.iface, s.key, s.label, s.mac, s.vid])).toEqual([
-      ['default_radio0', 'kidspass1', 'Kids', '00:00:00:00:00:00', undefined],
-      ['default_radio1', 'kidspass1', 'Kids', '00:00:00:00:00:00', undefined],
-    ]);
-    expect(vlans()).toEqual([]);
-    // The follow-up that brings such networks up on 24.10.
-    expect(router.calls.some((c) => c.object === 'netui.wifi' && c.method === 'vlans')).toBe(true);
-  });
-
-  it('puts a password on another network where the radios can', async () => {
-    router.overrides.push((c) => (c.object === 'netui.wifi' && c.method === 'caps' ? structuredClone(wdrCaps) : undefined));
-    const drawer = await open('netui-test');
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Add Password' }));
-    type(drawer, 'Password name', 'Smart plugs');
-    pick(drawer, 'Network for Smart plugs', 'iot');
-    fireEvent.click(within(drawer).getByRole('button', { name: 'Apply Changes' }));
-    await applyReviewed();
-    expect(vlans().map((s) => [s.iface, s.network, s.vid, s.name])).toEqual([
-      ['default_radio0', 'iot', '10', 'v10'],
-      ['default_radio1', 'iot', '10', 'v10'],
-    ]);
-    expect(stations().map((s) => s.vid)).toEqual(['10', '10']);
-    // A generated password, 12 characters.
-    expect(String(stations()[0]!.key)).toMatch(/^[A-Za-z0-9]{12}$/);
-  });
-
-  it('needs WPA2', async () => {
-    resetRouter({ wireless: wireless() });
-    const drawer = await open('Home');
-    expect(within(drawer).getByText(/Needs WPA2 security/)).toBeTruthy();
-    expect((within(drawer).getByRole('button', { name: 'Add Password' }) as HTMLButtonElement).disabled).toBe(true);
-  });
-
-  it('removes them with the WiFi', async () => {
-    const cfg = wrx();
-    cfg.p1 = section('p1', 'wifi-station', { iface: 'default_radio0', key: 'kidspass1', mac: '00:00:00:00:00:00', label: 'Kids' });
-    resetRouter({ wireless: cfg });
-    const drawer = await open('netui-test');
-    expect((within(drawer).getByLabelText('Password name') as HTMLInputElement).value).toBe('Kids');
-    fireEvent.click(within(drawer).getByRole('button', { name: /Remove$/ }));
-    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Remove' }));
-    await applyReviewed();
-    expect(stations()).toEqual([]);
   });
 });

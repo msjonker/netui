@@ -4,7 +4,6 @@
 /usr/share/rpcd/ucode/netui-agent
 /usr/share/rpcd/ucode/netui-firmware
 /usr/share/rpcd/ucode/netui-packages
-/usr/share/rpcd/ucode/netui-wifi
 /usr/sbin/netui-agent
 /usr/libexec/netui-agent/
 /etc/netui-agent/

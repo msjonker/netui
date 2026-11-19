@@ -64,9 +64,6 @@
 				],
 				"netui.packages": [
 					"status"
-				],
-				"netui.wifi": [
-					"caps"
 				]
 			},
 			"uci": [
@@ -106,9 +103,6 @@
 				"netui.packages": [
 					"install",
 					"remove"
-				],
-				"netui.wifi": [
-					"vlans"
 				]
 			},
 			"uci": [

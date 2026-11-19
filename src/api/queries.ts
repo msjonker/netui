@@ -401,33 +401,6 @@ export const useCountryList = (radio: string | undefined) =>
     refetchOnWindowFocus: false,
   });
 
-/** What each phy can do (netui.wifi caps); fixed hardware, so read once. */
-export const useWifiCaps = () =>
-  useQuery({
-    queryKey: ['netui.wifi', 'caps'] as const,
-    queryFn: () => read<import('./types').WifiCaps>('netui.wifi', 'caps'),
-    staleTime: Infinity,
-    retry: false,
-  });
-
-/**
- * Whether every one of these radios can put the devices using a WiFi password
- * on another network. Undefined while loading; false when unknown (an older
- * netui without netui.wifi).
- */
-export function useVlanCapable(radios: string[]): boolean | undefined {
-  const caps = useWifiCaps();
-  const infos = useQueries({
-    queries: radios.map((radio) => ({
-      queryKey: wifiKeys.radioInfo(radio),
-      queryFn: () => read<IwinfoInfo>('iwinfo', 'info', { device: radio }),
-    })),
-  });
-  if (caps.isError) return false;
-  if (!caps.data || infos.some((q) => q.isPending)) return undefined;
-  return radios.length > 0 && infos.every((q) => !!q.data?.phy && caps.data.phys[q.data.phy]?.ap_vlan === true);
-}
-
 /** iwinfo info for a radio (htmodes etc.), available while the radio is down. */
 export const useRadioInfo = (radio: string | undefined) =>
   useQuery({

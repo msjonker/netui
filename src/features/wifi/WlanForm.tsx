@@ -2,9 +2,6 @@ import { useMemo, useState } from 'preact/hooks';
 import type { UciConfig } from '../../api/types';
 import { useApply } from '../../api/useApply';
 import { usePackages } from '../../api/packages';
-import { useVlanCapable } from '../../api/queries';
-import { useNetworks } from '../../model/hooks';
-import { networkVids } from '../../model/wifiPasswords';
 import { networkLabel } from '../../model/network';
 import {
   deleteWlanOps,
@@ -28,7 +25,6 @@ import { Drawer, Modal } from '../../components/overlay';
 import { IconQr, IconTrash, IconWifi } from '../../components/icons';
 import { Banner, Button, Field, FormSection, ToggleRow, cx } from '../../components/ui';
 import { ShareWifi } from './ShareWifi';
-import { Passwords } from './Passwords';
 
 const SECURITY_OPTIONS: { value: Security; label: string }[] = [
   { value: 'sae-mixed', label: 'WPA2/WPA3 (recommended)' },
@@ -77,9 +73,6 @@ export function WlanForm({
   // hostapd's basic build has no BSS transition and starts no network with it on.
   const basicWifi = usePackages().data?.addons.mesh?.installed === false;
   const [showKey, setShowKey] = useState(false);
-  const allNetworks = useNetworks().networks;
-  const netVids = useMemo(() => networkVids(allNetworks ?? []), [allNetworks]);
-  const vlanOk = useVlanCapable(edited?.radios ?? []);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [sharing, setSharing] = useState(false);
   if (!edited) return null;
@@ -90,7 +83,7 @@ export function WlanForm({
   const error = validateWlan(
     draft,
     wlans.filter((w) => w.id !== wlan?.id),
-    { radios, isolated, vlanOk },
+    { radios, isolated },
   );
   const turnOn = radiosToTurnOn(draft, wlan, wireless);
   const turnOnBands = radios.filter((r) => turnOn.includes(r.section)).map((r) => r.bandLabel);
@@ -129,7 +122,7 @@ export function WlanForm({
           <Button onClick={dirty ? reset : onClose} disabled={apply.busy}>
             {dirty ? 'Reset' : 'Cancel'}
           </Button>
-          <Button variant="primary" disabled={!canApply} onClick={() => apply.start(wlanOps(draft, wlan, wireless, netVids), { ...WIFI_PLAN, onConfirmed: onClose })}>
+          <Button variant="primary" disabled={!canApply} onClick={() => apply.start(wlanOps(draft, wlan, wireless), { ...WIFI_PLAN, onConfirmed: onClose })}>
             {wlan ? 'Apply Changes' : 'Add WiFi'}
           </Button>
         </>
@@ -234,17 +227,6 @@ export function WlanForm({
           )}
           <ToggleRow label="Enabled" checked={draft.enabled} onChange={(enabled) => update({ enabled })} />
         </FormSection>
-
-        <Passwords
-          passwords={draft.passwords}
-          onChange={(passwords) => update({ passwords })}
-          security={draft.security}
-          network={draft.network}
-          networks={networks}
-          vlanOk={vlanOk}
-          wlan={wlan}
-          showKey={showKey}
-        />
 
         <FormSection title="Network">
           <ToggleRow

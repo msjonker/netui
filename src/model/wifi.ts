@@ -1,7 +1,6 @@
 import type { AssocStation, IwinfoInfo, UciConfig, UciSection, UciValue } from '../api/types';
 import { bool, diffSection, list, sectionsOfType, str, type UciOp } from '../api/uci';
 import { zones } from './firewall';
-import { hasPasswords, passwordOps, passwordSections, readPasswords, validatePasswords, type WifiPassword } from './wifiPasswords';
 
 // netui presents one "WiFi network" per SSID across bands. OpenWrt has one
 // wifi-iface section per radio, so ap-mode sections with the same SSID are
@@ -112,11 +111,7 @@ export interface Wlan extends IfaceSettings {
   key: string;
   network: string[];
   members: WlanMember[];
-  /** More passwords (WPA2), read from the first band. */
-  passwords: WifiPassword[];
-  /** wifi-station/wifi-vlan sections of this WiFi only, removed with it. */
-  passwordSections: string[];
-  /** Bands disagree on security, passwords or an Advanced option; saving makes them the same. */
+  /** Bands disagree on security or an Advanced option; saving makes them the same. */
   mixed: boolean;
   /** Every band's radio is off, so it cannot broadcast even when enabled. */
   radioOff: boolean;
@@ -238,8 +233,7 @@ export function normalizeWifi(wireless: UciConfig, live: LiveDevice[] = []): Wif
       g.mixed ||=
         securityOf(encryption) !== g.security ||
         (str(s.key) ?? '') !== (str(first.key) ?? '') ||
-        JSON.stringify(settings) !== JSON.stringify(ifaceSettings(first)) ||
-        JSON.stringify(readPasswords(wireless, s['.name'])) !== JSON.stringify(g.passwords);
+        JSON.stringify(settings) !== JSON.stringify(ifaceSettings(first));
       continue;
     }
     groups.set(ssid, {
@@ -252,8 +246,6 @@ export function normalizeWifi(wireless: UciConfig, live: LiveDevice[] = []): Wif
       security: securityOf(encryption),
       key: str(s.key) ?? '',
       network: list(s.network),
-      passwords: readPasswords(wireless, s['.name']),
-      passwordSections: [],
       members: [member],
       mixed: false,
       radioOff,
@@ -267,7 +259,6 @@ export function normalizeWifi(wireless: UciConfig, live: LiveDevice[] = []): Wif
       return { ifname: d.ifname, ssid: d.info?.ssid ?? ssidOf.get(d.ifname), band: band && BAND_LABEL[band], stations: d.stations! };
     });
 
-  for (const w of groups.values()) w.passwordSections = passwordSections(wireless, w.members.map((m) => m.section));
   return { radios, wlans: [...groups.values()], assoc };
 }
 
@@ -284,8 +275,6 @@ export interface WlanDraft extends IfaceSettings {
   radios: string[];
   /** "Guest network": isolation on and an isolated network. UI state only. */
   guest: boolean;
-  /** More passwords; a network of '' is the WiFi's own. */
-  passwords: WifiPassword[];
 }
 
 /**
@@ -320,7 +309,6 @@ export function wlanDraft(w: Wlan, isolated: string[] = []): WlanDraft {
     multicastEnhance: w.multicastEnhance,
     maxClients: w.maxClients,
     guest: w.isolate && isolated.includes(network),
-    passwords: w.passwords.map((p) => (p.network === network ? { ...p, network: '' } : p)),
   };
 }
 
@@ -345,7 +333,6 @@ export function newWlanDraft(radios: string[], network: string, bssTransition = 
     multicastEnhance: false,
     maxClients: '',
     guest: false,
-    passwords: [],
   };
 }
 
@@ -457,8 +444,7 @@ function keepBool(before: UciSection | undefined, key: string, want: boolean): s
 export function validateWlan(
   d: WlanDraft,
   others: Wlan[],
-  /** vlanOk: every radio of this WiFi can put a password's devices on another network. */
-  ctx: { radios?: Radio[]; isolated?: string[]; vlanOk?: boolean } = {},
+  ctx: { radios?: Radio[]; isolated?: string[] } = {},
 ): string | null {
   if (!d.ssid) return 'Enter a network name.';
   if (new TextEncoder().encode(d.ssid).length > 32) return 'Network name must be at most 32 bytes.';
@@ -480,7 +466,7 @@ export function validateWlan(
       ? 'A guest WiFi must use an isolated network.'
       : 'Create an isolated network for guests first (Networks, with its own firewall zone).';
   }
-  return validatePasswords(d.passwords, { security: d.security, key: d.key, network: d.network, vlanOk: ctx.vlanOk ?? false });
+  return null;
 }
 
 /** Channel choices per band (20 MHz primaries; the driver rejects any not allowed in the country). */
@@ -508,13 +494,9 @@ const NOT_INHERITED = new Set(['device', 'ifname', 'macaddr', 'bssid']);
  * A new band copies the other options of an existing band, so settings this
  * UI does not show carry over. Without `existing` the whole group is new.
  */
-export function wlanOps(d: WlanDraft, existing: Wlan | undefined, wireless: UciConfig, netVids: Record<string, number> = {}): UciOp[] {
+export function wlanOps(d: WlanDraft, existing: Wlan | undefined, wireless: UciConfig): UciOp[] {
   const ops: UciOp[] = [];
   const members = existing?.members ?? [];
-  // Password sections refer to their band's section by name, so new bands get one.
-  const withPasswords = d.passwords.length > 0 || hasPasswords(wireless, members.map((m) => m.section));
-  const names = new Set(Object.keys(wireless));
-  const added: string[] = [];
   for (const m of members) {
     if (d.radios.includes(m.radio)) {
       ops.push(...diffSection('wireless', m.section, wireless[m.section], wlanValues(d, wireless[m.section])));
@@ -534,20 +516,7 @@ export function wlanOps(d: WlanDraft, existing: Wlan | undefined, wireless: UciC
         ([, v]) => v !== '' && !(Array.isArray(v) && v.length === 0),
       ),
     );
-    let name: string | undefined;
-    if (withPasswords) {
-      let n = 0;
-      while (names.has(`wifinet${n}`)) n++;
-      name = `wifinet${n}`;
-      names.add(name);
-      added.push(name);
-    }
-    ops.push({ op: 'add', config: 'wireless', type: 'wifi-iface', values: { device: radio, ...values }, ...(name ? { name } : {}) });
-  }
-  if (withPasswords) {
-    const stay = members.filter((m) => d.radios.includes(m.radio)).map((m) => m.section);
-    const gone = members.filter((m) => !d.radios.includes(m.radio)).map((m) => m.section);
-    ops.push(...passwordOps(wireless, [...stay, ...added], gone, d.passwords, d.network, netVids));
+    ops.push({ op: 'add', config: 'wireless', type: 'wifi-iface', values: { device: radio, ...values } });
   }
   const keep = members.map((m) => m.section);
   for (const radio of radiosToTurnOn(d, existing, wireless)) {
@@ -581,7 +550,7 @@ function placeholderOffOps(wireless: UciConfig, radio: string, keep: string[] = 
 }
 
 export function deleteWlanOps(w: Wlan): UciOp[] {
-  return [...w.members.map((m) => m.section), ...w.passwordSections].map((section) => ({ op: 'delete', config: 'wireless', section }));
+  return w.members.map((m) => ({ op: 'delete', config: 'wireless', section: m.section }));
 }
 
 export interface RadioDraft {

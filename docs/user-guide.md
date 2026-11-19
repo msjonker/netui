@@ -233,23 +233,6 @@ password, and choose which network its devices join (normally *LAN*).
 - **Share WiFi:** the share button next to a network shows a QR code. Point
   a phone's camera at it to join without typing the password.
 
-**More passwords for one WiFi:** open a WiFi network and use **More
-passwords → Add Password**. Give each person or group of devices a password of
-its own, for example "Kids" or "Smart plugs". netui fills in a random password
-you can change. Removing a password disconnects only the devices that joined
-with it, and everyone else keeps theirs. The share button next to a saved
-password shows a QR code for that password.
-
-- A password can also choose the **network** its devices get, for example the
-  IoT network: smart plugs join the same WiFi name as everyone else but end up
-  kept apart. This depends on the WiFi hardware. Some radios cannot do it, and
-  netui then offers only the WiFi's own network. On access points that cannot
-  do it, such a password is left out, so its devices cannot join there (they
-  are not let onto the main network instead). The access point's panel lists
-  the passwords it left out.
-- More passwords need **WPA2** security. WPA3 can check only one password per
-  WiFi.
-
 **Radios** (further down) set the channel and power of each radio. *Auto*
 works well; if your WiFi is slow, **Insights → WiFi Environment** suggests a
 less crowded channel.

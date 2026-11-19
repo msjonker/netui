@@ -217,17 +217,6 @@ router (the internet, other networks), work for devices behind access points
 too, and work with software flow offloading. Hardware flow offloading skips
 them; netui says so when it is on.
 
-### More WiFi passwords
-
-A WPA2 WiFi network can have more passwords besides its main one, one per
-person or group of devices (**More passwords** in the WiFi's settings).
-Removing one disconnects only the devices that used it. A password can also
-put its devices on another network, such as an IoT network, if the radio can
-do that (many can; where it cannot, netui does not offer it).
-These passwords are copied to access points too. An access point whose radio
-cannot put devices on another network leaves such a password out, so those
-devices cannot join through it at all.
-
 ### Optional features
 
 These features need an extra OpenWrt package (an add-on). Each one's card has
