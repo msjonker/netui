@@ -189,17 +189,6 @@ assistant (devices with a weak signal are asked to move to a closer access
 point; this also turns on BSS transition and 802.11k) and a minimum signal.
 The gateway copies these settings to every access point.
 
-#### More WiFi passwords
-
-A WPA2 WiFi network can have more passwords besides its main one, one per
-person or group of devices (**More passwords** in the WiFi's settings).
-Removing one disconnects only the devices that used it. A password can also
-put its devices on another network, such as an IoT network, if the radio can
-do that (many can; where it cannot, netui does not offer it).
-These passwords are copied to access points too. An access point whose radio
-cannot put devices on another network leaves such a password out, so those
-devices cannot join through it at all.
-
 #### Wireless mesh
 
 Access points can also reach the gateway over WiFi (wireless mesh). Turn on **Settings → WiFi → Wireless mesh**: the gateway's 5 GHz
@@ -218,6 +207,26 @@ cable first, then move them where you want them. Turning the mesh on fixes the
 
 `prepare` is a separate step on purpose: installing the package on your main
 router by mistake changes nothing.
+
+### Speed limits
+
+A device's **Settings** tab sets its download and upload speed in Mbit/s.
+Limits are kept in the firewall config, so they are applied and undone like
+any other change, and survive a restart. They apply to traffic through the
+router (the internet, other networks), work for devices behind access points
+too, and work with software flow offloading. Hardware flow offloading skips
+them; netui says so when it is on.
+
+### More WiFi passwords
+
+A WPA2 WiFi network can have more passwords besides its main one, one per
+person or group of devices (**More passwords** in the WiFi's settings).
+Removing one disconnects only the devices that used it. A password can also
+put its devices on another network, such as an IoT network, if the radio can
+do that (many can; where it cannot, netui does not offer it).
+These passwords are copied to access points too. An access point whose radio
+cannot put devices on another network leaves such a password out, so those
+devices cannot join through it at all.
 
 ### Optional features
 

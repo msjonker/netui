@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/preact';
+import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { resetRouter, router } from '../../../test/fakeRouter';
 import { renderApp } from '../../../test/renderApp';
 import { applyReviewed, review } from '../../../test/applyFlow';
@@ -196,5 +196,44 @@ describe('Client Devices: deep links and WiFi actions', () => {
     const rows = screen.getAllByRole('row').slice(1);
     expect(rows).toHaveLength(1);
     expect(rows[0]!.textContent).toMatch(/9a:3d:59:1b:de:92/);
+  });
+});
+
+describe('speed limits', () => {
+  const limits = () => Object.values(router.configs.firewall!).filter((s) => s['.type'] === 'netui_limit');
+
+  it('limits a device, adding the firewall include once, and shows it', async () => {
+    const drawer = await openClient('laptop');
+    fireEvent.click(within(drawer).getByRole('tab', { name: 'Settings' }));
+    fireEvent.input(await within(drawer).findByLabelText('Download (Mbit/s)'), { target: { value: '10' } });
+    fireEvent.input(within(drawer).getByLabelText('Upload (Mbit/s)'), { target: { value: '2' } });
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Apply Limit' }));
+    expect((await review()).textContent).toMatch(/netui_limit/);
+    await applyReviewed();
+    expect(limits()).toEqual([expect.objectContaining({ mac: '02:4E:55:00:01:10', name: 'laptop', download: '10', upload: '2' })]);
+    expect(router.configs.firewall!.netui_limits).toMatchObject({ '.type': 'include', type: 'script', path: '/usr/share/netui/limits.sh' });
+
+    // The list re-reads the firewall config after the apply.
+    await waitFor(() => {
+      const row = within(screen.getByRole('table')).getByText('laptop').closest('tr')!;
+      expect(within(row).getByText('Limited')).toBeTruthy();
+    });
+    fireEvent.click(within(drawer).getByRole('tab', { name: 'Overview' }));
+    expect(await within(drawer).findByText('10 Mbit/s down, 2 Mbit/s up')).toBeTruthy();
+
+    // Removing it deletes the section and keeps the include.
+    fireEvent.click(within(drawer).getByRole('tab', { name: 'Settings' }));
+    fireEvent.click(await within(drawer).findByRole('button', { name: 'Remove Limit' }));
+    await applyReviewed();
+    expect(limits()).toEqual([]);
+    expect(router.configs.firewall!.netui_limits).toBeTruthy();
+  });
+
+  it('refuses a speed that is not a number', async () => {
+    const drawer = await openClient('laptop');
+    fireEvent.click(within(drawer).getByRole('tab', { name: 'Settings' }));
+    fireEvent.input(await within(drawer).findByLabelText('Download (Mbit/s)'), { target: { value: 'fast' } });
+    expect(within(drawer).getByRole('alert').textContent).toMatch(/Mbit\/s/);
+    expect((within(drawer).getByRole('button', { name: 'Apply Limit' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });

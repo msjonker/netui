@@ -4,6 +4,7 @@ import { inSubnet, isIPv4 } from '../lib/ip';
 import { isLocallyAdministered, normalizeMac } from '../lib/mac';
 import { ouiVendor, type DeviceKind } from '../lib/oui';
 import type { BlockRule } from './firewall';
+import type { SpeedLimit } from './speedLimit';
 import type { Subnet } from './network';
 
 export interface WirelessLink {
@@ -53,6 +54,8 @@ export interface Client {
   leaseExpires?: number | false;
   reservation?: Reservation;
   block?: BlockRule;
+  /** Speed limit (model/speedLimit). */
+  limit?: SpeedLimit;
   /** Locally administered MAC, usually a phone's per-network random address. */
   randomMac: boolean;
   /** IPv6 addresses from host hints (neighbour table). */
@@ -80,6 +83,7 @@ export interface ClientSources {
   }[];
   dhcp?: UciConfig;
   blocks?: BlockRule[];
+  limits?: SpeedLimit[];
   /** MACs of the router's own interfaces. */
   routerMacs?: Set<string>;
   /** Local subnets; host hints outside them (the WAN gateway etc.) are dropped. */
@@ -161,6 +165,11 @@ export function mergeClients(src: ClientSources): Client[] {
       const c = get(mac);
       if (c && (!c.block || (b.enabled && !c.block.enabled))) c.block = b;
     }
+  }
+
+  for (const l of src.limits ?? []) {
+    const c = get(l.mac);
+    if (c && !c.limit && l.enabled) c.limit = l;
   }
 
   // Hints last: they fill in names and addresses but only create a client

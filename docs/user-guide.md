@@ -297,6 +297,12 @@ Click a device to:
 - **Reconnect** it (WiFi devices), which helps when it is stuck.
 - **Wake** it: switch on a sleeping or powered-off computer that supports
   *Wake-on-LAN*, usually over a cable. (An add-on.)
+- **Limit its speed** (*Speed limit*, under **Settings**): a download and an
+  upload speed in Mbit/s, for example 10 down and 2 up for a games console
+  that should not slow down everyone else. Leave one empty for no limit that
+  way. The limit covers the internet and your other networks, not traffic to
+  devices on the same network. Limited devices are marked **Limited** in the
+  list.
 - **Block** it: it can no longer reach the internet or your network until you
   unblock it (under **Firewall & Security → Blocked Devices**).
 

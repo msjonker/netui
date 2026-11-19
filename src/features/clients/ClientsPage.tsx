@@ -6,6 +6,8 @@ import { useUsage } from '../../api/usage';
 import { AddonMissingError } from '../../api/packages';
 import { AddonMissing } from '../../components/InstallAddon';
 import { normalizeUsage } from '../../model/usage';
+import { limitSummary } from '../../model/speedLimit';
+import { SpeedLimit } from './SpeedLimit';
 import { useApply } from '../../api/useApply';
 import {
   clientAddresses,
@@ -163,6 +165,7 @@ function ClientRow({ c, selected, onSelect }: { c: Client; selected: boolean; on
           <ClientIcon c={c} />
           <span class={`max-w-[220px] truncate font-medium ${isOffline(c) ? 'text-muted' : ''}`}>{displayName(c)}</span>
           {c.reservation?.ip && <Pill>Fixed IP</Pill>}
+          {c.limit && <Pill>Limited</Pill>}
         </span>
       </td>
       <td class={c.randomMac ? 'text-faint' : 'text-muted'}>{vendor ?? '—'}</td>
@@ -321,6 +324,7 @@ function Overview({ c }: { c: Client }) {
           ['Vendor', vendor],
           ['Connection', <Connection c={c} />],
           ['Network', c.network && networkLabel(c.network)],
+          ...(c.limit ? [['Speed limit', limitSummary(c.limit)] as [string, ComponentChildren]] : []),
           ['IP address', c.ip && <span class="font-mono text-xs">{c.ip}</span>],
           ...(c.otherAddresses ?? []).map((o): [string, ComponentChildren] => [
             `Also on ${o.network ? networkLabel(o.network) : 'another network'}`,
@@ -458,6 +462,8 @@ function Settings({ c, subnets, dhcp, fw }: { c: Client; subnets: Subnet[]; dhcp
           <p class="pb-3 text-xs text-muted">The device picks up a new address when it next renews its lease or reconnects.</p>
         )}
       </FormSection>
+
+      {fw && <SpeedLimit c={c} name={name} fw={fw} returnTo={path(c)} />}
 
       <FormSection title="Access">
         {block?.enabled ? (

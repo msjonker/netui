@@ -17,6 +17,7 @@ import {
 import { mergeClients } from './clients';
 import { normalizeWan, wanExposure } from './internet';
 import { normalizeBlockRules } from './firewall';
+import { normalizeLimits } from './speedLimit';
 import { localSubnets, normalizeNetworks, routerMacs } from './network';
 import { normalizeSwitch } from './ports';
 import { normalizeWifi } from './wifi';
@@ -76,6 +77,7 @@ export function useClients() {
   const { model: wifi, wireless } = useWifiModel({ assoc: true });
 
   const blocks = useMemo(() => (firewall.data ? normalizeBlockRules(firewall.data) : undefined), [firewall.data]);
+  const limits = useMemo(() => (firewall.data ? normalizeLimits(firewall.data) : undefined), [firewall.data]);
   // Adopted access points take a DHCP lease like anything else; they are
   // infrastructure, not clients.
   const managed = useManagedDevices();
@@ -89,10 +91,11 @@ export function useClients() {
         dhcp: dhcp.data,
         assoc: [...(wifi?.assoc ?? []), ...apAssoc],
         blocks,
+        limits,
         routerMacs: devices.data ? routerMacs(devices.data) : undefined,
         subnets,
       }),
-    [leases.data, hints.data, dhcp.data, wifi, blocks, devices.data, subnets, apAssoc],
+    [leases.data, hints.data, dhcp.data, wifi, blocks, limits, devices.data, subnets, apAssoc],
   );
   const clients = useMemo(() => (infra.size ? merged.filter((c) => !infra.has(c.mac)) : merged), [merged, infra]);
   return {
