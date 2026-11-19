@@ -3,15 +3,15 @@
 # locally and in CI (.github/workflows/release.yml).
 #
 #   npm run build
-#   scripts/build-package.sh x86-64-openwrt-25.12 0.4.0   # -> out/…/netui-0.4.0-r1.apk
-#   scripts/build-package.sh x86-64-openwrt-24.10 0.4.0   # -> out/…/netui_0.4.0-r1_all.ipk
+#   scripts/build-package.sh x86-64-openwrt-25.12 0.4.1   # -> out/…/netui-0.4.1-r1.apk
+#   scripts/build-package.sh x86-64-openwrt-24.10 0.4.1   # -> out/…/netui_0.4.1-r1_all.ipk
 #
 # netui is PKGARCH:=all, so one SDK per package format covers every target.
 # The SDK release only decides the format: 25.x builds .apk, 24.10 builds .ipk.
 set -euo pipefail
 
 sdk="${1:?usage: build-package.sh <sdk-image-tag> [version]}"
-version="${2:-0.4.0}"
+version="${2:-0.4.1}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [[ ! -f "$root/dist/index.html" ]]; then
