@@ -44,6 +44,11 @@ access points and more, step by step.
   the provider shares one public address between customers (carrier-grade
   NAT) or another router sits in front, where port forwards and the VPN
   server cannot work.
+- **A health check of your settings.** netui looks over the router's settings
+  for what is risky (services open to the internet, a common WiFi password,
+  old WiFi encryption, WPS, a guest network that can reach the LAN) or quietly
+  not working (hardware offloading bypassing Smart Queues, a clock that is
+  never set), and fixes most of it in one click.
 - **VPN both ways.** A WireGuard server with a QR code for each phone; the
   router as the client of a VPN provider, for all devices or chosen ones,
   with a switch that blocks their internet if the tunnel drops; or Tailscale

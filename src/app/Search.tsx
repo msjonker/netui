@@ -39,6 +39,7 @@ const PAGE_LIST: [string, string, string][] = [
   ['System', 'system', 'reboot hostname time firmware'],
   ['Set up your router', '/setup', 'wizard first run'],
   ['Diagnostics', 'diagnostics', 'ping traceroute dns lookup troubleshoot connection check'],
+  ['Health Check', 'health', 'security audit risks password wps exposed'],
 ];
 
 export const PAGES: SearchItem[] = PAGE_LIST.map(([label, path, kw]) =>

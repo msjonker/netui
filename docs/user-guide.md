@@ -324,6 +324,16 @@ also block malware or adult sites. (An add-on.)
 **Policies** and **Traffic Rules** decide which networks may talk to which.
 The defaults are safe: leave them unless you know why you want a change.
 
+**Health Check** (**Settings → Health Check**) looks over all of this for you:
+anything open to the internet, WiFi without a password or with an old or
+easily guessed one, WPS, a guest network that can reach your other devices,
+automatic port forwarding (UPnP) without secure mode, a DMZ, Smart Queues or
+speed limits that hardware offloading skips, and a clock that is never set.
+Each finding says why it matters; most have a button that fixes it (through
+the usual review, see [How changes work](#4-how-changes-work)). **Ignore**
+hides a finding in this browser. The dashboard shows a line when something
+needs a look.
+
 ## 10. More WiFi coverage: access points and mesh
 
 If WiFi does not reach every room, add another OpenWrt router as an **access

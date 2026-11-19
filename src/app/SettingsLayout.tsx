@@ -2,6 +2,7 @@ import type { ComponentChildren } from 'preact';
 import { Link, useLocation } from 'wouter-preact';
 import {
   IconEthernet,
+  IconCheckCircle,
   IconExternal,
   IconGlobe,
   IconNetwork,
@@ -24,6 +25,7 @@ const SECTIONS = [
   { href: '/settings/routing', label: 'Routing & DNS', icon: IconRoute },
   { href: '/settings/system', label: 'System', icon: IconSystem },
   { href: '/settings/diagnostics', label: 'Diagnostics', icon: IconPulse },
+  { href: '/settings/health', label: 'Health Check', icon: IconCheckCircle },
 ];
 
 // Out of scope for v1: link to the matching LuCI page instead.

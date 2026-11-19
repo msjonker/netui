@@ -207,6 +207,30 @@ export const IconPulse = (p: P) => (
   </Svg>
 );
 
+export const IconCheckCircle = (p: P) => (
+  <Svg {...p}>
+    <circle cx="10" cy="10" r="7.5" />
+    <path d="m6.8 10.2 2.2 2.2 4.2-4.6" />
+  </Svg>
+);
+
+export const IconHistory = (p: P) => (
+  <Svg {...p}>
+    <path d="M3.5 10a6.5 6.5 0 1 0 1.9-4.6" />
+    <path d="M3 3.5v3h3" />
+    <path d="M10 6.5V10l2.5 1.5" />
+  </Svg>
+);
+
+export const IconPeople = (p: P) => (
+  <Svg {...p}>
+    <circle cx="7.5" cy="7" r="2.75" />
+    <path d="M2.5 16.5c.4-2.8 2.5-4.5 5-4.5s4.6 1.7 5 4.5" />
+    <circle cx="13.75" cy="6.25" r="2.25" />
+    <path d="M13.5 11c2 0 3.6 1.3 4 3.75" />
+  </Svg>
+);
+
 export const IconLog = (p: P) => (
   <Svg {...p}>
     <rect x="3.5" y="2.5" width="13" height="15" rx="2" />

@@ -30,6 +30,7 @@ const DiagnosticsPage = lazy(() => import('../features/diagnostics/DiagnosticsPa
 const SetupPage = lazy(() => import('../features/setup/SetupPage').then((m) => ({ default: m.SetupPage })));
 const VpnPage = lazy(() => import('../features/vpn/VpnPage').then((m) => ({ default: m.VpnPage })));
 const RoutingPage = lazy(() => import('../features/routing/RoutingPage').then((m) => ({ default: m.RoutingPage })));
+const HealthPage = lazy(() => import('../features/health/HealthPage').then((m) => ({ default: m.HealthPage })));
 const SystemPage = lazy(() => import('../features/system/SystemPage').then((m) => ({ default: m.SystemPage })));
 import { Shell } from './Shell';
 
@@ -165,6 +166,7 @@ function SignedIn({
                   <Route path="/settings/routing" component={RoutingPage} />
                   <Route path="/settings/system" component={SystemPage} />
                   <Route path="/settings/diagnostics" component={DiagnosticsPage} />
+                  <Route path="/settings/health" component={HealthPage} />
                   <Route>
                     <NotFound />
                   </Route>

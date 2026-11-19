@@ -1,4 +1,5 @@
 import { useMemo } from 'preact/hooks';
+import { lazy, Suspense } from 'preact/compat';
 import { Link } from 'wouter-preact';
 import { firstError, useInterfaces, useSystemBoard, useSystemInfo, useThroughput } from '../../api/queries';
 import { findUplink, networkLabel, normalizeSystem, uplinkOnline } from '../../model/network';
@@ -34,6 +35,9 @@ import { PortPanel, PortTile } from '../../components/PortTile';
 import { Card, Dot, Empty, LoadError, Meter, Page, Pill, Spinner, Stat, cx } from '../../components/ui';
 import type { ComponentChildren } from 'preact';
 import { SetupBanner } from './SetupBanner';
+
+// The health check's rules are a lazy chunk; the banner appears once they load.
+const HealthBanner = lazy(() => import('./HealthBanner').then((m) => ({ default: m.HealthBanner })));
 
 const SERIES = [
   { label: 'Download', color: '--accent' },
@@ -414,6 +418,9 @@ export function DashboardPage() {
       <LoadError error={firstError(ifaces, board)} />
       <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <SetupBanner />
+        <Suspense fallback={null}>
+          <HealthBanner />
+        </Suspense>
         <HealthStrip />
         <InternetCard />
         <GatewayCard />
