@@ -4,6 +4,7 @@ import {
   IconEthernet,
   IconCheckCircle,
   IconExternal,
+  IconHistory,
   IconGlobe,
   IconNetwork,
   IconPulse,
@@ -26,6 +27,7 @@ const SECTIONS = [
   { href: '/settings/system', label: 'System', icon: IconSystem },
   { href: '/settings/diagnostics', label: 'Diagnostics', icon: IconPulse },
   { href: '/settings/health', label: 'Health Check', icon: IconCheckCircle },
+  { href: '/settings/history', label: 'Change History', icon: IconHistory },
 ];
 
 // Out of scope for v1: link to the matching LuCI page instead.

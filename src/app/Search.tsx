@@ -40,6 +40,7 @@ const PAGE_LIST: [string, string, string][] = [
   ['System', 'system', 'reboot hostname time firmware'],
   ['Set up your router', '/setup', 'wizard first run'],
   ['Diagnostics', 'diagnostics', 'ping traceroute dns lookup troubleshoot connection check'],
+  ['Change History', 'history', 'undo revert log audit changes outside'],
   ['Health Check', 'health', 'security audit risks password wps exposed'],
 ];
 

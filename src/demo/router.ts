@@ -25,6 +25,7 @@ import type {
 } from '../api/types';
 import { ADDONS } from '../model/addons';
 import { Status, UciStore } from './uci';
+import { DemoHistory } from './history';
 import {
   ADDON_CONFIG,
   AP_BOARD,
@@ -180,6 +181,7 @@ export class DemoRouter {
   private boot = now() - (3 * 86400 + 4 * 3600 + 17 * 60);
   private installed = { ...INSTALLED };
   private uci: UciStore;
+  private history: DemoHistory;
   private sessions = new Map<string, { username: string; readOnly: boolean }>();
   private users: NetuiUser[] = [
     { username: 'netui', role: 'admin' },
@@ -219,6 +221,7 @@ export class DemoRouter {
 
   constructor() {
     this.uci = new UciStore(initialConfigs(), (c) => this.configInstalled(c), (configs) => this.committed(configs));
+    this.history = new DemoHistory(this.uci);
     const t = now();
     for (const c of CLIENTS) {
       const age = (t - this.boot) * (0.25 + 0.5 * hash(c.host));
@@ -1334,6 +1337,10 @@ export class DemoRouter {
       'netui.tailscale.down': () => ({}),
       'netui.tailscale.logout': () => ({}),
       'netui.tailscale.set': () => ({}),
+      'netui.history.begin': (a) => this.history.begin(a),
+      'netui.history.record': (a) => this.history.record(a),
+      'netui.history.list': () => this.history.list(),
+      'netui.history.get': (a) => this.history.get(a),
       'netui.users.list': () => ({ users: clone(this.users) }),
       'netui.users.add': (a) => {
         const username = String(a.username ?? '');
@@ -1423,6 +1430,9 @@ const WRITES = new Set([
   'netui.devices.credentials',
   'netui.packages.install',
   'netui.packages.remove',
+  'netui.history.begin',
+  'netui.history.record',
+  'netui.history.get',
   'netui.users.list',
   'netui.users.add',
   'netui.users.remove',

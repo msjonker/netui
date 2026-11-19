@@ -9,6 +9,7 @@
 /usr/share/rpcd/ucode/netui-services
 /usr/share/rpcd/ucode/netui-users
 /usr/share/rpcd/ucode/netui-tailscale
+/usr/share/rpcd/ucode/netui-history
 /usr/share/netui/
 /usr/sbin/netui-passwd
 /etc/netui/

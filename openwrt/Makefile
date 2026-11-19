@@ -66,7 +66,7 @@ define Package/netui/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/usr/sbin/netui-passwd $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/ucode
-	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest ./files/usr/share/rpcd/ucode/netui-services ./files/usr/share/rpcd/ucode/netui-users ./files/usr/share/rpcd/ucode/netui-packages ./files/usr/share/rpcd/ucode/netui-tailscale $(1)/usr/share/rpcd/ucode/
+	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest ./files/usr/share/rpcd/ucode/netui-services ./files/usr/share/rpcd/ucode/netui-users ./files/usr/share/rpcd/ucode/netui-packages ./files/usr/share/rpcd/ucode/netui-tailscale ./files/usr/share/rpcd/ucode/netui-history $(1)/usr/share/rpcd/ucode/
 	$(INSTALL_DIR) $(1)/usr/share/netui
 	$(INSTALL_DATA) ./files/usr/share/netui/limits.sh $(1)/usr/share/netui/
 	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d

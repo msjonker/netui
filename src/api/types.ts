@@ -820,3 +820,33 @@ export interface PackagesStatus {
   addons: Partial<Record<AddonKey, { installed: boolean }>>;
   job: PackagesJob | null;
 }
+
+// netui.history (openwrt/files/usr/share/rpcd/ucode/netui-history), recorded
+// in test/fixtures/ubus/dl-wrx36/plain/netui.history.*.json.
+
+export interface HistoryEntry {
+  id: number;
+  /** Epoch seconds. */
+  time: number;
+  packages: string[];
+  /** Who applied it (netui login); absent for outside changes. */
+  user?: string;
+  /** The netui page it was applied from. */
+  page?: string;
+  /** Changed by something other than netui (LuCI, ssh, a service), noticed later. */
+  outside?: boolean;
+}
+
+export interface HistoryList {
+  entries: HistoryEntry[];
+  /** Packages whose committed config differs from the last recorded state. */
+  changed: string[];
+}
+
+export interface HistoryDetail {
+  id: number;
+  time: number;
+  /** null: the package did not exist (or its state was pruned). */
+  before: Record<string, UciConfig | null>;
+  after: Record<string, UciConfig | null>;
+}

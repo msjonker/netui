@@ -166,6 +166,13 @@ three steps, so a mistake can never cut you off for good:
 If the router undid a change, netui tells you. Look at what you changed, and
 try again more carefully, or ask for help.
 
+**Settings → Change History** lists every change applied from netui: when,
+by whom, from which page, and exactly what changed. **Undo This Change** puts
+those settings back the way they were before it (through the same review and
+safety timer). Changes made some other way (in LuCI, over ssh, or by a
+service) are marked **Changed outside netui**: you can see what changed and
+put it back as netui left it. The router keeps about the last 100 changes.
+
 ## 5. Your internet connection
 
 **Settings → Internet** shows your connection to the internet (the **WAN**).

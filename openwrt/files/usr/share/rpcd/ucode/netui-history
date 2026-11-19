@@ -1,0 +1,226 @@
+// netui.history: what changed in the router's settings, and when.
+//
+//   begin {packages}        before an apply: remember those packages as they
+//                           are committed now. If one differs from the last
+//                           recorded state, something else changed it (LuCI,
+//                           ssh, a service): that becomes an entry first.
+//   record {user, page}     after the apply was confirmed: store an entry with
+//                           each package as it was and as it is now.
+//   list                    entries, newest first (no config), and which
+//                           packages differ from the last recorded state now
+//   get {id}                one entry's packages, before and after (admins:
+//                           configs hold WiFi keys and other secrets)
+//
+// Stored in /etc/netui/history (kept over firmware upgrades with /etc/netui):
+// index.json plus one file per distinct config state under blobs/, named by
+// a hash, so a package that did not change between entries is stored once.
+// The oldest entries go once there are more than MAX_ENTRIES or the blobs
+// take more than MAX_BYTES; flash is small on many routers.
+//
+// Configs are read with the uci module from /etc/config without anyone's
+// staged changes (an empty save directory). rpcd runs this plugin in its own
+// (only) thread, so it never calls rpcd's objects (uci, session, file).
+
+'use strict';
+
+import { cursor } from 'uci';
+import { readfile, writefile, rename, unlink, mkdir, stat, lsdir, access } from 'fs';
+
+const DIR = '/etc/netui/history';
+const BLOBS = `${DIR}/blobs`;
+const INDEX = `${DIR}/index.json`;
+const PENDING = '/tmp/netui-history-pending.json';
+const EMPTY_SAVEDIR = '/var/run/netui-history-nosave';
+const MAX_ENTRIES = 100;
+const MAX_BYTES = 393216;
+// A begin older than this is from an apply that never confirmed.
+const PENDING_TTL = 600;
+const PKG = /^[a-z0-9_-]{1,32}$/;
+
+function read_pkg(name) {
+	if (!access(`/etc/config/${name}`, 'r'))
+		return null;
+	const c = cursor(null, EMPTY_SAVEDIR);
+	return c.get_all(name);
+}
+
+// FNV-1a over the JSON text, plus its length.
+function hash(text) {
+	let h = 0x811c9dc5;
+	for (let i = 0; i < length(text); i++)
+		h = ((h ^ ord(text, i)) * 0x01000193) & 0xffffffff;
+	return sprintf('%08x%x', h, length(text));
+}
+
+function save(path, text) {
+	if (!writefile(`${path}.tmp`, text))
+		return false;
+	return rename(`${path}.tmp`, path);
+}
+
+function ensure_dirs() {
+	mkdir('/etc/netui', 0o700);
+	mkdir(DIR, 0o700);
+	mkdir(BLOBS, 0o700);
+}
+
+function load_index() {
+	const j = json(readfile(INDEX) ?? '{}') ?? {};
+	return { next: +j.next || 1, entries: type(j.entries) == 'array' ? j.entries : [] };
+}
+
+/** Store a package's config; returns its blob name. */
+function put_blob(cfg) {
+	const text = sprintf('%J', cfg);
+	const h = hash(text);
+	const path = `${BLOBS}/${h}.json`;
+	if (!stat(path))
+		save(path, text);
+	return h;
+}
+
+function get_blob(h) {
+	return h && match(h, /^[0-9a-f]+$/) ? json(readfile(`${BLOBS}/${h}.json`) ?? 'null') : null;
+}
+
+/** The newest recorded state of each package: blob name. */
+function latest(idx) {
+	const out = {};
+	for (let i = length(idx.entries) - 1; i >= 0; i--)
+		for (let p, v in idx.entries[i].packages)
+			if (!exists(out, p))
+				out[p] = v.after;
+	return out;
+}
+
+function prune(idx) {
+	const size = () => {
+		let n = 0;
+		for (let f in lsdir(BLOBS) ?? [])
+			n += stat(`${BLOBS}/${f}`)?.size ?? 0;
+		return n;
+	};
+	const gc = () => {
+		const used = {};
+		for (let e in idx.entries)
+			for (let p, v in e.packages) {
+				if (v.before) used[v.before] = true;
+				if (v.after) used[v.after] = true;
+			}
+		for (let f in lsdir(BLOBS) ?? [])
+			if (!used[replace(f, /\.json(\.tmp)?$/, '')])
+				unlink(`${BLOBS}/${f}`);
+	};
+	while (length(idx.entries) > MAX_ENTRIES)
+		shift(idx.entries);
+	gc();
+	while (length(idx.entries) > 1 && size() > MAX_BYTES) {
+		shift(idx.entries);
+		gc();
+	}
+}
+
+function clean_text(v, max) {
+	return substr(replace(`${v ?? ''}`, /[^ -~]/g, ''), 0, max);
+}
+
+const methods = {
+	begin: {
+		args: { packages: [] },
+		call: function(request) {
+			const pkgs = filter(request.args.packages ?? [], (p) => type(p) == 'string' && match(p, PKG));
+			ensure_dirs();
+			const idx = load_index();
+			const last = latest(idx);
+			const before = {};
+			const outside = {};
+			for (let p in pkgs) {
+				const cfg = read_pkg(p);
+				if (cfg == null)
+					continue;
+				before[p] = cfg;
+				if (last[p] && hash(sprintf('%J', cfg)) != last[p])
+					outside[p] = { before: last[p], after: put_blob(cfg) };
+			}
+			if (length(outside)) {
+				push(idx.entries, { id: idx.next++, time: time(), outside: true, packages: outside });
+				prune(idx);
+				save(INDEX, sprintf('%J', idx));
+			}
+			writefile(PENDING, sprintf('%J', { time: time(), packages: before }));
+			return { result: true };
+		}
+	},
+
+	record: {
+		args: { user: 'user', page: 'page' },
+		call: function(request) {
+			const pending = json(readfile(PENDING) ?? 'null');
+			unlink(PENDING);
+			if (!pending || time() - pending.time > PENDING_TTL)
+				return { error: 'nothing to record' };
+			ensure_dirs();
+			const idx = load_index();
+			const packages = {};
+			for (let p, cfg in pending.packages) {
+				if (!match(p, PKG))
+					continue;
+				const now = read_pkg(p);
+				if (now == null)
+					continue;
+				const b = put_blob(cfg), a = put_blob(now);
+				if (a != b)
+					packages[p] = { before: b, after: a };
+			}
+			if (!length(packages)) {
+				prune(idx);
+				return { result: true, recorded: false };
+			}
+			const e = { id: idx.next++, time: time(), packages };
+			const user = clean_text(request.args.user, 32), page = clean_text(request.args.page, 64);
+			if (user) e.user = user;
+			if (page) e.page = page;
+			push(idx.entries, e);
+			prune(idx);
+			return save(INDEX, sprintf('%J', idx)) ? { result: true, recorded: true, id: e.id } : { error: 'could not save the history' };
+		}
+	},
+
+	list: {
+		call: function() {
+			const idx = load_index();
+			const entries = map(reverse(idx.entries), (e) => {
+				const o = { id: e.id, time: e.time, packages: keys(e.packages) };
+				if (e.user) o.user = e.user;
+				if (e.page) o.page = e.page;
+				if (e.outside) o.outside = true;
+				return o;
+			});
+			const changed = [];
+			for (let p, h in latest(idx)) {
+				const cfg = read_pkg(p);
+				if (cfg != null && hash(sprintf('%J', cfg)) != h)
+					push(changed, p);
+			}
+			return { entries, changed: sort(changed) };
+		}
+	},
+
+	get: {
+		args: { id: 0 },
+		call: function(request) {
+			const idx = load_index();
+			const e = filter(idx.entries, (x) => x.id == +request.args.id)[0];
+			if (!e)
+				return { error: 'no such entry' };
+			const before = {}, after = {};
+			for (let p, v in e.packages) {
+				before[p] = get_blob(v.before);
+				after[p] = get_blob(v.after);
+			}
+			return { id: e.id, time: e.time, before, after };
+		}
+	},
+};
+
+return { 'netui.history': methods };

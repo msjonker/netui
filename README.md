@@ -23,6 +23,10 @@ access points and more, step by step.
   applied with a 30-second safety timer: if it cuts netui off from the
   router, the router undoes it by itself. A change that moves the router to
   a new address is followed there.
+- **Every change on record, and undoable.** Change History shows what each
+  change did, who made it and from where, and undoes any of them through the
+  same review and safety timer. Changes made in LuCI or over ssh are noticed
+  and shown too, with a way to put the settings back.
 - **Access points in one click.** Install a small agent on any other OpenWrt
   router and click **Adopt**: it becomes an access point with your WiFi
   networks, and every later WiFi change is copied to it. Each access point

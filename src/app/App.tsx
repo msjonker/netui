@@ -6,6 +6,7 @@ import { useHashLocation } from 'wouter-preact/use-hash-location';
 import { clearSession, getSession, onSessionExpired, type Session } from '../api/ubus';
 import { browserDeps, completeHandoff, takeRollbackNotice, type ApplyDeps, type ApplyResult, type Handoff } from '../api/apply';
 import { confirm } from '../api/uci';
+import { historyRecord } from '../api/history';
 import { keys, useStagedChanges } from '../api/queries';
 import { ApplyContext, useApply, useApplyController } from '../api/useApply';
 import type { UciConfig } from '../api/types';
@@ -31,6 +32,7 @@ const SetupPage = lazy(() => import('../features/setup/SetupPage').then((m) => (
 const VpnPage = lazy(() => import('../features/vpn/VpnPage').then((m) => ({ default: m.VpnPage })));
 const RoutingPage = lazy(() => import('../features/routing/RoutingPage').then((m) => ({ default: m.RoutingPage })));
 const PeoplePage = lazy(() => import('../features/people/PeoplePage').then((m) => ({ default: m.PeoplePage })));
+const HistoryPage = lazy(() => import('../features/history/HistoryPage').then((m) => ({ default: m.HistoryPage })));
 const HealthPage = lazy(() => import('../features/health/HealthPage').then((m) => ({ default: m.HealthPage })));
 const SystemPage = lazy(() => import('../features/system/SystemPage').then((m) => ({ default: m.SystemPage })));
 import { Shell } from './Shell';
@@ -80,7 +82,8 @@ function HandoffBanner({ handoff }: { handoff: Handoff }) {
       confirm: () => confirm(),
       sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
       now: () => Date.now(),
-    }).then((r) => {
+    }).then(async (r) => {
+      if (r.outcome === 'confirmed') await historyRecord(handoff.returnTo);
       setResult(r);
       void qc.invalidateQueries();
     });
@@ -173,6 +176,7 @@ function SignedIn({
                   <Route path="/settings/system" component={SystemPage} />
                   <Route path="/settings/diagnostics" component={DiagnosticsPage} />
                   <Route path="/settings/health" component={HealthPage} />
+                  <Route path="/settings/history" component={HistoryPage} />
                   <Route>
                     <NotFound />
                   </Route>

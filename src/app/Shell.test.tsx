@@ -63,8 +63,8 @@ describe('global search', () => {
     fireEvent.keyDown(box, { key: 'ArrowDown' });
     expect(screen.getAllByRole('option')[1]!.getAttribute('aria-selected')).toBe('true');
     fireEvent.keyDown(box, { key: 'Enter' });
-    // Settings pages, alphabetical: Diagnostics, then Firewall & Security.
-    await waitFor(() => expect(location.hash).toBe('#/settings/security'));
+    // Settings pages, alphabetical: Change History, then Diagnostics.
+    await waitFor(() => expect(location.hash).toBe('#/settings/diagnostics'));
 
     fireEvent.keyDown(window, { key: 'k', metaKey: true });
     fireEvent.keyDown(await screen.findByRole('combobox', { name: 'Search netui' }), { key: 'Escape' });

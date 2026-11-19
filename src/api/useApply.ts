@@ -5,6 +5,7 @@ import { browserDeps, runApply, type ApplyDeps, type ApplyPhase, type ApplyPlan,
 import { getChanges, revert, stage, type UciOp } from './uci';
 import { getSession } from './ubus';
 import { runServiceHooks } from './services';
+import { historyBegin, historyRecord } from './history';
 import type { UciChange } from './types';
 
 // The UI side of the apply/rollback contract:
@@ -53,6 +54,9 @@ export interface ApplyTarget {
   revert(packages: readonly string[]): Promise<void>;
   /** Follow-up work after a confirmed apply; returns what failed. */
   after(packages: readonly string[]): Promise<string[]>;
+  /** Change history: right before the apply, and once it is confirmed. Best effort. */
+  begin?(packages: readonly string[]): Promise<void>;
+  record?(plan: ApplyPlan): Promise<void>;
 }
 
 const gatewayTarget: ApplyTarget = {
@@ -60,6 +64,8 @@ const gatewayTarget: ApplyTarget = {
   changes: getChanges,
   revert: (packages) => revert(packages),
   after: runServiceHooks,
+  begin: historyBegin,
+  record: (plan) => historyRecord(plan.returnTo),
 };
 
 /** Second re-read after a confirmed apply, once service reloads have finished. */
@@ -120,8 +126,10 @@ export function useApplyController(deps: () => ApplyDeps = browserDeps, target: 
     if (!plan) return;
     setState({ step: 'running', phase: { phase: 'applying' }, plan });
     try {
+      await target.begin?.(plan.packages);
       const result = await runApply(plan, deps(), (phase) => setState({ step: 'running', phase, plan }));
       if (result.outcome === 'redirected' || result.outcome === 'expired') return;
+      if (result.outcome === 'confirmed') await target.record?.(plan);
       const failed = result.outcome === 'confirmed' ? await target.after(plan.packages) : [];
       setState({ step: 'done', result, plan, ...(failed.length ? { failedServices: failed } : {}) });
       if (result.outcome === 'confirmed') plan.onConfirmed?.();
