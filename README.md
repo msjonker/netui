@@ -17,6 +17,21 @@ New to this? The **[user guide](docs/user-guide.md)** walks through
 installing netui and setting up WiFi, a guest network, ad blocking, extra
 access points and more, step by step.
 
+## Quick start
+
+On a router running OpenWrt 25.12 with internet access, over ssh:
+
+```sh
+cd /tmp && wget https://github.com/msjonker/netui/releases/download/v0.4.3/netui-0.4.3-r1.apk
+apk update && apk add --allow-untrusted netui-0.4.3-r1.apk
+netui-passwd
+```
+
+Then open **https://192.168.1.1/netui/** and sign in as `netui`. LuCI stays
+installed and keeps working, and `apk del netui` removes netui again. For
+OpenWrt 24.10, a router without internet access or adding access points, see
+[Install on a router](#install-on-a-router) and [Tested on](#tested-on).
+
 ## What makes netui different
 
 - **You cannot lock yourself out.** Every change is shown for review, then
@@ -110,6 +125,22 @@ grep DISTRIB_RELEASE /etc/openwrt_release
 | `24.10.x` | opkg | `netui_0.4.3-r1_all.ipk` |
 
 Older releases (23.05 and before) are not supported.
+
+### Tested on
+
+Every release is installed and checked on these routers before it is
+published:
+
+| Router | OpenWrt | Role | Notes |
+|---|---|---|---|
+| Dynalink DL-WRX36 | 25.12 | Gateway | aarch64, DSA ports, full WiFi package |
+| Xiaomi AX3600 | 25.12 | Access point over wireless mesh | aarch64, DSA ports |
+| TP-Link TL-WDR4300 v1 | 24.10 | Access point over a cable | MIPS, switch chip (swconfig), 8 MB flash, basic WiFi package |
+
+Port, VLAN and firewall changes are also tested on OpenWrt x86 virtual
+machines. netui contains no compiled code, so other routers on 24.10 or 25.x
+should work too; please [open an issue](https://github.com/msjonker/netui/issues)
+with your router's model and OpenWrt version, whether it works or not.
 
 ### 2. Download the package and copy it to the router
 
