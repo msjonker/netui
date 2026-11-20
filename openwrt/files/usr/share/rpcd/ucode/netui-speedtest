@@ -7,7 +7,7 @@
 //            the line moves in that time).
 //
 // rpcd runs ucode in-process, so the test runs as a detached job in
-// /tmp/netui-speedtest. A finished run is added to /etc/netui/speedtest.json
+// /var/run/netui-speedtest. A finished run is added to /etc/netui/speedtest.json
 // the first time status sees it; only speeds, latency and the server are
 // kept, never the public address, provider or location speedtestcpp reports.
 
@@ -15,7 +15,7 @@
 
 import { readfile, writefile, mkdir, access, unlink, rename } from 'fs';
 
-const DIR = '/tmp/netui-speedtest';
+const DIR = '/var/run/netui-speedtest';
 const HISTORY = '/etc/netui/speedtest.json';
 const LIBRESPEED = '/usr/bin/librespeed-cli';
 const SPEEDTEST = '/usr/bin/speedtest';

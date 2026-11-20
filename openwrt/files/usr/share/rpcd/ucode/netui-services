@@ -26,7 +26,7 @@ import { readfile, writefile, mkdir, access, unlink, popen, open } from 'fs';
 import { cursor } from 'uci';
 import { connect } from 'ubus';
 
-const RUN = '/tmp/netui-services';
+const RUN = '/var/run/netui-services';
 const ADBLOCK = '/etc/init.d/adblock-fast';
 const OPENNDS = '/etc/init.d/opennds';
 const NDSCTL = '/usr/bin/ndsctl';

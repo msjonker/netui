@@ -20,7 +20,7 @@
 import { popen, readfile, writefile, mkdir, access, unlink } from 'fs';
 
 const CLI = '/usr/sbin/tailscale';
-const DIR = '/tmp/netui-tailscale';
+const DIR = '/var/run/netui-tailscale';
 
 function run(cmd) {
 	const p = popen(`${cmd} 2>&1`, 'r');

@@ -10,7 +10,7 @@
 //                         leave WiFi without hostapd's full build).
 //
 // Installs take up to a few minutes and rpcd runs ucode in-process, so they
-// run as a detached job in /tmp/netui-packages. Packages come from the
+// run as a detached job in /var/run/netui-packages. Packages come from the
 // router's configured feeds with their usual signature checks (apk on 25.x,
 // opkg on 24.10).
 //
@@ -24,7 +24,7 @@
 
 import { readfile, writefile, mkdir, access, unlink, popen, open } from 'fs';
 
-const DIR = '/tmp/netui-packages';
+const DIR = '/var/run/netui-packages';
 const LOG_TAIL = 4096;
 
 const FULL_WPAD = ['wpad', 'wpad-mbedtls', 'wpad-openssl', 'wpad-wolfssl'];

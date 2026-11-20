@@ -16,7 +16,7 @@ import { cursor } from 'uci';
 import { connect } from 'ubus';
 
 const REGISTRY = '/etc/netui/devices.json';
-const RUN = '/tmp/netui';
+const RUN = '/var/run/netui';
 const NULL_SID = '00000000000000000000000000000000';
 // Also the UCI section name on the AP, so no hyphen.
 const AP_LOGIN = 'netui_gw';

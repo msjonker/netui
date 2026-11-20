@@ -11,7 +11,7 @@
 //            {version}. The device flashes and reboots when it finishes.
 //
 // owut takes seconds to minutes and rpcd runs ucode in-process, so both run
-// as a detached job in /tmp/netui-fw; /tmp is empty again after the reboot.
+// as a detached job in /var/run/netui-fw (in /tmp: empty again after the reboot).
 //
 // netui itself is not in the ASU package feeds, so it is removed from the
 // build request (-r). /lib/upgrade/keep.d/<package> keeps its files.
@@ -20,7 +20,7 @@
 
 import { readfile, writefile, mkdir, access, unlink, open } from 'fs';
 
-const DIR = '/tmp/netui-fw';
+const DIR = '/var/run/netui-fw';
 const OWUT = '/usr/bin/owut';
 const LOG_TAIL = 6144;
 

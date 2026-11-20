@@ -75,8 +75,8 @@ function sha256(text) {
 			return d.sha256(text);
 	}
 	catch (e) {}
-	mkdir('/tmp/netui-agent', 0700);
-	const f = '/tmp/netui-agent/hash';
+	mkdir('/var/run/netui-agent', 0700);
+	const f = '/var/run/netui-agent/hash';
 	writefile(f, '');
 	chmod(f, 0600);
 	writefile(f, text);

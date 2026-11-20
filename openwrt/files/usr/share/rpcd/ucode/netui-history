@@ -30,7 +30,7 @@ const DIR = '/etc/netui/history';
 const BLOBS = `${DIR}/blobs`;
 const INDEX = `${DIR}/index.json`;
 // Holds whole configs (keys included) between begin and record: private.
-const PENDING_DIR = '/tmp/netui-history';
+const PENDING_DIR = '/var/run/netui-history';
 const PENDING = `${PENDING_DIR}/pending.json`;
 const EMPTY_SAVEDIR = '/var/run/netui-history-nosave';
 const MAX_ENTRIES = 100;
