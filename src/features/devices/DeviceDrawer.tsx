@@ -150,6 +150,14 @@ export function DeviceDrawer({ device, onClose }: { device: ManagedDevice; onClo
             </Banner>
           </div>
         )}
+        {device.verified !== false && device.secure === false && device.online && (
+          <div class="mt-4">
+            <Banner tone="warn">
+              The connection to this access point is not encrypted: it has no HTTPS. Install Secure access (HTTPS) under
+              its Add-ons below; netui then uses it by itself.
+            </Banner>
+          </div>
+        )}
         {notice && (
           <div class="mt-4">
             <Banner tone={notice.tone} role={notice.tone === 'bad' ? 'alert' : 'status'}>

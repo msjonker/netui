@@ -517,8 +517,10 @@ export interface ManagedDevice {
   agent?: string;
   /** Unix seconds. */
   adopted_at?: number;
-  /** It proves its identity before the gateway sends it anything (agent 0.5+; false: an older agent). Absent from older gateways. */
+  /** It proves its identity before the gateway sends it anything (false: an older agent). Absent from older gateways. */
   verified?: boolean;
+  /** The gateway talks to it over HTTPS checked against its pinned certificate (false: plain HTTP, it has no HTTPS). */
+  secure?: boolean;
 }
 
 /** An access point running netui-agent that no gateway here has adopted. */

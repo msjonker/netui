@@ -1,11 +1,12 @@
 {
 	"unauthenticated": {
-		"description": "netui gateway discovery: what this device is, and proof of its identity; no secrets",
+		"description": "netui gateway discovery: what this device is, proof of its identity and its HTTPS certificate; no secrets",
 		"read": {
 			"ubus": {
 				"netui.agent": [
 					"info",
-					"prove"
+					"prove",
+					"cert"
 				]
 			}
 		}

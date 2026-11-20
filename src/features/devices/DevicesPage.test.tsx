@@ -102,6 +102,34 @@ describe('Devices', () => {
   });
 });
 
+describe('how the gateway reaches an access point', () => {
+  const open = async () => {
+    renderApp('#/devices');
+    const table = await screen.findByRole('table', { name: 'Devices' });
+    fireEvent.click((await within(table).findByText('Office AP')).closest('tr')!);
+    return screen.findByRole('complementary', { name: 'Office AP' });
+  };
+
+  it('says nothing over pinned HTTPS', async () => {
+    seedDevices(router, { managed: [{ ...recorded.device, verified: true, secure: true }] });
+    const drawer = await open();
+    await within(drawer).findByRole('table', { name: 'Radios' });
+    expect(within(drawer).queryByText(/not encrypted|cannot prove/)).toBeNull();
+  });
+
+  it('points to HTTPS where the access point has none', async () => {
+    seedDevices(router, { managed: [{ ...recorded.device, verified: true, secure: false }] });
+    expect(await within(await open()).findByText(/The connection to this access point is not encrypted/)).toBeTruthy();
+  });
+
+  it('asks for a newer agent where it cannot prove itself', async () => {
+    seedDevices(router, { managed: [{ ...recorded.device, verified: false, secure: false }] });
+    const drawer = await open();
+    expect(await within(drawer).findByText(/older netui-agent, which cannot prove its identity/)).toBeTruthy();
+    expect(within(drawer).queryByText(/not encrypted: it has no HTTPS/)).toBeNull();
+  });
+});
+
 describe('adopted access points elsewhere', () => {
   it('shows them in Topology and keeps them out of the client list', async () => {
     seedDevices(router, { managed: [recorded.device] });

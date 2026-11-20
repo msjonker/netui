@@ -389,10 +389,12 @@ the devices on its WiFi, its radios, firmware updates and add-ons. Under
 **Radios**, **Edit** sets the channel, width and power for that access point
 alone, so two access points near each other do not have to share a channel.
 
-The main router only talks to an access point after it proves who it is, with
-a secret the two share since adoption, so another device on your network cannot
-pose as it. An access point with an older `netui-agent` cannot do that: its
-panel says so, and installing the current `netui-agent` on it fixes it.
+The main router talks to an access point over an encrypted connection that
+only that access point can answer, set up with a secret the two share since
+adoption. Another device on your network cannot pose as it or read what passes
+between them. An access point without HTTPS says so in its panel (install
+**Secure access (HTTPS)** among its add-ons), and one with an older
+`netui-agent` asks for the current one.
 
 ![An access point's panel](screenshots/access-point.png)
 

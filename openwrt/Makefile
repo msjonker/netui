@@ -35,7 +35,7 @@ define Package/netui
   # stay optional: netui hides or explains what is not installed.
   # rpcd-mod-ucode and uclient-fetch run netui.devices, which adopts access
   # points and relays calls to them. owut (firmware upgrades) is optional.
-  DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +rpcd-mod-ucode +uclient-fetch +uhttpd +uhttpd-mod-ubus +luci-base
+  DEPENDS:=+rpcd +rpcd-mod-iwinfo +rpcd-mod-file +rpcd-mod-ucode +ucode-mod-digest +uclient-fetch +uhttpd +uhttpd-mod-ubus +luci-base
   PKGARCH:=all
 endef
 
@@ -69,6 +69,8 @@ define Package/netui/install
 	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest ./files/usr/share/rpcd/ucode/netui-services ./files/usr/share/rpcd/ucode/netui-users ./files/usr/share/rpcd/ucode/netui-packages ./files/usr/share/rpcd/ucode/netui-tailscale ./files/usr/share/rpcd/ucode/netui-history ./files/usr/share/rpcd/ucode/netui-config $(1)/usr/share/rpcd/ucode/
 	$(INSTALL_DIR) $(1)/usr/share/netui
 	$(INSTALL_DATA) ./files/usr/share/netui/limits.sh $(1)/usr/share/netui/
+	$(INSTALL_DIR) $(1)/usr/share/ucode/netui
+	$(INSTALL_DATA) ./files/usr/share/ucode/netui/crypt.uc $(1)/usr/share/ucode/netui/
 	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
 	$(INSTALL_DATA) ./files/lib/upgrade/keep.d/netui $(1)/lib/upgrade/keep.d/
 endef
@@ -112,7 +114,7 @@ define Package/netui-agent
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Access point agent for a netui gateway
-  DEPENDS:=+rpcd +rpcd-mod-ucode +uhttpd +uhttpd-mod-ubus
+  DEPENDS:=+rpcd +rpcd-mod-ucode +ucode-mod-digest +uhttpd +uhttpd-mod-ubus
   PKGARCH:=all
 endef
 
@@ -132,6 +134,9 @@ define Package/netui-agent/install
 	$(INSTALL_BIN) ./agent/files/usr/libexec/netui-agent/access-point $(1)/usr/libexec/netui-agent/
 	# Same firmware plugin as the gateway's; the gateway relays to it.
 	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-packages $(1)/usr/share/rpcd/ucode/
+	# Password hashes made in ucode (shared with the gateway package).
+	$(INSTALL_DIR) $(1)/usr/share/ucode/netui
+	$(INSTALL_DATA) ./files/usr/share/ucode/netui/crypt.uc $(1)/usr/share/ucode/netui/
 	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
 	$(INSTALL_DATA) ./agent/files/lib/upgrade/keep.d/netui-agent $(1)/lib/upgrade/keep.d/
 endef

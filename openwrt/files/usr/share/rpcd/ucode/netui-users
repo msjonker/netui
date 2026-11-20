@@ -61,7 +61,18 @@ function logins() {
 	return out;
 }
 
+// SHA-256-crypt made in ucode (netui.crypt): the password never reaches a
+// command line. Without ucode's digest module, uhttpd -m, where it shows in
+// the process list while it runs.
 function hash(password) {
+	let crypt = null;
+	try {
+		crypt = require('netui.crypt');
+	}
+	catch (e) {}
+	const made = crypt?.hash(password);
+	if (made)
+		return made;
 	const p = popen(`uhttpd -m ${shellquote(password)}`);
 	const out = trim(p?.read('all') ?? '');
 	p?.close();

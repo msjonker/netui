@@ -11,7 +11,7 @@
 
 'use strict';
 
-import { readfile, writefile, mkdir, unlink, chmod, popen, lsdir } from 'fs';
+import { readfile, writefile, mkdir, unlink, chmod, popen, lsdir, access, rename } from 'fs';
 import { cursor } from 'uci';
 import { connect } from 'ubus';
 
@@ -92,10 +92,16 @@ function random_secret(n) {
 
 const IPV4 = /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/;
 
-// One JSON-RPC call to http://ip/ubus (https:// with `tls`, without checking
-// the certificate: access points have self-signed ones; it keeps what is sent
-// from anyone just listening). The body goes through a 0600 temp file so
-// passwords never show up in a process list.
+// Pinned HTTPS certificates of access points, by MAC.
+const CERTS = '/etc/netui/certs';
+const pin_of = (dev) => `${CERTS}/${replace(dev.mac, /:/g, '')}.der`;
+
+// One JSON-RPC call to ip/ubus. `tls`: false for http://; true for https://
+// without checking the certificate (adoption: access points have self-signed
+// ones; it keeps what is sent from anyone just listening); or the path of a
+// pinned certificate, which the access point must present and which must
+// name the address. The body goes through a 0600 temp file so passwords
+// never show up in a process list.
 function ubus_at(ip, sid, object, method, args, timeout, tls) {
 	if (!match(ip ?? '', IPV4))
 		return { error: 'invalid address' };
@@ -104,11 +110,20 @@ function ubus_at(ip, sid, object, method, args, timeout, tls) {
 	chmod(body, 0600);
 	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [sid, object, method, args ?? {}] }));
 	const url = tls ? `https://${ip}/ubus` : `http://${ip}/ubus`;
-	const out = sh(`uclient-fetch -q -T ${timeout ?? 3} -O - ${tls ? '--no-check-certificate ' : ''}--header='Content-Type: application/json' --post-file=${body} ${shellquote(url)} 2>/dev/null`);
+	const check = type(tls) == 'string' ? `--ca-certificate=${shellquote(tls)} ` : tls ? '--no-check-certificate ' : '';
+	const out = sh(`uclient-fetch -T ${timeout ?? 3} -O - ${check}--header='Content-Type: application/json' --post-file=${body} ${shellquote(url)} 2>${body}.err`);
+	const err = readfile(`${body}.err`) ?? '';
 	unlink(body);
+	unlink(`${body}.err`);
 	const r = parse(out);
-	if (type(r?.result) != 'array')
-		return r?.error ? { error: r.error.message, code: r.error.code } : { error: 'unreachable' };
+	if (type(r?.result) != 'array') {
+		if (r?.error)
+			return { error: r.error.message, code: r.error.code };
+		// Not the pinned certificate, or one that does not name this address.
+		if (type(tls) == 'string' && match(err, /SSL|certificate/i))
+			return { error: 'certificate', tls_failed: true };
+		return { error: 'unreachable' };
+	}
 	return { status: r.result[0], data: r.result[1] };
 }
 
@@ -213,6 +228,8 @@ function public_view(dev, live, ip) {
 		adopted_at: dev.adopted_at,
 		// It holds a key and proves itself before the gateway sends it anything.
 		verified: !!dev.key,
+		// The gateway talks to it over HTTPS checked against its pinned certificate.
+		secure: !!dev.key && !!access(pin_of(dev)),
 	};
 }
 
@@ -262,16 +279,95 @@ function give_key(dev, ip, sid) {
 	dev.key = key;
 }
 
-function login(dev, ip) {
-	const r = ubus_at(ip, NULL_SID, 'session', 'login', { username: AP_LOGIN, password: dev.password });
+// Ask the access point for its HTTPS certificate and pin it if the tag shows
+// it holds this device's key. 'pinned' (restarting: uhttpd restarts to use a
+// new one), 'nohttps' (it has none, tagged), 'old' (an agent without the
+// method, untagged), or 'failed'.
+function refresh_pin(dev, ip) {
+	const nonce = random_secret(32);
+	const r = ubus_at(ip, NULL_SID, 'netui.agent', 'cert', { nonce });
+	if (r.error == 'unreachable' || r.error == 'invalid address')
+		return { state: 'failed', unreachable: true };
+	if (r.status != 0 || r.code)
+		return { state: 'old' };
+	if (r.data?.error == 'no https')
+		return { state: r.data.tag == sha256(`netui-nohttps:${dev.key}:${nonce}`) ? 'nohttps' : 'failed' };
+	if (type(r.data?.cert) != 'string')
+		return { state: 'failed' };
+	mkdir(CERTS, 0700);
+	const pin = pin_of(dev), tmp = `${pin}.new`;
+	writefile(tmp, b64dec(r.data.cert) ?? '');
+	const fp = match(sh(`sha256sum ${shellquote(tmp)}`), /^[0-9a-f]{64}/)?.[0];
+	if (!fp || r.data.tag != sha256(`netui-cert:${dev.key}:${nonce}:${fp}`)) {
+		unlink(tmp);
+		return { state: 'failed' };
+	}
+	rename(tmp, pin);
+	return { state: 'pinned', restarting: !!r.data.restarting };
+}
+
+// Remember that this access point showed it can say what it has (a
+// certificate or "no https"): from then on an untagged "old agent" answer is
+// someone else's.
+function seen_cert(dev) {
+	if (dev.cert_seen)
+		return;
+	const reg = load_registry();
+	if (!reg.devices[dev.mac])
+		return;
+	reg.devices[dev.mac].cert_seen = true;
+	save_registry(reg);
+	dev.cert_seen = true;
+}
+
+const nothing_sent = (dev, ip) => ({ error: `the device at ${ip} could not prove it is ${dev.name}; nothing was sent to it`, ip });
+
+function finish_login(dev, ip, tls, r) {
 	if (r.status != 0)
-		return null;
+		return { error: 'login failed', ip };
+	const ch = { sid: r.data.ubus_rpc_session, ip, tls };
 	const s = sessions();
-	s[dev.mac] = { sid: r.data.ubus_rpc_session, ip };
+	s[dev.mac] = ch;
 	save_sessions(s);
 	if (!dev.key)
-		give_key(dev, ip, s[dev.mac].sid);
-	return s[dev.mac].sid;
+		give_key(dev, ip, ch.sid);
+	return ch;
+}
+
+// Open a channel to an access point at `ip` and log in on it: HTTPS checked
+// against its pinned certificate wherever it serves HTTPS; plain HTTP only to
+// an address that proved it holds the key, and only when the device said
+// (tagged) it has no HTTPS, or runs an agent too old to say, and never once a
+// certificate is pinned. An access point adopted before keys existed (no
+// key yet) gets one here.
+function open_channel(dev, ip) {
+	let tls = false;
+	if (dev.key) {
+		const p = refresh_pin(dev, ip);
+		if (p.unreachable)
+			return { error: 'unreachable', ip };
+		if (p.state == 'pinned' || p.state == 'nohttps')
+			seen_cert(dev);
+		if (p.state == 'pinned')
+			tls = pin_of(dev);
+		else if ((p.state == 'nohttps' || (p.state == 'old' && !dev.cert_seen)) && !access(pin_of(dev))) {
+			if (!proves(dev, ip))
+				return nothing_sent(dev, ip);
+		}
+		else
+			return nothing_sent(dev, ip);
+		// A new certificate takes effect when uhttpd has restarted (a few seconds).
+		const tries = p.restarting ? 12 : 1;
+		for (let i = 0; i < tries; i++) {
+			if (i)
+				sleep(1000);
+			const r = ubus_at(ip, NULL_SID, 'session', 'login', { username: AP_LOGIN, password: dev.password }, null, tls);
+			if (!r.tls_failed && r.error != 'unreachable')
+				return finish_login(dev, ip, tls, r);
+		}
+		return { error: `could not open a secure connection to ${dev.name} at ${ip}`, ip };
+	}
+	return finish_login(dev, ip, tls, ubus_at(ip, NULL_SID, 'session', 'login', { username: AP_LOGIN, password: dev.password }));
 }
 
 
@@ -280,26 +376,21 @@ function allowed(object, method) {
 	return index(ALLOWED[key] ?? [], method) >= 0;
 }
 
-// Relay one call to an adopted AP, logging in again once if the session expired.
-// A session is only used at the address that proved itself for it; at any
-// other address the device proves itself again before anything is sent.
+// Relay one call to an adopted AP over the channel opened for its current
+// address (see open_channel), opening a new one when the address changed, the
+// session expired or the certificate no longer fits.
 function relay(dev, object, method, args) {
 	const ip = address_of(dev);
 	const known = sessions()[dev.mac];
-	let sid = type(known) == 'object' && known.ip == ip ? known.sid : null;
-	if (!sid) {
-		if (dev.key && !proves(dev, ip))
-			return { error: `the device at ${ip} could not prove it is ${dev.name}; nothing was sent to it`, ip: ip };
-		sid = login(dev, ip);
-	}
-	if (!sid)
-		return { error: 'login failed', ip: ip };
-	let r = ubus_at(ip, sid, object, method, args);
-	if (r.code == -32002 || r.status == 6) {
-		sid = login(dev, ip);
-		if (!sid)
-			return { error: 'login failed', ip: ip };
-		r = ubus_at(ip, sid, object, method, args);
+	let ch = type(known) == 'object' && known.ip == ip && known.sid ? known : open_channel(dev, ip);
+	if (ch.error)
+		return ch;
+	let r = ubus_at(ip, ch.sid, object, method, args, null, ch.tls);
+	if (r.tls_failed || r.code == -32002 || r.status == 6) {
+		ch = open_channel(dev, ip);
+		if (ch.error)
+			return ch;
+		r = ubus_at(ip, ch.sid, object, method, args, null, ch.tls);
 	}
 	return r;
 }
@@ -681,6 +772,8 @@ const methods = {
 			const reg = load_registry();
 			reg.devices[dev.mac] = dev;
 			save_registry(reg);
+			// A certificate pinned for an earlier adoption of this device is not its now.
+			unlink(pin_of(dev));
 			return { device: public_view(dev, info.data, a.ip) };
 		}
 	},
@@ -693,6 +786,7 @@ const methods = {
 			if (!dev)
 				return { error: 'unknown device' };
 			relay(dev, 'netui.agent', 'release', {});
+			unlink(pin_of(dev));
 			delete reg.devices[dev.mac];
 			save_registry(reg);
 			const s = sessions();

@@ -10,6 +10,14 @@
 //            over this one's address (or its DHCP lease, by copying its MAC)
 //            learns nothing. Tied to the address, so an impostor cannot pass
 //            the challenge on to this device and replay the answer.
+//   cert     anyone on the LAN: this device's HTTPS certificate {nonce}, and
+//            sha256("netui-cert:" key ":" nonce ":" sha256 of the certificate)
+//            to show it is this device's. The gateway pins the certificate and
+//            from then on talks to the device only over HTTPS checked against
+//            it, so nobody on the way can read or change what it sends. The
+//            certificate names the device's IPv4 addresses (the gateway
+//            connects by address): when they change, it is made again and
+//            uhttpd restarts. Errors with "no https" where uhttpd has none.
 //   adopt    root only: create the gateway's login, store its key, optionally
 //            set a new root password, and turn the device into a bridged
 //            access point.
@@ -55,6 +63,7 @@ function save_state(state) {
 }
 
 const KEY = /^[A-Za-z0-9]{32,64}$/;
+const CERT_STATE = '/etc/netui-agent/cert.json';
 const NONCE = /^[A-Za-z0-9]{16,64}$/;
 
 // Hex SHA-256 of a string: ucode's digest module where installed, else
@@ -74,6 +83,41 @@ function sha256(text) {
 	const out = sh(`sha256sum < ${f}`);
 	unlink(f);
 	return match(out ?? '', /^[0-9a-f]{64}/)?.[0];
+}
+
+// uhttpd's certificate and key, where it serves HTTPS and a certificate can be made.
+function https_files() {
+	const c = cursor().get_all('uhttpd', 'main');
+	const listen = c?.listen_https;
+	if (!c || !(type(listen) == 'array' ? length(listen) : length(listen ?? '')))
+		return null;
+	// uhttpd's TLS support is the library it loads by this name.
+	if (!access('/usr/sbin/px5g') || !(access('/lib/libustream-ssl.so') || access('/usr/lib/libustream-ssl.so')))
+		return null;
+	return { cert: c.cert ?? '/etc/uhttpd.crt', key: c.key ?? '/etc/uhttpd.key' };
+}
+
+// Make uhttpd's certificate name exactly these addresses (one name each:
+// px5g takes one per -addext). Returns true when it was replaced, and
+// uhttpd restarts to use it; false when it already did; null on failure.
+function cert_for(files, ips) {
+	const want = join(' ', sort([...ips]));
+	const state = json(readfile(CERT_STATE) ?? 'null');
+	if (state?.ips == want && access(files.cert))
+		return false;
+	let cmd = `px5g selfsigned -der -days 3650 -newkey ec -pkeyopt ec_paramgen_curve:P-256 ` +
+		`-keyout ${shellquote(files.key + '.new')} -out ${shellquote(files.cert + '.new')} ` +
+		`-subj /CN=netui-ap -addext extendedKeyUsage=serverAuth`;
+	for (let ip in ips)
+		cmd += ` -addext subjectAltName=DNS:${ip}`;
+	if (system(`${cmd} >/dev/null 2>&1`) != 0 || !access(files.cert + '.new'))
+		return null;
+	chmod(files.key + '.new', 0600);
+	system(`mv ${shellquote(files.key + '.new')} ${shellquote(files.key)} && mv ${shellquote(files.cert + '.new')} ${shellquote(files.cert)}`);
+	writefile(CERT_STATE, sprintf('%J\n', { ips: want }));
+	// After this reply: the restart drops the connection it travels on.
+	system('(sleep 1; /etc/init.d/uhttpd restart) >/dev/null 2>&1 &');
+	return true;
 }
 
 function own_ipv4() {
@@ -147,7 +191,13 @@ const methods = {
 			if (!match(a.username, /^[a-z0-9_]{1,32}$/) || length(a.password) < 16 || !length(a.gateway))
 				return { error: 'invalid arguments' };
 
-			const hash = sh(`uhttpd -m ${shellquote(a.password)}`);
+			// Made in ucode where it can be (netui.crypt), so the password stays off the command line.
+			let crypt = null;
+			try {
+				crypt = require('netui.crypt');
+			}
+			catch (e) {}
+			const hash = crypt?.hash(a.password) ?? sh(`uhttpd -m ${shellquote(a.password)}`);
 			if (!match(hash, /^\$/))
 				return { error: 'could not hash the password' };
 
@@ -186,6 +236,30 @@ const methods = {
 			if (!key || !match(nonce, NONCE))
 				return { error: 'nothing to prove' };
 			return { proofs: map(own_ipv4(), (ip) => sha256(`netui-prove:${key}:${nonce}:${ip}`)) };
+		}
+	},
+
+	cert: {
+		args: { nonce: 'nonce' },
+		call: function(request) {
+			const key = adopted()?.key;
+			const nonce = request.args.nonce ?? '';
+			if (!key || !match(nonce, NONCE))
+				return { error: 'nothing to prove' };
+			const files = https_files();
+			// Tagged too, so nobody can claim it for this device to keep the gateway on plain HTTP.
+			if (!files)
+				return { error: 'no https', tag: sha256(`netui-nohttps:${key}:${nonce}`) };
+			const ips = own_ipv4();
+			if (!length(ips))
+				return { error: 'no address' };
+			const fresh = cert_for(files, ips);
+			if (fresh == null)
+				return { error: 'could not make a certificate' };
+			const fp = match(sh(`sha256sum ${shellquote(files.cert)}`) ?? '', /^[0-9a-f]{64}/)?.[0];
+			if (!fp)
+				return { error: 'could not read the certificate' };
+			return { cert: b64enc(readfile(files.cert)), tag: sha256(`netui-cert:${key}:${nonce}:${fp}`), restarting: fresh };
 		}
 	},
 

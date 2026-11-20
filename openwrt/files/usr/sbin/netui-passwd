@@ -23,7 +23,10 @@ stty echo 2>/dev/null
 if [ "$pw" != "$pw2" ]; then echo "netui-passwd: passwords do not match." >&2; exit 1; fi
 if [ ${#pw} -lt 8 ]; then echo "netui-passwd: use at least 8 characters." >&2; exit 1; fi
 
-hash=$(uhttpd -m "$pw") || exit 1
+# Hashed in ucode (netui.crypt) from stdin, so the password is never on a
+# command line; uhttpd -m only without ucode's digest module.
+hash=$(printf '%s' "$pw" | ucode -e 'print(require("netui.crypt").hash(require("fs").stdin.read("all")) ?? "")' 2>/dev/null)
+[ -n "$hash" ] || hash=$(uhttpd -m "$pw") || exit 1
 
 uci -q batch <<EOF
 set rpcd.$user=login

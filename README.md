@@ -347,13 +347,20 @@ like the one `netui-passwd` creates.
   the router confirms it is an admin's session that may confirm the change,
   and never over a session the tab already has.
 - **Access points.** The gateway keeps each access point's login in
-  `/etc/netui/devices.json` (root only). At adoption it also gives the access
-  point a secret key; before sending a password or session to an address, it
-  asks the device there to prove it holds that key, bound to that address. A
-  device that copies an access point's MAC address to get its DHCP lease
-  gets nothing. Adoption uses HTTPS where the access point serves it. Access
-  points with an older netui-agent cannot prove themselves; their panel says
-  so. Update netui-agent on them.
+  `/etc/netui/devices.json` (root only) and gives each access point a secret
+  key at adoption. It then talks to the access point only over HTTPS, checked
+  against that access point's own certificate, which the gateway pins after
+  the access point proves with the key that the certificate is its own. So
+  nobody on the network can read or change what passes between them (logins,
+  WiFi passwords), even from the middle of the connection, and a device that
+  copies an access point's MAC address to get its DHCP lease gets nothing.
+  The certificate names the access point's address; when that changes, the
+  access point makes a new one and the gateway pins it the same way. An
+  access point without HTTPS proves itself before every new connection
+  instead, and its panel suggests the HTTPS add-on. Access points with an
+  older netui-agent cannot prove themselves; their panel says so.
+- **Passwords** for netui's logins are hashed (SHA-256-crypt) inside netui
+  itself, so they never appear on a command line.
 - **Releases** list a SHA256SUMS file; check a package against it before
   installing.
 
