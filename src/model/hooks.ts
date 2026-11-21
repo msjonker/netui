@@ -180,7 +180,7 @@ export function useClientDetails(opts: { traffic?: boolean } = {}) {
 
   useEffectCI(() => {
     if (!ct.data) return;
-    traffic.add(ct.data, ct.dataUpdatedAt, isLocal);
+    traffic.add(ct.data.entries, ct.dataUpdatedAt, isLocal);
     bump((n) => n + 1);
     // Sample once per poll; isLocal changing alone must not re-add.
     // eslint-disable-next-line react-hooks/exhaustive-deps

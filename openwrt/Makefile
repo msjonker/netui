@@ -29,7 +29,7 @@ define Package/netui
   CATEGORY:=Network
   TITLE:=Web management UI for OpenWrt routers and access points
   # luci-base provides the luci-rpc and luci objects (leases, host hints,
-  # timezones, conntrack); LuCI stays installed as the fallback UI anyway.
+  # timezones); LuCI stays installed as the fallback UI anyway.
   # rpcd-mod-file runs the three service scripts the ACL allows.
   # SQM, UPnP, DDNS, WireGuard, wifischedule, etherwake and https-dns-proxy
   # stay optional: netui hides or explains what is not installed.
@@ -66,7 +66,7 @@ define Package/netui/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/usr/sbin/netui-passwd $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/ucode
-	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest ./files/usr/share/rpcd/ucode/netui-services ./files/usr/share/rpcd/ucode/netui-users ./files/usr/share/rpcd/ucode/netui-packages ./files/usr/share/rpcd/ucode/netui-tailscale ./files/usr/share/rpcd/ucode/netui-history ./files/usr/share/rpcd/ucode/netui-config $(1)/usr/share/rpcd/ucode/
+	$(INSTALL_DATA) ./files/usr/share/rpcd/ucode/netui-devices ./files/usr/share/rpcd/ucode/netui-firmware ./files/usr/share/rpcd/ucode/netui-speedtest ./files/usr/share/rpcd/ucode/netui-services ./files/usr/share/rpcd/ucode/netui-users ./files/usr/share/rpcd/ucode/netui-packages ./files/usr/share/rpcd/ucode/netui-tailscale ./files/usr/share/rpcd/ucode/netui-history ./files/usr/share/rpcd/ucode/netui-config ./files/usr/share/rpcd/ucode/netui-traffic $(1)/usr/share/rpcd/ucode/
 	$(INSTALL_DIR) $(1)/usr/share/netui
 	$(INSTALL_DATA) ./files/usr/share/netui/limits.sh $(1)/usr/share/netui/
 	$(INSTALL_DIR) $(1)/usr/share/ucode/netui

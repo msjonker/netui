@@ -303,12 +303,24 @@ function TrafficInsights() {
     );
   }
   if (!conntrack.data) return <Spinner />;
+  const { partial, total: tracked, entries } = conntrack.data;
 
   return (
     <div class="space-y-4">
+      {partial && (
+        <Banner tone="warn">
+          The router tracks {tracked.toLocaleString()} connections, more than it can list quickly. netui reads the
+          first {entries.length.toLocaleString()} each time so the router stays responsive; traffic on the others is
+          not counted.
+        </Banner>
+      )}
       <Card>
         <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Stat label="Active connections" value={traffic.active} />
+          <Stat
+            label="Active connections"
+            value={partial ? tracked : traffic.active}
+            hint={partial ? `${entries.length.toLocaleString()} read` : undefined}
+          />
           <Stat label="Active clients" value={usage.filter((u) => u.rate > 0).length} />
           <Stat label="Current throughput" value={formatBitrate(rate)} hint="Both directions" />
           <Stat label="Since opened" value={formatBytes(total)} />

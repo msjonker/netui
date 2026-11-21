@@ -47,6 +47,18 @@ describe('Insights: traffic', () => {
     renderApp('#/insights');
     fireEvent.click(await screen.findByRole('tab', { name: 'Traffic' }));
     expect(await screen.findByText('Active connections')).toBeTruthy();
-    expect(router.calls.some((c) => c.object === 'luci' && c.method === 'getConntrackList')).toBe(true);
+    expect(router.calls.some((c) => c.object === 'netui.traffic' && c.method === 'connections')).toBe(true);
+  });
+
+  it('says when the router listed only part of a large table', async () => {
+    router.overrides.push((c) =>
+      c.object === 'netui.traffic' && c.method === 'connections'
+        ? { total: 16_293, partial: true, rows: [['tcp', '192.168.1.228', 40000, '192.0.2.1', 443, 1000, '0']] }
+        : undefined,
+    );
+    renderApp('#/insights');
+    fireEvent.click(await screen.findByRole('tab', { name: 'Traffic' }));
+    expect(await screen.findByText(/tracks 16,293 connections/)).toBeTruthy();
+    expect(screen.getByText('1 read')).toBeTruthy();
   });
 });

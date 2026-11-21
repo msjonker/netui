@@ -7,7 +7,8 @@ import { UbusStatus } from '../api/ubus';
 import type {
   AddonKey,
   AssocStation,
-  ConntrackEntry,
+  ConnectionRow,
+  ConnectionsReply,
   DeviceStatus,
   DeviceStatusMap,
   FirmwareJob,
@@ -680,9 +681,9 @@ export class DemoRouter {
     return out;
   }
 
-  private conntrack(): { result: ConntrackEntry[] } {
+  private conntrack(): ConnectionsReply {
     const t = now();
-    const out: ConntrackEntry[] = [];
+    const out: ConnectionRow[] = [];
     for (const c of CLIENTS) {
       if (!this.where(c, t) || this.blocked(c.mac)) continue;
       const s = this.clients.get(c.mac)!;
@@ -694,23 +695,20 @@ export class DemoRouter {
         for (const { k, w } of conns.filter((x) => x.app === app)) {
           // Open connections carry what the client sent since the demo started, plus a little history.
           const share = ((s.rx + s.tx - s.base * 0.99) * w) / total;
-          out.push({
-            layer3: 'ipv4',
-            layer4: proto.toLowerCase(),
-            src: this.ipOf(c),
-            dst: `${k % 2 ? '198.51.100' : '192.0.2'}.${10 + Math.floor(hash(c.host * 31 + i * 7 + k) * 200)}`,
-            sport: 40000 + Math.floor(hash(c.host * 3 + k + i) * 20000),
-            dport: port,
-            bytes: Math.floor(share),
-            packets: Math.floor(share / 1100) + 3,
-            timeout: proto === 'TCP' ? 7400 : 60,
-            zone: '0',
-          });
+          out.push([
+            proto.toLowerCase(),
+            this.ipOf(c),
+            40000 + Math.floor(hash(c.host * 3 + k + i) * 20000),
+            `${k % 2 ? '198.51.100' : '192.0.2'}.${10 + Math.floor(hash(c.host * 31 + i * 7 + k) * 200)}`,
+            port,
+            Math.floor(share),
+            '0',
+          ]);
         }
       });
-      out.push({ layer3: 'ipv4', layer4: 'udp', src: this.ipOf(c), dst: c.net === 'lan' ? '192.168.1.1' : '192.168.10.1', sport: 50000 + c.host, dport: 53, bytes: 180, packets: 2, timeout: 30, zone: '0' });
+      out.push(['udp', this.ipOf(c), 50000 + c.host, c.net === 'lan' ? '192.168.1.1' : '192.168.10.1', 53, 180, '0']);
     }
-    return { result: out };
+    return { total: out.length, partial: false, rows: out };
   }
 
   // -------------------------------------------------------------------------
@@ -1199,7 +1197,7 @@ export class DemoRouter {
       'luci.getTimezones': () => clone(timezones),
       'luci.getUnixtime': () => ({ result: Math.floor(now()) }),
       'luci.getLocaltime': () => ({ result: Math.floor(now()) }),
-      'luci.getConntrackList': () => this.conntrack(),
+      'netui.traffic.connections': () => this.conntrack(),
       'luci.upnp.get_status': () => {
         if (!this.installed.upnp) throw new Status(UbusStatus.NOT_FOUND);
         const on = str(Object.values(u.committed('upnpd')).find((s) => s['.type'] === 'upnpd')?.enabled) === '1';

@@ -31,6 +31,8 @@ const STATUS_NAMES: Record<number, string> = Object.fromEntries(
 // uhttpd-mod-ubus answers -32002 when the session id is unknown, expired, or
 // the ACL denies the object outright.
 const RPC_ACCESS_DENIED = -32002;
+/** uhttpd-mod-ubus: rpcd did not answer within uhttpd's script_timeout. */
+export const RPC_TIMEOUT = -32003;
 /** uhttpd-mod-ubus: no such ubus object (checked before the session). */
 export const RPC_OBJECT_NOT_FOUND = -32000;
 
@@ -62,9 +64,16 @@ export class RpcError extends Error {
 
 /** The router could not be reached, or answered with something other than JSON-RPC. */
 export class TransportError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
+  /**
+   * No answer within the timeout. The router may still be working on the
+   * request, so sending it again only queues more work behind it.
+   */
+  readonly timedOut: boolean;
+
+  constructor(message: string, options?: { cause?: unknown; timedOut?: boolean }) {
     super(message, options);
     this.name = 'TransportError';
+    this.timedOut = options?.timedOut ?? false;
   }
 }
 
@@ -229,6 +238,10 @@ async function post(body: RpcRequest | RpcRequest[], timeoutMs: number): Promise
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (err) {
+    if (err instanceof DOMException && err.name === 'TimeoutError') {
+      routerBusy();
+      throw new TransportError('The router did not answer in time', { cause: err, timedOut: true });
+    }
     throw new TransportError('Router unreachable', { cause: err });
   }
   if (!res.ok) throw new TransportError(`HTTP ${res.status} from ${ENDPOINT}`);
@@ -247,6 +260,7 @@ function decode(
 ): { ok: true; data: unknown } | { ok: false; error: Error; auth: boolean } {
   if (!res) return { ok: false, error: new TransportError(`No response for ${object}.${method}`), auth: false };
   if (res.error) {
+    if (res.error.code === RPC_TIMEOUT) routerBusy();
     const error = new RpcError(res.error.code, res.error.message);
     return { ok: false, error, auth: res.error.code === RPC_ACCESS_DENIED };
   }
@@ -372,13 +386,36 @@ interface Pending {
 let queue: Pending[] = [];
 
 /**
+ * How long polling reads hold off after the router failed to answer in time.
+ * rpcd runs one call at a time and finishes a call the browser gave up on
+ * (uhttpd waits up to its script_timeout, 60 s by default), so reads sent
+ * meanwhile only queue behind it. Calls from user actions are not held.
+ */
+export const BUSY_HOLDOFF_MS = 30_000;
+let busyUntil = 0;
+
+function routerBusy(): void {
+  busyUntil = Date.now() + BUSY_HOLDOFF_MS;
+}
+
+/** Test hook: forget a previous timeout. */
+export function resetBusy(): void {
+  busyUntil = 0;
+}
+
+/**
  * Like call(), but every read() issued in the same tick goes out as one
  * batch request. Query hooks use this so a page's initial reads share a
- * single round trip without the hooks knowing about each other.
+ * single round trip without the hooks knowing about each other. After a
+ * timeout, reads wait out BUSY_HOLDOFF_MS and then go out together.
  */
 export function read<T>(object: string, method: string, args: object = {}): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    if (queue.length === 0) queueMicrotask(flush);
+    if (queue.length === 0) {
+      const wait = busyUntil - Date.now();
+      if (wait > 0) setTimeout(() => void flush(), wait);
+      else queueMicrotask(() => void flush());
+    }
     queue.push({ call: { object, method, args }, resolve: resolve as (v: unknown) => void, reject });
   });
 }

@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  BUSY_HOLDOFF_MS,
   LoginError,
   NULL_SESSION,
   RpcError,
@@ -14,7 +15,9 @@ import {
   onSessionExpired,
   read,
   req,
+  resetBusy,
 } from './ubus';
+import { createQueryClient } from './queries';
 
 const SID = 'c0ffee00c0ffee00c0ffee00c0ffee00';
 
@@ -46,6 +49,7 @@ function seedSession(expiresInMs = 300_000) {
 
 beforeEach(() => {
   vi.unstubAllGlobals();
+  resetBusy();
 });
 
 describe('read-only sessions', () => {
@@ -281,5 +285,66 @@ describe('read', () => {
     const fetchMock = mockRouter(() => [0, { x: 1 }]);
     await expect(read('system', 'board')).resolves.toEqual({ x: 1 });
     expect(Array.isArray(JSON.parse(fetchMock.mock.calls[0]![1].body as string))).toBe(false);
+  });
+});
+
+describe('a router that does not answer in time', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** fetch as AbortSignal.timeout ends it. */
+  function timingOut() {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new DOMException('signal timed out', 'TimeoutError');
+      }),
+    );
+  }
+
+  it('reports a timeout, which queries do not retry', async () => {
+    seedSession();
+    timingOut();
+    const err = await call('luci-rpc', 'getHostHints').catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(TransportError);
+    expect((err as TransportError).timedOut).toBe(true);
+    const retry = createQueryClient().getDefaultOptions().queries!.retry as (n: number, e: Error) => boolean;
+    expect(retry(0, err as Error)).toBe(false);
+    expect(retry(0, new TransportError('Router unreachable'))).toBe(true);
+  });
+
+  it('holds polling reads back, then sends them together', async () => {
+    seedSession();
+    timingOut();
+    await call('luci-rpc', 'getHostHints').catch(() => undefined);
+
+    vi.useFakeTimers();
+    const fetchMock = mockRouter(() => [0, {}]);
+    const a = read('system', 'info');
+    const b = read('network.interface', 'dump');
+    await vi.advanceTimersByTimeAsync(BUSY_HOLDOFF_MS - 1_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1_000);
+    await Promise.all([a, b]);
+    expect(fetchMock).toHaveBeenCalledOnce();
+    // A user's action is not held.
+    await call('system', 'reboot');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("holds reads back after uhttpd's own timeout too", async () => {
+    seedSession();
+    mockRouter(() => ({ error: { code: -32003, message: 'ubus request timed out' } }));
+    await expect(call('luci-rpc', 'getHostHints')).rejects.toBeInstanceOf(RpcError);
+
+    vi.useFakeTimers();
+    const fetchMock = mockRouter(() => [0, {}]);
+    const a = read('system', 'info');
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(BUSY_HOLDOFF_MS);
+    await a;
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

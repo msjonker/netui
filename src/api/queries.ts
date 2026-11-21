@@ -7,6 +7,8 @@ import { AddonMissingError } from './packages';
 import type {
   AssocList,
   BoardJson,
+  ConnectionsReply,
+  ConntrackEntry,
   DeviceStatusMap,
   DhcpLeases,
   HostapdStatus,
@@ -38,8 +40,10 @@ export function createQueryClient(): QueryClient {
         refetchIntervalInBackground: false,
         // Only transient transport failures are worth retrying. A ubus status
         // error will not fix itself, and an expired session must go to login.
+        // A timeout is not transient: the router is still busy with the
+        // request, and a retry would queue another behind it.
         retry: (failureCount, error) =>
-          !(error instanceof SessionExpiredError) && error instanceof TransportError && failureCount < 2,
+          !(error instanceof SessionExpiredError) && error instanceof TransportError && !error.timedOut && failureCount < 2,
       },
       mutations: { retry: false },
     },
@@ -468,23 +472,70 @@ export function useLog(refetchInterval: number | false = LIVE_MS) {
 // Clients / Insights: connection tracking, on-demand WiFi scans, reconnect.
 
 export const insightKeys = {
-  conntrack: ['luci', 'getConntrackList'] as const,
+  conntrack: ['netui.traffic', 'connections'] as const,
   scan: (dev: string) => ['iwinfo', 'scan', dev] as const,
 };
 
 export const CONNTRACK_POLL_MS = 5_000;
+/** Polls never come closer than this many times the last call's duration. */
+const CONNTRACK_SLOWDOWN = 3;
+/** ...nor further apart than this (model/traffic.ts treats 3 polls' time as a gap). */
+const CONNTRACK_MAX_POLL_MS = 14_000;
+/** After a failed poll. */
+const CONNTRACK_ERROR_POLL_MS = 60_000;
+
+export interface Connections {
+  entries: ConntrackEntry[];
+  /** Connections the router tracks; more than entries.length when partial. */
+  total: number;
+  /** The router stopped reading its table early (time or size limit). */
+  partial: boolean;
+  /** How long the call took, ms. */
+  took: number;
+}
+
+export function connectionEntries(reply: ConnectionsReply): ConntrackEntry[] {
+  return reply.rows.map(([layer4, src, sport, dst, dport, bytes, zone]) => ({
+    layer4,
+    src,
+    dst,
+    bytes,
+    ...(sport === null ? {} : { sport }),
+    ...(dport === null ? {} : { dport }),
+    ...(zone === null ? {} : { zone }),
+  }));
+}
+
+async function readConnections(): Promise<Connections> {
+  const start = performance.now();
+  // A call of its own, not batched through read(): uhttpd answers a batch only
+  // when its last call is done, so a slow table would hold up the page's
+  // other reads. The router bounds the work (about 1 s and 3000 rows).
+  const reply = await call<ConnectionsReply | { error: string }>('netui.traffic', 'connections');
+  if ('error' in reply) throw new Error(reply.error);
+  return { entries: connectionEntries(reply), total: reply.total, partial: reply.partial, took: performance.now() - start };
+}
+
+/** Next poll: every 5 s, slower when the router takes long to answer, rare after an error. */
+export function connectionsInterval(state: { status: string; data?: Connections }): number {
+  if (state.status === 'error') return CONNTRACK_ERROR_POLL_MS;
+  const took = state.data?.took ?? 0;
+  return Math.min(CONNTRACK_MAX_POLL_MS, Math.max(CONNTRACK_POLL_MS, took * CONNTRACK_SLOWDOWN));
+}
 
 /**
- * The router's connection table, polled every 5 s while a page that needs it
- * is mounted and visible. It can run to thousands of entries: no structural
- * sharing (each poll is consumed once by model/traffic.ts) and dropped soon
- * after the last observer goes.
+ * The router's connection table, polled while a page that needs it is
+ * mounted and visible. Each poll waits for the previous answer (TanStack
+ * restarts the interval when one arrives). No retries: a failed poll waits
+ * for the next. No structural sharing (each poll is consumed once by
+ * model/traffic.ts), dropped soon after the last observer goes.
  */
 export const useConntrack = (enabled = true) =>
   useQuery({
     queryKey: insightKeys.conntrack,
-    queryFn: async () => (await read<import('./types').ConntrackList>('luci', 'getConntrackList')).result ?? [],
-    refetchInterval: CONNTRACK_POLL_MS,
+    queryFn: readConnections,
+    refetchInterval: (q) => connectionsInterval(q.state),
+    retry: false,
     structuralSharing: false,
     gcTime: 30_000,
     enabled,

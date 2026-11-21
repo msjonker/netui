@@ -446,29 +446,42 @@ export interface LogRead {
 // Recorded on the DL-WRX36 (test/fixtures/ubus/dl-wrx36/plain/).
 
 /**
- * One `luci getConntrackList` entry. luci.sys parses /proc/net/nf_conntrack:
- * src/dst/ports are the ORIGINAL direction only (the reply tuple, and with it
- * any NAT translation, is dropped), and bytes/packets are the sum of both
- * directions (needs nf_conntrack_acct=1). TIME_WAIT entries are skipped.
+ * One `netui.traffic connections` row (openwrt/.../ucode/netui-traffic): the
+ * ORIGINAL-direction tuple of a connection (the reply tuple, and with it any
+ * NAT translation, is dropped) and the bytes of both directions summed (needs
+ * nf_conntrack_acct=1). Ports are null for protocols without them. TIME_WAIT
+ * and loopback entries are left out on the router.
  */
+export type ConnectionRow = [
+  proto: string,
+  src: string,
+  sport: number | null,
+  dst: string,
+  dport: number | null,
+  bytes: number,
+  zone: string | null,
+];
+
+/** `netui.traffic connections`, recorded in test/fixtures/ubus/dl-wrx36/plain/. */
+export interface ConnectionsReply {
+  /** Connections the kernel tracks (nf_conntrack_count). */
+  total: number;
+  /** The router stopped reading before the end (time or row limit). */
+  partial: boolean;
+  rows: ConnectionRow[];
+}
+
+/** One connection, as model/traffic.ts reads it. */
 export interface ConntrackEntry {
-  /** "ipv4" | "ipv6" */
-  layer3: string;
-  /** "tcp", "udp", "icmp", ... */
+  /** "tcp", "udp", "icmp", "igmp", ... */
   layer4: string;
   src: string;
   dst: string;
-  /** Absent for ICMP. */
+  /** Absent for protocols without ports. */
   sport?: number;
   dport?: number;
   bytes: number;
-  packets: number;
-  timeout: number;
   zone?: string;
-}
-
-export interface ConntrackList {
-  result: ConntrackEntry[];
 }
 
 /** `iwinfo scan` result. Widths are iwinfo's encoding; see model/rf.ts. */
@@ -541,6 +554,8 @@ export interface ManagedDeviceList {
 
 export interface PendingDeviceList {
   devices: PendingDevice[];
+  /** LAN hosts not probed yet (the gateway probes in the background, 16 at a time). Absent before 0.4.4. */
+  unchecked?: number;
 }
 
 /** netui.devices methods report failures as data, not as a ubus status. */

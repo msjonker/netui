@@ -4,8 +4,8 @@ import { RingBuffer } from '../lib/ringbuffer';
 import { HISTORY_MS } from '../lib/throughput';
 import type { Subnet } from './network';
 
-// Per-client traffic from the router's connection table (luci
-// getConntrackList). What the data allows, and what it does not:
+// Per-client traffic from the router's connection table (netui.traffic
+// connections). What the data allows, and what it does not:
 //
 // - Each entry is one connection's ORIGINAL tuple with the byte count of
 //   both directions summed (see ConntrackEntry). So traffic is attributable
@@ -15,6 +15,8 @@ import type { Subnet } from './network';
 // - Counters only exist since the connection started, so usage counts from
 //   the first poll after netui was opened; a connection that closes between
 //   two polls loses its last few seconds.
+// - On a busy router the table can be partial (the router reads it for about
+//   a second, at most 3000 rows): connections past the cut are not counted.
 // - Flows accelerated in hardware (NSS/ECM, flow offloading) may not update
 //   the counters at all, or only in bursts.
 //

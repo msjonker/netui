@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { ConntrackEntry, ConntrackList } from '../api/types';
-import recorded from '../../test/fixtures/ubus/dl-wrx36/plain/luci.getConntrackList.json';
+import type { ConnectionsReply, ConntrackEntry } from '../api/types';
+import { connectionEntries, connectionsInterval } from '../api/queries';
+import recorded from '../../test/fixtures/ubus/dl-wrx36/plain/netui.traffic.connections.json';
 import { inPrefix6, localPredicate, serviceName, topBytes, topClientsByUsage, TrafficTracker } from './traffic';
 
-const table: ConntrackList = recorded;
+const table = connectionEntries(recorded as ConnectionsReply);
 
 // The DL-WRX36's LAN, as in its recorded interface dump.
 const isLocal = localPredicate({
@@ -13,7 +14,7 @@ const isLocal = localPredicate({
 });
 
 function conn(over: Partial<ConntrackEntry>): ConntrackEntry {
-  return { layer3: 'ipv4', layer4: 'tcp', src: '192.168.1.137', dst: '93.184.215.14', sport: 50000, dport: 443, bytes: 0, packets: 0, timeout: 100, zone: '0', ...over };
+  return { layer4: 'tcp', src: '192.168.1.137', dst: '93.184.215.14', sport: 50000, dport: 443, bytes: 0, zone: '0', ...over };
 }
 
 describe('localPredicate', () => {
@@ -38,16 +39,39 @@ describe('localPredicate', () => {
   });
 });
 
+describe('netui.traffic connections rows', () => {
+  it('become entries without the null ports', () => {
+    expect(table).toHaveLength(18);
+    expect(table.find((e) => e.layer4 === 'igmp')).toEqual({ layer4: 'igmp', src: '0.0.0.0', dst: '224.0.0.1', bytes: 0, zone: '0' });
+    // The router shortens the kernel's full-length IPv6 addresses.
+    expect(table.find((e) => e.src.startsWith('fe80'))).toMatchObject({ src: 'fe80::f652:46ff:fe08:dca6', sport: 547, dport: 546 });
+  });
+});
+
 describe('TrafficTracker on the recorded table', () => {
-  it('attributes DNS lookups to the laptop and skips the router talking to itself', () => {
+  it('attributes the laptop and the access point, not the router or its WAN side', () => {
     const t = new TrafficTracker();
-    t.add(table.result, 1_000, isLocal);
-    // 20 entries: 7 on loopback (v4 and v6), 13 from the laptop to the router's DNS.
-    expect(t.active).toBe(13);
-    expect(t.conns).toHaveLength(13);
-    expect(t.conns[0]).toMatchObject({ local: '192.168.1.137', remote: '192.168.1.1', port: 53, service: 'DNS', outbound: true, rate: null });
+    t.add(table, 1_000, isLocal);
+    expect(t.active).toBe(18);
+    // Laptop (.228): DNS and HTTP to the router; access point (.166): NTP.
+    expect(new Set(t.conns.map((c) => c.local))).toEqual(new Set(['192.168.1.228', '192.168.1.166']));
+    expect(t.conns.find((c) => c.port === 80)).toMatchObject({ local: '192.168.1.228', remote: '192.168.1.1', service: 'HTTP', outbound: true, rate: null });
     // The first poll is the baseline: nothing counted yet.
-    expect(t.hosts.get('192.168.1.137')).toMatchObject({ total: 0, rate: null });
+    expect(t.hosts.get('192.168.1.228')).toMatchObject({ total: 0, rate: null });
+  });
+});
+
+describe('connectionsInterval', () => {
+  const data = (took: number) => ({ entries: [], total: 0, partial: false, took });
+  it('polls every 5 s while the router answers quickly', () => {
+    expect(connectionsInterval({ status: 'success', data: data(300) })).toBe(5_000);
+  });
+  it('waits three times the last answer, at most 14 s', () => {
+    expect(connectionsInterval({ status: 'success', data: data(3_000) })).toBe(9_000);
+    expect(connectionsInterval({ status: 'success', data: data(20_000) })).toBe(14_000);
+  });
+  it('waits a minute after a failed poll', () => {
+    expect(connectionsInterval({ status: 'error' })).toBe(60_000);
   });
 });
 
@@ -81,7 +105,7 @@ describe('TrafficTracker deltas', () => {
   it('attributes inbound connections to the LAN side and IPv6 by prefix', () => {
     const t = new TrafficTracker();
     const inbound = conn({ src: '203.0.113.9', dst: '192.168.1.50', sport: 40000, dport: 22 });
-    const v6 = conn({ layer3: 'ipv6', src: 'fd00:5191:f25a::77', dst: '2a00:1450::5', dport: 443, layer4: 'udp' });
+    const v6 = conn({ src: 'fd00:5191:f25a::77', dst: '2a00:1450::5', dport: 443, layer4: 'udp' });
     t.add([inbound, v6], 1, isLocal);
     t.add([{ ...inbound, bytes: 5_000 }, { ...v6, bytes: 10_000 }], 5_001, isLocal);
     expect(t.conns.map((c) => [c.local, c.remote, c.service, c.outbound])).toEqual([
