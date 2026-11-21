@@ -81,14 +81,16 @@ function DeviceRow({ d, onOpen }: { d: ManagedDevice; onOpen: () => void }) {
 }
 
 function PendingCard({ pending, onAdopt }: { pending: ReturnType<typeof usePendingDevices>; onAdopt: (p: PendingDevice) => void }) {
-  const list = pending.data ?? [];
+  const list = pending.data?.devices ?? [];
+  const unchecked = pending.data?.unchecked ?? 0;
   return (
     <Card
       title="Ready to adopt"
       flush
       actions={
         <span class="inline-flex items-center gap-2 text-xs text-muted">
-          {pending.isFetching && <Spinner />} Scanning the LAN every 15 s
+          {(pending.isFetching || unchecked > 0) && <Spinner />}
+          {unchecked > 0 ? `Checking the LAN: ${unchecked} devices to go` : 'Scanning the LAN every 15 s'}
         </span>
       }
     >

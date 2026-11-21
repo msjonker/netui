@@ -62,6 +62,12 @@ describe('Devices', () => {
     expect(screen.queryByRole('table', { name: 'Ready to adopt' })).toBeNull();
   });
 
+  it('says how much of a large LAN is still to be checked', async () => {
+    router.overrides.push((c) => (c.object === 'netui.devices' && c.method === 'discover' ? { devices: [], unchecked: 182, scanning: true } : undefined));
+    renderApp('#/devices');
+    expect(await screen.findByText('Checking the LAN: 182 devices to go')).toBeTruthy();
+  });
+
   it('says so when the root password is wrong', async () => {
     seedDevices(router, { pending: [recorded.pending] });
     renderApp('#/devices');

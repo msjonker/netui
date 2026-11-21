@@ -17,6 +17,9 @@ import { connect } from 'ubus';
 
 const REGISTRY = '/etc/netui/devices.json';
 const RUN = '/var/run/netui';
+// Discovery's memory of probed LAN hosts: { ip: { mac, at, agent: info | null } }.
+const SEEN = `${RUN}/discover.json`;
+const NOT_AGENT_S = 600;
 const NULL_SID = '00000000000000000000000000000000';
 // Also the UCI section name on the AP, so no hyphen.
 const AP_LOGIN = 'netui_gw';
@@ -191,27 +194,113 @@ function address_of(dev) {
 	return dev.ip;
 }
 
-// Probe many hosts at once for netui-agent; returns { ip: info }.
+// Probes run PROBE_WAVE at a time: each is a uclient-fetch plus a shell
+// (~400 KB), and a LAN can have hundreds of hosts (all at once took 92 MB on
+// the bench with 231).
+const PROBE_WAVE = 16;
+
+// Shell commands that ask each address for netui.agent info, PROBE_WAVE at a
+// time, each answer in dir/<ip>.out (empty when there was none: uclient-fetch
+// leaves no file then).
+function probe_cmd(dir, ips) {
+	writefile(`${dir}/body`, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [NULL_SID, 'netui.agent', 'info', {}] }));
+	let cmd = '';
+	for (let i, ip in ips) {
+		cmd += `(uclient-fetch -q -T 2 -O ${dir}/${ip}.part --header='Content-Type: application/json' --post-file=${dir}/body http://${ip}/ubus >/dev/null 2>&1; mv ${dir}/${ip}.part ${dir}/${ip}.out 2>/dev/null || : >${dir}/${ip}.out) & `;
+		if ((i + 1) % PROBE_WAVE == 0)
+			cmd += 'wait; ';
+	}
+	return `${cmd} wait`;
+}
+
+// An agent's answer, or null.
+function agent_info(text) {
+	const r = parse(text);
+	return r?.result?.[0] == 0 && r.result[1]?.agent ? r.result[1] : null;
+}
+
+// Probe hosts for netui-agent now; returns { ip: info }.
 function probe(ips) {
 	ips = filter(ips, (ip) => match(ip ?? '', IPV4));
 	if (!length(ips))
 		return {};
 	mkdir(RUN, 0700);
 	const dir = sh(`mktemp -d ${RUN}/probe.XXXXXX`);
-	const body = `${dir}/body`;
-	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [NULL_SID, 'netui.agent', 'info', {}] }));
-	let cmd = '';
-	for (let ip in ips)
-		cmd += `(uclient-fetch -q -T 2 -O ${dir}/${ip} --header='Content-Type: application/json' --post-file=${body} http://${ip}/ubus >/dev/null 2>&1) & `;
-	sh(`${cmd} wait`);
+	sh(probe_cmd(dir, ips));
 	const found = {};
 	for (let ip in ips) {
-		const r = parse(readfile(`${dir}/${ip}`));
-		if (r?.result?.[0] == 0 && r.result[1]?.agent)
-			found[ip] = r.result[1];
+		const info = agent_info(readfile(`${dir}/${ip}.out`));
+		if (info)
+			found[ip] = info;
 	}
 	sh(`rm -rf ${shellquote(dir)}`);
 	return found;
+}
+
+// Probes that answer from the last results and refresh them in a background
+// job, so rpcd's only thread never waits for an address that does not answer
+// (~3 s each; a LAN can have hundreds of hosts). One job per kind ('discover':
+// LAN hosts not adopted yet; 'live': adopted devices), results in
+// RUN/<kind>.d/<ip>.out until the next call takes them in.
+const BG_MAX = 256;
+
+function bg_dir(kind) {
+	return `${RUN}/${kind}.d`;
+}
+
+function bg_running(kind) {
+	const pid = +(readfile(`${RUN}/${kind}.pid`) ?? '');
+	return pid > 0 && index(readfile(`/proc/${pid}/cmdline`) ?? '', bg_dir(kind)) >= 0;
+}
+
+function bg_start(kind, ips) {
+	ips = filter(ips, (ip) => match(ip ?? '', IPV4));
+	if (!length(ips))
+		return;
+	const dir = bg_dir(kind);
+	mkdir(RUN, 0700);
+	sh(`rm -rf ${dir}`);
+	mkdir(dir, 0700);
+	const pid = sh(`sh -c ${shellquote(probe_cmd(dir, slice(ips, 0, BG_MAX)))} </dev/null >/dev/null 2>&1 & echo $!`);
+	writefile(`${RUN}/${kind}.pid`, pid);
+}
+
+// { ip: info | null } for each finished probe, removed once read.
+function bg_results(kind) {
+	const dir = bg_dir(kind);
+	const out = {};
+	for (let f in lsdir(dir) ?? []) {
+		const m = match(f, /^([0-9.]+)\.out$/);
+		if (!m)
+			continue;
+		out[m[1]] = agent_info(readfile(`${dir}/${f}`));
+		unlink(`${dir}/${f}`);
+	}
+	return out;
+}
+
+// Liveness of adopted devices by address: { ip: info | null }. An address
+// never probed (just adopted, or moved) is probed right away; the rest
+// answer from the last background probe, at most one poll old.
+function live_state(ips) {
+	const file = `${RUN}/live.json`;
+	const known = parse(readfile(file)) ?? {};
+	const out = {};
+	for (let ip in ips)
+		if (exists(known, ip))
+			out[ip] = known[ip];
+	for (let ip, info in bg_results('live'))
+		if (index(ips, ip) >= 0)
+			out[ip] = info;
+	const unknown = filter(ips, (ip) => !exists(out, ip));
+	const found = probe(unknown);
+	for (let ip in unknown)
+		out[ip] = found[ip] ?? null;
+	mkdir(RUN, 0700);
+	writefile(file, sprintf('%J', out));
+	if (!bg_running('live'))
+		bg_start('live', filter(ips, (ip) => index(unknown, ip) < 0));
+	return out;
 }
 
 function public_view(dev, live, ip) {
@@ -700,7 +789,7 @@ const methods = {
 			const ips = {};
 			for (let mac, dev in reg.devices)
 				ips[mac] = address_of(dev);
-			const live = probe(values(ips));
+			const live = live_state(uniq(filter(values(ips), (ip) => match(ip ?? '', IPV4))));
 			const out = [];
 			for (let mac, dev in reg.devices) {
 				const info = live[ips[mac]];
@@ -710,16 +799,54 @@ const methods = {
 		}
 	},
 
+	// Access points waiting for adoption, from the background probes (see
+	// bg_start). New hosts go first, so a freshly plugged-in access point
+	// shows up within a poll or two. Hosts that are not agents are probed
+	// again after NOT_AGENT_S.
+	// unchecked: hosts not probed yet; scanning: a sweep is running.
 	discover: {
 		call: function() {
 			const reg = load_registry();
 			const hosts = lan_hosts();
-			const found = probe(keys(hosts));
+			const seen = parse(readfile(SEEN)) ?? {};
+			const now = time();
+
+			// Forget hosts that left (or changed address); take in new answers.
+			const next = {};
+			for (let ip, mac in hosts)
+				if (seen[ip]?.mac == mac)
+					next[ip] = seen[ip];
+			for (let ip, info in bg_results('discover'))
+				if (hosts[ip])
+					next[ip] = { mac: hosts[ip], at: now, agent: info };
+
+			let scanning = bg_running('discover');
+			if (!scanning) {
+				const due = [];
+				for (let ip, mac in hosts) {
+					const s = next[ip];
+					if (!s || s.agent || now - s.at >= NOT_AGENT_S)
+						push(due, { ip, rank: !s ? 0 : s.agent ? 1 : 2, at: s?.at ?? 0 });
+				}
+				sort(due, (a, b) => a.rank - b.rank || a.at - b.at);
+				if (length(due)) {
+					bg_start('discover', map(due, (d) => d.ip));
+					scanning = true;
+				}
+			}
+			mkdir(RUN, 0700);
+			writefile(SEEN, sprintf('%J', next));
+
 			const pending = [];
-			for (let ip, info in found)
-				if (!reg.devices[info.mac])
+			let unchecked = 0;
+			for (let ip in keys(hosts)) {
+				const info = next[ip]?.agent;
+				if (!next[ip])
+					unchecked++;
+				else if (info && !reg.devices[info.mac])
 					push(pending, { ip, mac: info.mac, hostname: info.hostname, model: info.model, release: info.release, agent: info.agent, adopted: info.adopted });
-			return { devices: pending };
+			}
+			return { devices: pending, unchecked, scanning };
 		}
 	},
 

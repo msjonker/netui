@@ -39,8 +39,8 @@ function check<T extends DevicePluginError>(r: T): T {
 
 export const listDevices = async () => check(await read<ManagedDeviceList & DevicePluginError>('netui.devices', 'list')).devices;
 
-export const discoverDevices = async () =>
-  check(await read<PendingDeviceList & DevicePluginError>('netui.devices', 'discover')).devices;
+export const discoverDevices = async (): Promise<PendingDeviceList> =>
+  check(await read<PendingDeviceList & DevicePluginError>('netui.devices', 'discover'));
 
 /** `password` is the access point's current root password ('' on a fresh install). */
 export async function adoptDevice(ip: string, password: string, name: string) {
