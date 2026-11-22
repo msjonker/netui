@@ -1,36 +1,27 @@
 // netui.traffic: the router's connection table, bounded.
 //
-//   connections   { total, partial, rows: [[proto, src, sport, dst, dport,
-//                   bytes, zone], ...] }
+//   connections   { total, partial, text }
 //
-// The original-direction tuple of each connection (sport/dport null for
-// protocols without ports), bytes of both directions summed, TIME_WAIT and
-// loopback left out. total is the kernel's count of tracked connections;
-// partial says the table was not read to the end.
+// text: /proc/net/nf_conntrack as is, whole lines, at most MAX_BYTES and
+// what TIME_MS allows; the browser parses it (src/model/conntrack.ts).
+// total is the kernel's count of tracked connections; partial says the
+// table was not read to the end.
 //
-// luci's getConntrackList returns every entry as an object. rpcd runs one call
-// at a time, so with thousands of connections it blocks every other request
-// for seconds (minutes on slow routers), and a reply past ubus's size limit
-// kills rpcd, which signs every session out. This reads the fields netui uses
-// by position (several times faster than matching each key=value), stops after
-// TIME_MS or MAX_ROWS, and sends rows instead of objects (a third of the size).
+// luci's getConntrackList parses every entry into an object. rpcd runs one
+// call at a time, so with thousands of connections it blocks every other
+// request for seconds (minutes on slow routers), and a reply past ubus's size
+// limit kills rpcd, which signs every session out. Parsing in ucode at all
+// costs 1.5 ms a line on a 560 MHz MIPS router; reading the text a tenth.
 
 'use strict';
 
 import { open, popen } from 'fs';
 
 const TIME_MS = 1000;
-const MAX_ROWS = 3000;
+// Well inside ubus's message limit (1 MB); about 2,400 connections.
+const MAX_BYTES = 524288;
 
-const PORTS = { tcp: true, udp: true, udplite: true, sctp: true, dccp: true };
-// The kernel names only the protocols it tracks in detail; the rest are
-// "unknown" followed by the number.
-const OTHER = { '2': 'igmp', '41': 'ipv6', '47': 'gre', '50': 'esp', '51': 'ah', '89': 'ospf', '112': 'vrrp' };
-
-function now() {
-	const c = clock(true);
-	return c[0] * 1000 + c[1] / 1000000;
-}
+const conntrack = require('netui.conntrack');
 
 function readInt(path) {
 	const fd = open(path);
@@ -41,85 +32,19 @@ function readInt(path) {
 	return v;
 }
 
-// The kernel writes IPv6 addresses in full (fe80:0000:...); netui compares
-// them with the short form other sources use.
-function addr(ip) {
-	return index(ip, ':') < 0 ? ip : (arrtoip(iptoarr(ip)) ?? ip);
-}
-
-function isLoopback(ip) {
-	return substr(ip, 0, 4) == '127.' || ip == '::1';
-}
-
-// One line: "ipv4  2 tcp  6 7440 ESTABLISHED src=a dst=b sport=1 dport=2
-// packets=3 bytes=4 [UNREPLIED] src=b dst=a sport=2 dport=1 packets=5 bytes=6
-// [ASSURED] mark=0 zone=0 use=2". The state word only appears for TCP-like
-// protocols; zone only with zone support in the kernel.
-function parse(line) {
-	const t = split(line, / +/);
-	const n = length(t);
-	let i = 5;
-	if (substr(t[i], 0, 4) != 'src=')
-		i++;
-	if (substr(t[i], 0, 4) != 'src=')
-		return null;
-	const proto = t[2] == 'unknown' ? (OTHER[t[3]] ?? `proto ${t[3]}`) : t[2];
-	let sport = null, dport = null, j = i + 2;
-	if (PORTS[proto]) {
-		sport = +substr(t[i + 2], 6);
-		dport = +substr(t[i + 3], 6);
-		j = i + 4;
-	}
-	while (j < n && substr(t[j], 0, 8) != 'packets=')
-		j++;
-	if (j + 1 >= n)
-		return null;
-	// The reply tuple has the same fields as the original one, after an
-	// optional [UNREPLIED].
-	const len = j + 2 - i;
-	let r = j + 2;
-	if (substr(t[r], 0, 1) == '[')
-		r++;
-	const rb = t[r + len - 1];
-	const bytes = +substr(t[j + 1], 6) + (substr(rb, 0, 6) == 'bytes=' ? +substr(rb, 6) : 0);
-	const z = t[n - 2];
-	return [proto, addr(substr(t[i], 4)), sport, addr(substr(t[i + 1], 4)), dport, bytes,
-		substr(z, 0, 5) == 'zone=' ? trim(substr(z, 5)) : null];
-}
-
 const methods = {
 	connections: {
 		call: function() {
-			const start = now();
 			const total = readInt('/proc/sys/net/netfilter/nf_conntrack_count');
 			let fd = open('/proc/net/nf_conntrack');
 			if (!fd)
 				fd = popen('/usr/sbin/conntrack -L -o extended 2>/dev/null');
 			if (!fd)
 				return { error: 'The connection table is not available' };
-
-			const rows = [];
-			let partial = false;
-			let lines = 0;
-			for (let line = fd.read('line'); length(line); line = fd.read('line')) {
-				if (++lines % 100 == 0 && now() - start > TIME_MS) {
-					partial = true;
-					break;
-				}
-				if (index(line, 'TIME_WAIT') >= 0)
-					continue;
-				const row = parse(line);
-				if (!row || isLoopback(row[1]))
-					continue;
-				if (length(rows) >= MAX_ROWS) {
-					partial = true;
-					break;
-				}
-				push(rows, row);
-			}
+			const r = conntrack.read(fd, { time_ms: TIME_MS, max_bytes: MAX_BYTES });
 			// A pipe is left unread on purpose: conntrack stops on the closed pipe.
 			fd.close();
-			return { total: total ?? lines, partial, rows };
+			return { total, partial: r.partial, text: r.text };
 		}
 	},
 };

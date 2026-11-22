@@ -7,7 +7,6 @@ import { UbusStatus } from '../api/ubus';
 import type {
   AddonKey,
   AssocStation,
-  ConnectionRow,
   ConnectionsReply,
   DeviceStatus,
   DeviceStatusMap,
@@ -683,7 +682,13 @@ export class DemoRouter {
 
   private conntrack(): ConnectionsReply {
     const t = now();
-    const out: ConnectionRow[] = [];
+    const out: string[] = [];
+    // As the kernel prints /proc/net/nf_conntrack; the router side sends it as is.
+    const line = (proto: string, src: string, sport: number, dst: string, dport: number, bytes: number) => {
+      const l4 = proto === 'tcp' ? 'tcp      6 7440 ESTABLISHED' : 'udp      17 59';
+      const sent = Math.floor(bytes / 3);
+      return `ipv4     2 ${l4} src=${src} dst=${dst} sport=${sport} dport=${dport} packets=${Math.floor(sent / 1100) + 1} bytes=${sent} src=${dst} dst=${src} sport=${dport} dport=${sport} packets=${Math.floor((bytes - sent) / 1100) + 1} bytes=${bytes - sent} [ASSURED] mark=0 zone=0 use=2`;
+    };
     for (const c of CLIENTS) {
       if (!this.where(c, t) || this.blocked(c.mac)) continue;
       const s = this.clients.get(c.mac)!;
@@ -695,20 +700,21 @@ export class DemoRouter {
         for (const { k, w } of conns.filter((x) => x.app === app)) {
           // Open connections carry what the client sent since the demo started, plus a little history.
           const share = ((s.rx + s.tx - s.base * 0.99) * w) / total;
-          out.push([
-            proto.toLowerCase(),
-            this.ipOf(c),
-            40000 + Math.floor(hash(c.host * 3 + k + i) * 20000),
-            `${k % 2 ? '198.51.100' : '192.0.2'}.${10 + Math.floor(hash(c.host * 31 + i * 7 + k) * 200)}`,
-            port,
-            Math.floor(share),
-            '0',
-          ]);
+          out.push(
+            line(
+              proto.toLowerCase(),
+              this.ipOf(c),
+              40000 + Math.floor(hash(c.host * 3 + k + i) * 20000),
+              `${k % 2 ? '198.51.100' : '192.0.2'}.${10 + Math.floor(hash(c.host * 31 + i * 7 + k) * 200)}`,
+              port,
+              Math.floor(share),
+            ),
+          );
         }
       });
-      out.push(['udp', this.ipOf(c), 50000 + c.host, c.net === 'lan' ? '192.168.1.1' : '192.168.10.1', 53, 180, '0']);
+      out.push(line('udp', this.ipOf(c), 50000 + c.host, c.net === 'lan' ? '192.168.1.1' : '192.168.10.1', 53, 180));
     }
-    return { total: out.length, partial: false, rows: out };
+    return { total: out.length, partial: false, text: out.map((l) => `${l}\n`).join('') };
   }
 
   // -------------------------------------------------------------------------

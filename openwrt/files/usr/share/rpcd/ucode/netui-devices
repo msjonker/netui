@@ -99,19 +99,21 @@ const IPV4 = /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/;
 const CERTS = '/etc/netui/certs';
 const pin_of = (dev) => `${CERTS}/${replace(dev.mac, /:/g, '')}.der`;
 
-// One JSON-RPC call to ip/ubus. `tls`: false for http://; true for https://
-// without checking the certificate (adoption: access points have self-signed
-// ones; it keeps what is sent from anyone just listening); or the path of a
-// pinned certificate, which the access point must present and which must
-// name the address. The body goes through a 0600 temp file so passwords
-// never show up in a process list.
-function ubus_at(ip, sid, object, method, args, timeout, tls) {
+// { status, data } from one JSON-RPC response, or { error, code? }.
+function answer_of(x) {
+	if (type(x?.result) != 'array')
+		return x?.error ? { error: x.error.message, code: x.error.code } : { error: 'unreachable' };
+	return { status: x.result[0], data: x.result[1] };
+}
+
+// POST a JSON-RPC body to ip/ubus: { json } (the parsed reply) or { error }.
+function post_at(ip, payload, timeout, tls) {
 	if (!match(ip ?? '', IPV4))
 		return { error: 'invalid address' };
 	mkdir(RUN, 0700);
 	const body = sh(`mktemp ${RUN}/req.XXXXXX`);
 	chmod(body, 0600);
-	writefile(body, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [sid, object, method, args ?? {}] }));
+	writefile(body, sprintf('%J', payload));
 	const url = tls ? `https://${ip}/ubus` : `http://${ip}/ubus`;
 	const check = type(tls) == 'string' ? `--ca-certificate=${shellquote(tls)} ` : tls ? '--no-check-certificate ' : '';
 	const out = sh(`uclient-fetch -T ${timeout ?? 3} -O - ${check}--header='Content-Type: application/json' --post-file=${body} ${shellquote(url)} 2>${body}.err`);
@@ -119,15 +121,45 @@ function ubus_at(ip, sid, object, method, args, timeout, tls) {
 	unlink(body);
 	unlink(`${body}.err`);
 	const r = parse(out);
-	if (type(r?.result) != 'array') {
-		if (r?.error)
-			return { error: r.error.message, code: r.error.code };
+	if (r == null) {
 		// Not the pinned certificate, or one that does not name this address.
 		if (type(tls) == 'string' && match(err, /SSL|certificate/i))
 			return { error: 'certificate', tls_failed: true };
 		return { error: 'unreachable' };
 	}
-	return { status: r.result[0], data: r.result[1] };
+	return { json: r };
+}
+
+// One JSON-RPC call to ip/ubus. `tls`: false for http://; true for https://
+// without checking the certificate (adoption: access points have self-signed
+// ones; it keeps what is sent from anyone just listening); or the path of a
+// pinned certificate, which the access point must present and which must
+// name the address. The body goes through a 0600 temp file so passwords
+// never show up in a process list.
+function ubus_at(ip, sid, object, method, args, timeout, tls) {
+	const r = post_at(ip, { jsonrpc: '2.0', id: 1, method: 'call', params: [sid, object, method, args ?? {}] }, timeout, tls);
+	if (r.error)
+		return r;
+	return answer_of(r.json);
+}
+
+// Several calls in one request (a JSON-RPC batch), so one connection (and,
+// over HTTPS, one handshake: ~0.2 s of the AP's and the gateway's CPU on a
+// slow router) carries them all. { results: [answer_of each] } or { error }.
+function ubus_batch_at(ip, sid, calls, timeout, tls) {
+	const body = [];
+	for (let i, c in calls)
+		push(body, { jsonrpc: '2.0', id: i + 1, method: 'call', params: [sid, c.object, c.method, c.args ?? {}] });
+	const r = post_at(ip, body, timeout, tls);
+	if (r.error)
+		return r;
+	// A whole-request refusal (an expired session) comes back as one object.
+	if (type(r.json) != 'array')
+		return r.json?.error ? { error: r.json.error.message, code: r.json.error.code } : { error: 'unreachable' };
+	const by_id = {};
+	for (let x in r.json)
+		by_id[x?.id] = x;
+	return { results: map(calls, (c, i) => answer_of(by_id[i + 1])) };
 }
 
 function own_addresses() {
@@ -144,7 +176,7 @@ function lan_hosts() {
 		if (length(f) >= 3)
 			hosts[f[2]] = lc(f[1]);
 	}
-	for (let line in split(sh(`ip -4 neigh show dev ${shellquote(lan)}`), '\n')) {
+	for (let line in split(sh(`ip -4 neigh show dev ${shellquote(lan)} 2>/dev/null`), '\n')) {
 		const m = match(line, /^([0-9.]+) .*lladdr ([0-9a-f:]+)/);
 		if (m && !hosts[m[1]])
 			hosts[m[1]] = m[2];
@@ -199,18 +231,20 @@ function address_of(dev) {
 // the bench with 231).
 const PROBE_WAVE = 16;
 
-// Shell commands that ask each address for netui.agent info, PROBE_WAVE at a
-// time, each answer in dir/<ip>.out (empty when there was none: uclient-fetch
-// leaves no file then).
+// Asks each address in $1/ips for netui.agent info, PROBE_WAVE at a time,
+// each answer in $1/<ip>.out (empty when there was none: uclient-fetch leaves
+// no file then). A fixed script over a list, so the list's length costs
+// nothing to build (a command with 200 probes in it took 0.3 s on MIPS).
+const PROBE_SH = 'n=0; while read ip; do ' +
+	'(uclient-fetch -q -T 2 -O "$1/$ip.part" --header="Content-Type: application/json" --post-file="$1/body" "http://$ip/ubus" >/dev/null 2>&1; ' +
+	'mv "$1/$ip.part" "$1/$ip.out" 2>/dev/null || : >"$1/$ip.out") & ' +
+	`n=$((n + 1)); [ $((n % ${PROBE_WAVE})) -eq 0 ] && wait; done <"$1/ips"; wait`;
+
+// The shell command that probes `ips` (IPv4 only) into dir.
 function probe_cmd(dir, ips) {
 	writefile(`${dir}/body`, sprintf('%J', { jsonrpc: '2.0', id: 1, method: 'call', params: [NULL_SID, 'netui.agent', 'info', {}] }));
-	let cmd = '';
-	for (let i, ip in ips) {
-		cmd += `(uclient-fetch -q -T 2 -O ${dir}/${ip}.part --header='Content-Type: application/json' --post-file=${dir}/body http://${ip}/ubus >/dev/null 2>&1; mv ${dir}/${ip}.part ${dir}/${ip}.out 2>/dev/null || : >${dir}/${ip}.out) & `;
-		if ((i + 1) % PROBE_WAVE == 0)
-			cmd += 'wait; ';
-	}
-	return `${cmd} wait`;
+	writefile(`${dir}/ips`, join('\n', filter(ips, (ip) => match(ip ?? '', IPV4))) + '\n');
+	return `sh -c ${shellquote(PROBE_SH)} probe ${shellquote(dir)}`;
 }
 
 // An agent's answer, or null.
@@ -261,7 +295,9 @@ function bg_start(kind, ips) {
 	mkdir(RUN, 0700);
 	sh(`rm -rf ${dir}`);
 	mkdir(dir, 0700);
-	const pid = sh(`sh -c ${shellquote(probe_cmd(dir, slice(ips, 0, BG_MAX)))} </dev/null >/dev/null 2>&1 & echo $!`);
+	// At the lowest priority: on a single slow core, 16 probes starting at
+	// once would otherwise hold rpcd up for a second or more.
+	const pid = sh(`nice -n 19 ${probe_cmd(dir, slice(ips, 0, BG_MAX))} </dev/null >/dev/null 2>&1 & echo $!`);
 	writefile(`${RUN}/${kind}.pid`, pid);
 }
 
@@ -480,6 +516,45 @@ function relay(dev, object, method, args) {
 		if (ch.error)
 			return ch;
 		r = ubus_at(ip, ch.sid, object, method, args, null, ch.tls);
+	}
+	return r;
+}
+
+// What batch may relay: reads only, so a batch can be sent again after a lost
+// session. Writes go one at a time through call.
+const READS = {
+	'system': ['board', 'info'],
+	'network.interface': ['dump'],
+	'network.device': ['status'],
+	'iwinfo': ['devices', 'info', 'assoclist', 'scan', 'survey', 'freqlist', 'txpowerlist', 'countrylist'],
+	'hostapd.*': ['get_status', 'get_clients'],
+	'log': ['read'],
+	'uci': ['get', 'state', 'changes'],
+	'netui.agent': ['info', 'ports'],
+	'netui.firmware': ['status'],
+	'netui.packages': ['status'],
+};
+const BATCH_MAX = 32;
+
+function readable(object, method) {
+	const key = match(object ?? '', /^hostapd\./) ? 'hostapd.*' : object;
+	return index(READS[key] ?? [], method) >= 0;
+}
+
+// relay() for several reads in one request.
+function relay_batch(dev, calls) {
+	const ip = address_of(dev);
+	const known = sessions()[dev.mac];
+	let ch = type(known) == 'object' && known.ip == ip && known.sid ? known : open_channel(dev, ip);
+	if (ch.error)
+		return ch;
+	let r = ubus_batch_at(ip, ch.sid, calls, null, ch.tls);
+	const lost = (r) => r.tls_failed || r.code == -32002 || length(filter(r.results ?? [], (x) => x.code == -32002 || x.status == 6));
+	if (lost(r)) {
+		ch = open_channel(dev, ip);
+		if (ch.error)
+			return ch;
+		r = ubus_batch_at(ip, ch.sid, calls, null, ch.tls);
 	}
 	return r;
 }
@@ -933,6 +1008,24 @@ const methods = {
 			if (!allowed(a.object, a.method))
 				return { error: 'not allowed' };
 			return relay(dev, a.object, a.method, a.args);
+		}
+	},
+
+	// Several reads on one device in one request: { results: [{ status, data }
+	// | { error }] } in the order asked.
+	batch: {
+		args: { mac: 'mac', calls: [] },
+		call: function(request) {
+			const a = request.args;
+			const dev = load_registry().devices[a.mac];
+			if (!dev)
+				return { error: 'unknown device' };
+			if (type(a.calls) != 'array' || !length(a.calls) || length(a.calls) > BATCH_MAX)
+				return { error: 'invalid calls' };
+			for (let c in a.calls)
+				if (type(c) != 'object' || !readable(c.object, c.method) || (c.args != null && type(c.args) != 'object'))
+					return { error: 'not allowed' };
+			return relay_batch(dev, a.calls);
 		}
 	},
 

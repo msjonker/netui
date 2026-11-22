@@ -445,30 +445,14 @@ export interface LogRead {
 // --- Clients / Insights -----------------------------------------------------
 // Recorded on the DL-WRX36 (test/fixtures/ubus/dl-wrx36/plain/).
 
-/**
- * One `netui.traffic connections` row (openwrt/.../ucode/netui-traffic): the
- * ORIGINAL-direction tuple of a connection (the reply tuple, and with it any
- * NAT translation, is dropped) and the bytes of both directions summed (needs
- * nf_conntrack_acct=1). Ports are null for protocols without them. TIME_WAIT
- * and loopback entries are left out on the router.
- */
-export type ConnectionRow = [
-  proto: string,
-  src: string,
-  sport: number | null,
-  dst: string,
-  dport: number | null,
-  bytes: number,
-  zone: string | null,
-];
-
 /** `netui.traffic connections`, recorded in test/fixtures/ubus/dl-wrx36/plain/. */
 export interface ConnectionsReply {
-  /** Connections the kernel tracks (nf_conntrack_count). */
-  total: number;
-  /** The router stopped reading before the end (time or row limit). */
+  /** Connections the kernel tracks (nf_conntrack_count); null where the router cannot say. */
+  total: number | null;
+  /** The router stopped reading before the end (size or time limit). */
   partial: boolean;
-  rows: ConnectionRow[];
+  /** /proc/net/nf_conntrack as is, whole lines (model/conntrack.ts parses it). */
+  text: string;
 }
 
 /** One connection, as model/traffic.ts reads it. */
@@ -573,6 +557,11 @@ export interface RelayResult<T> extends DevicePluginError {
   data?: T;
   code?: number;
   ip?: string;
+}
+
+/** `netui.devices batch`: one answer per call, in the order asked. */
+export interface RelayBatchResult extends DevicePluginError {
+  results?: RelayResult<unknown>[];
 }
 
 export interface SyncOutcome extends DevicePluginError {

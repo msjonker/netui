@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ConnectionsReply, ConntrackEntry } from '../api/types';
-import { connectionEntries, connectionsInterval } from '../api/queries';
+import { connectionsInterval } from '../api/queries';
+import { parseConntrack } from './conntrack';
 import recorded from '../../test/fixtures/ubus/dl-wrx36/plain/netui.traffic.connections.json';
 import { inPrefix6, localPredicate, serviceName, topBytes, topClientsByUsage, TrafficTracker } from './traffic';
 
-const table = connectionEntries(recorded as ConnectionsReply);
+const reply: ConnectionsReply = recorded;
+const table = parseConntrack(reply.text);
 
 // The DL-WRX36's LAN, as in its recorded interface dump.
 const isLocal = localPredicate({
@@ -39,23 +41,14 @@ describe('localPredicate', () => {
   });
 });
 
-describe('netui.traffic connections rows', () => {
-  it('become entries without the null ports', () => {
-    expect(table).toHaveLength(18);
-    expect(table.find((e) => e.layer4 === 'igmp')).toEqual({ layer4: 'igmp', src: '0.0.0.0', dst: '224.0.0.1', bytes: 0, zone: '0' });
-    // The router shortens the kernel's full-length IPv6 addresses.
-    expect(table.find((e) => e.src.startsWith('fe80'))).toMatchObject({ src: 'fe80::f652:46ff:fe08:dca6', sport: 547, dport: 546 });
-  });
-});
-
 describe('TrafficTracker on the recorded table', () => {
   it('attributes the laptop and the access point, not the router or its WAN side', () => {
     const t = new TrafficTracker();
     t.add(table, 1_000, isLocal);
-    expect(t.active).toBe(18);
-    // Laptop (.228): DNS and HTTP to the router; access point (.166): NTP.
+    expect(t.active).toBe(13);
+    // Laptop (.228): HTTPS, HTTP and DNS to the router; access point (.166): NTP.
     expect(new Set(t.conns.map((c) => c.local))).toEqual(new Set(['192.168.1.228', '192.168.1.166']));
-    expect(t.conns.find((c) => c.port === 80)).toMatchObject({ local: '192.168.1.228', remote: '192.168.1.1', service: 'HTTP', outbound: true, rate: null });
+    expect(t.conns.find((c) => c.port === 443)).toMatchObject({ local: '192.168.1.228', remote: '192.168.1.1', service: 'HTTPS', outbound: true, rate: null });
     // The first poll is the baseline: nothing counted yet.
     expect(t.hosts.get('192.168.1.228')).toMatchObject({ total: 0, rate: null });
   });

@@ -302,17 +302,25 @@ describe('WiFi', () => {
     // The AP's 5 GHz WiFi is phy1-ap0, which on the router is the 2.4 GHz one.
     router.overrides.push((c) => {
       if (c.object === 'netui.devices' && c.method === 'list') return { devices: [{ mac: '02:00:00:00:00:aa', name: 'Office AP', online: true, ip: '192.168.1.2' }] };
-      if (c.object !== 'netui.devices' || c.method !== 'call') return undefined;
-      const a = c.args as { object: string; method: string };
-      const data =
-        a.object === 'iwinfo' && a.method === 'devices'
-          ? { devices: ['phy1-ap0'] }
-          : a.object === 'iwinfo' && a.method === 'info'
-            ? { phy: 'phy1', ssid: 'netui-test', mode: 'Master', channel: 36, frequency: 5180 }
-            : a.object === 'iwinfo' && a.method === 'assoclist'
-              ? { results: [sta('AA:BB:CC:00:00:01'), sta('AA:BB:CC:00:00:02')] }
-              : undefined;
-      return data && { status: 0, data };
+      if (c.object !== 'netui.devices') return undefined;
+      const answer = (a: { object: string; method: string }) => {
+        const data =
+          a.object === 'iwinfo' && a.method === 'devices'
+            ? { devices: ['phy1-ap0'] }
+            : a.object === 'iwinfo' && a.method === 'info'
+              ? { phy: 'phy1', ssid: 'netui-test', mode: 'Master', channel: 36, frequency: 5180 }
+              : a.object === 'iwinfo' && a.method === 'assoclist'
+                ? { results: [sta('AA:BB:CC:00:00:01'), sta('AA:BB:CC:00:00:02')] }
+                : undefined;
+        return data && { status: 0, data };
+      };
+      if (c.method === 'call') return answer(c.args as { object: string; method: string });
+      // Reads made together for one device are relayed as one batch.
+      if (c.method === 'batch') {
+        const results = (c.args as { calls: { object: string; method: string }[] }).calls.map(answer);
+        return results.every(Boolean) ? { results } : undefined;
+      }
+      return undefined;
     });
     renderApp('#/settings/wifi');
     const wlan = (await screen.findByText('netui-test')).closest('tr')!;

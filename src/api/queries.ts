@@ -22,6 +22,7 @@ import type {
   UciGet,
 } from './types';
 import { POLL_INTERVAL_MS, ThroughputSeries } from '../lib/throughput';
+import { parseConntrack } from '../model/conntrack';
 
 // One hook per data source. Every fetch goes through read(), so the hooks a
 // page mounts in the same render go out as a single batched request.
@@ -494,26 +495,15 @@ export interface Connections {
   took: number;
 }
 
-export function connectionEntries(reply: ConnectionsReply): ConntrackEntry[] {
-  return reply.rows.map(([layer4, src, sport, dst, dport, bytes, zone]) => ({
-    layer4,
-    src,
-    dst,
-    bytes,
-    ...(sport === null ? {} : { sport }),
-    ...(dport === null ? {} : { dport }),
-    ...(zone === null ? {} : { zone }),
-  }));
-}
-
 async function readConnections(): Promise<Connections> {
   const start = performance.now();
   // A call of its own, not batched through read(): uhttpd answers a batch only
   // when its last call is done, so a slow table would hold up the page's
-  // other reads. The router bounds the work (about 1 s and 3000 rows).
+  // other reads. The router bounds the work (512 KB of text, about 1 s).
   const reply = await call<ConnectionsReply | { error: string }>('netui.traffic', 'connections');
   if ('error' in reply) throw new Error(reply.error);
-  return { entries: connectionEntries(reply), total: reply.total, partial: reply.partial, took: performance.now() - start };
+  const entries = parseConntrack(reply.text);
+  return { entries, total: reply.total ?? entries.length, partial: reply.partial, took: performance.now() - start };
 }
 
 /** Next poll: every 5 s, slower when the router takes long to answer, rare after an error. */

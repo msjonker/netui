@@ -131,6 +131,11 @@ export const handle: FakeReadHandler = (object, method, args, router) => {
       return mac ? { devices: { [mac]: (syncJson as { devices: Record<string, unknown> }).devices[recorded.device.mac] } } : syncJson;
     case 'credentials':
       return known ? { ...credentials, password: 'ap-root-secret' } : { error: 'unknown device' };
+    case 'batch': {
+      if (!known) return { error: 'unknown device' };
+      const calls = args.calls as { object: string; method: string; args?: object }[];
+      return { results: calls.map((c) => handle('netui.devices', 'call', { mac, ...c }, router)) };
+    }
     case 'call': {
       if (!known) return { error: 'unknown device' };
       const a = (args.args ?? {}) as Record<string, unknown>;

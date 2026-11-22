@@ -70,7 +70,7 @@ define Package/netui/install
 	$(INSTALL_DIR) $(1)/usr/share/netui
 	$(INSTALL_DATA) ./files/usr/share/netui/limits.sh $(1)/usr/share/netui/
 	$(INSTALL_DIR) $(1)/usr/share/ucode/netui
-	$(INSTALL_DATA) ./files/usr/share/ucode/netui/crypt.uc $(1)/usr/share/ucode/netui/
+	$(INSTALL_DATA) ./files/usr/share/ucode/netui/crypt.uc ./files/usr/share/ucode/netui/conntrack.uc $(1)/usr/share/ucode/netui/
 	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
 	$(INSTALL_DATA) ./files/lib/upgrade/keep.d/netui $(1)/lib/upgrade/keep.d/
 endef

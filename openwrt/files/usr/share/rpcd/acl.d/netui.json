@@ -42,7 +42,7 @@
 				"luci.upnp": [ "delete_rule" ],
 				"luci.wireguard": [ "generateKeyPair", "generatePsk" ],
 				"system": [ "reboot", "validate_firmware_image" ],
-				"netui.devices": [ "adopt", "forget", "call", "sync", "rename", "credentials" ],
+				"netui.devices": [ "adopt", "forget", "call", "batch", "sync", "rename", "credentials" ],
 				"netui.firmware": [ "check", "upgrade" ],
 				"netui.speedtest": [ "start" ],
 				"netui.services": [ "adblock_apply", "portal_apply", "portal_auth", "portal_deauth" ],

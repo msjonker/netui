@@ -12,6 +12,7 @@ import type {
   DeviceStatusMap,
   ManagedDeviceList,
   PendingDeviceList,
+  RelayBatchResult,
   RelayResult,
   SyncOutcome,
   SyncResult,
@@ -128,12 +129,90 @@ export async function deviceCredentials(mac: string) {
   return check(await call<DeviceCredentials>('netui.devices', 'credentials', { mac }));
 }
 
-/** One ubus call on an adopted access point, relayed by the gateway. */
+/**
+ * One ubus call on an adopted access point, relayed by the gateway. Reads
+ * made within RELAY_WINDOW_MS of each other for the same device go out as
+ * one `netui.devices batch`: every relayed request is a connection from the
+ * gateway to the device (over pinned HTTPS a handshake, ~0.2 s of both
+ * routers' CPU on a slow one), and the gateway's rpcd waits for each. With
+ * two access points the Devices page made 97 relayed requests a minute.
+ * Writes go one at a time.
+ */
 export async function relay<T>(mac: string, object: string, method: string, args: object = {}, write = false): Promise<T> {
-  const send = write ? call : read;
-  const r = check(await send<RelayResult<T>>('netui.devices', 'call', { mac, object, method, args }));
+  if (!write) return queueRelay<T>(mac, { object, method, args });
+  return relayResult<T>(check(await call<RelayResult<T>>('netui.devices', 'call', { mac, object, method, args })), object, method);
+}
+
+function relayResult<T>(r: RelayResult<unknown>, object: string, method: string): T {
+  if (r.error) throw new DeviceError(r.error);
   if (r.status !== 0) throw new UbusError(r.status ?? -1, object, method);
   return r.data as T;
+}
+
+/** Long enough for the queries of one poll to meet; short enough not to notice. */
+export const RELAY_WINDOW_MS = 50;
+/** The gateway's limit (BATCH_MAX in netui-devices). */
+const RELAY_BATCH_MAX = 32;
+
+interface RelayCall {
+  object: string;
+  method: string;
+  args: object;
+}
+interface PendingRelay {
+  call: RelayCall;
+  resolve: (v: unknown) => void;
+  reject: (e: unknown) => void;
+}
+const relayQueues = new Map<string, PendingRelay[]>();
+
+function queueRelay<T>(mac: string, c: RelayCall): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    let q = relayQueues.get(mac);
+    if (!q) {
+      q = [];
+      relayQueues.set(mac, q);
+      setTimeout(() => void flushRelays(mac), RELAY_WINDOW_MS);
+    }
+    q.push({ call: c, resolve: resolve as (v: unknown) => void, reject });
+  });
+}
+
+async function flushRelays(mac: string): Promise<void> {
+  const pending = relayQueues.get(mac) ?? [];
+  relayQueues.delete(mac);
+  for (let i = 0; i < pending.length; i += RELAY_BATCH_MAX) {
+    const part = pending.slice(i, i + RELAY_BATCH_MAX);
+    if (part.length === 1) {
+      const [p] = part as [PendingRelay];
+      read<RelayResult<unknown>>('netui.devices', 'call', { mac, ...p.call }).then(
+        (r) => settle(p, () => relayResult(r, p.call.object, p.call.method)),
+        p.reject,
+      );
+      continue;
+    }
+    read<RelayBatchResult>('netui.devices', 'batch', { mac, calls: part.map((p) => p.call) }).then(
+      (r) => {
+        if (r.error || !r.results) {
+          const e = new DeviceError(r.error ?? 'no answer');
+          for (const p of part) p.reject(e);
+          return;
+        }
+        part.forEach((p, k) => settle(p, () => relayResult(r.results![k] ?? { error: 'no answer' }, p.call.object, p.call.method)));
+      },
+      (e: unknown) => {
+        for (const p of part) p.reject(e);
+      },
+    );
+  }
+}
+
+function settle(p: PendingRelay, value: () => unknown): void {
+  try {
+    p.resolve(value());
+  } catch (e) {
+    p.reject(e);
+  }
 }
 
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));

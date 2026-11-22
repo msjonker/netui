@@ -11,6 +11,7 @@
 /usr/share/rpcd/ucode/netui-tailscale
 /usr/share/rpcd/ucode/netui-history
 /usr/share/rpcd/ucode/netui-config
+/usr/share/rpcd/ucode/netui-traffic
 /usr/share/netui/
 /usr/share/ucode/netui/
 /usr/sbin/netui-passwd

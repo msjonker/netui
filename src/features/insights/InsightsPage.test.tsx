@@ -53,7 +53,11 @@ describe('Insights: traffic', () => {
   it('says when the router listed only part of a large table', async () => {
     router.overrides.push((c) =>
       c.object === 'netui.traffic' && c.method === 'connections'
-        ? { total: 16_293, partial: true, rows: [['tcp', '192.168.1.228', 40000, '192.0.2.1', 443, 1000, '0']] }
+        ? {
+            total: 16_293,
+            partial: true,
+            text: 'ipv4     2 tcp      6 300 ESTABLISHED src=192.168.1.228 dst=192.0.2.1 sport=40000 dport=443 packets=3 bytes=400 src=192.0.2.1 dst=192.168.1.228 sport=443 dport=40000 packets=4 bytes=600 [ASSURED] mark=0 zone=0 use=2\n',
+          }
         : undefined,
     );
     renderApp('#/insights');
