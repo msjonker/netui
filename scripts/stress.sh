@@ -95,6 +95,10 @@ out=$(R "sh $RD/router.sh info")
 echo "--- $(field "$out" info '"\(.release), \(.cpu), \(.mem_kb / 1024 | floor) MB"')"
 OBJECTS=$(field "$out" info .objects)
 CT_MAX=$(field "$out" info .conntrack_max)
+MEM_MB=$(field "$out" info '.mem_kb / 1024 | floor')
+# Discovery may use this much memory: 20 MB, or 5% on a large router (whose
+# free memory moves more than that on its own, with a full connection table).
+MEM_SLACK=$((MEM_MB / 20 > 20 ? MEM_MB / 20 : 20))
 BASE_AVAIL=$(field "$out" sample .min_avail_kb)
 BASE_PROCS=$(field "$out" sample .max_procs)
 has() { case " $OBJECTS " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
@@ -195,7 +199,7 @@ if want discover && [ "${added:-0}" -gt 0 ]; then
 		lat=$(field "$o" latency .max_ms)
 		pids=$(field "$o" sample '.rpcd_pids | length')
 		detail="$n calls over $((n * 5)) s, slowest ${worst} ms, others waited ${lat} ms, +$procs processes, -$drop MB, $left unchecked at the end"
-		if [ "$bad" != 0 ] || [ "$pids" != 1 ] || [ "$worst" -gt 1000 ] || [ "$lat" -gt 1500 ] || [ "$procs" -gt 60 ] || [ "$drop" -gt 20 ] || [ "$left" != 0 ]; then
+		if [ "$bad" != 0 ] || [ "$pids" != 1 ] || [ "$worst" -gt 1000 ] || [ "$lat" -gt 1500 ] || [ "$procs" -gt 60 ] || [ "$drop" -gt "$MEM_SLACK" ] || [ "$left" != 0 ]; then
 			result FAIL "discover: $added hosts" "$detail"
 		else
 			result PASS "discover: $added hosts" "$detail"
