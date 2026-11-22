@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, Router, Switch } from 'wouter-preact';
 import { useHashLocation } from 'wouter-preact/use-hash-location';
 import { getSession, onSessionExpired, signOut, type Session } from '../api/ubus';
+import { newBuildServed, reloadForUpdate, takeUpdateNotice } from '../lib/build';
 import { browserDeps, completeHandoff, takeRollbackNotice, type ApplyDeps, type ApplyResult, type Handoff } from '../api/apply';
 import { confirm } from '../api/uci';
 import { historyRecord } from '../api/history';
@@ -203,7 +204,7 @@ function NotFound() {
 export function App({ handoff, applyDeps = browserDeps }: { handoff?: Handoff; applyDeps?: () => ApplyDeps }) {
   const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(getSession);
-  const [notice, setNotice] = useState<string | null>(() => takeRollbackNotice());
+  const [notice, setNotice] = useState<string | null>(() => takeRollbackNotice() ?? takeUpdateNotice());
 
   useEffect(
     () =>
@@ -211,6 +212,9 @@ export function App({ handoff, applyDeps = browserDeps }: { handoff?: Handoff; a
         queryClient.clear();
         setSession(null);
         setNotice(why ?? SESSION_EXPIRED);
+        // An upgrade restarts rpcd, which ends the session: load the new build
+        // rather than sign in again with code the router may no longer allow.
+        void newBuildServed().then((updated) => updated && reloadForUpdate());
       }),
     [queryClient],
   );
