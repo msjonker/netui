@@ -23,3 +23,11 @@ jobs:
       - run: npx vite build
       - name: Bundle budget (190 KB gzipped initial load)
         run: npm run check:budget
+
+  # netui's rpcd plugins under a real rpcd in the official OpenWrt images
+  # (24.10 and 25.12): each loads, and polled calls stay bounded.
+  plugins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: scripts/test-plugins.sh

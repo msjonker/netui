@@ -53,6 +53,13 @@ export class FakeRouter {
   overrides: ((c: CallRecord) => unknown)[] = [];
   /** Files written through cgi-io upload, by path. */
   uploads = new Map<string, Blob>();
+  /** Answer every call after this long (polling tests, with fake timers). */
+  latencyMs = 0;
+  /** Per call (object.method and its args): requests waiting for an answer, and the most there ever were. */
+  inFlight = new Map<string, number>();
+  maxInFlight = new Map<string, number>();
+  /** Per call: how many were sent. */
+  sent = new Map<string, number>();
 
   /** Live state (device status, interface dump, board.json) the reads return. */
   live: { deviceStatus: () => unknown; ifaceDump: () => unknown; board: () => unknown };
@@ -236,10 +243,21 @@ export function resetRouter(extra?: Record<string, UciConfig>, scenario?: VmScen
 export function fakeUbusModule(actual: typeof Ubus): typeof Ubus {
   UbusError = actual.UbusError;
   const run = async <T,>(object: string, method: string, args: object = {}): Promise<T> => {
-    await Promise.resolve();
-    // A handler returning null stands for rpcd's bare [0]: success, no data.
-    const r = router.handle(object, method, args as Record<string, unknown>);
-    return (r === null ? undefined : r) as T;
+    const r0 = router;
+    const key = `${object}.${method} ${JSON.stringify(args)}`;
+    const n = (r0.inFlight.get(key) ?? 0) + 1;
+    r0.inFlight.set(key, n);
+    r0.maxInFlight.set(key, Math.max(n, r0.maxInFlight.get(key) ?? 0));
+    r0.sent.set(key, (r0.sent.get(key) ?? 0) + 1);
+    try {
+      if (r0.latencyMs) await new Promise((done) => setTimeout(done, r0.latencyMs));
+      else await Promise.resolve();
+      // A handler returning null stands for rpcd's bare [0]: success, no data.
+      const r = r0.handle(object, method, args as Record<string, unknown>);
+      return (r === null ? undefined : r) as T;
+    } finally {
+      r0.inFlight.set(key, (r0.inFlight.get(key) ?? 1) - 1);
+    }
   };
   return {
     ...actual,

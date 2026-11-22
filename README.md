@@ -520,6 +520,36 @@ The recorded `vm/plain` and `vm/vlan` scenarios back the switch model tests and
   `@testing-library/preact` turns `fireEvent.change` into an `input` event, so a
   select's `onChange` never fires with it; `pick()` dispatches a real `change`.
 - Drawers are `<aside>` (role `complementary`); modals are `<dialog>`.
+- `src/app/polling.test.tsx` renders every main page against a router that takes
+  8 s to answer and checks that no call is sent again before it is answered.
+  rpcd runs one call at a time, so a page that piles up requests stalls it.
+
+### Router plugins
+
+`scripts/test-plugins.sh` (needs Docker; CI runs it) starts a real ubusd and
+rpcd with netui's plugins in the official OpenWrt 24.10 and 25.12 rootfs images
+and runs `test/plugins/check.uc`: every plugin loads, the connection table stays
+within its size and time limits, discovery with 120 hosts that do not answer
+probes 16 at a time without holding rpcd up, and a device that does not answer
+does not slow the device list.
+
+### Stress test on a router
+
+`scripts/stress.sh` loads a real router and checks that rpcd stays responsive
+and alive: it fills the connection table (UDP from this machine), adds fake DHCP
+lease lines, lists adopted devices and, on an access point, hammers the agent's
+unauthenticated calls. It reports how long other callers waited behind each call,
+rpcd's size and whether it restarted. Only on a bench router: it swaps in this
+checkout's plugins until it ends (restarting rpcd, which signs everyone out) and
+puts everything back afterwards.
+
+```sh
+scripts/stress.sh 192.168.1.1                      # ssh/scp as root
+scripts/stress.sh --luci --from 192.168.1.228 192.168.1.1
+```
+
+Run it on the slowest router you support before a release: on a 560 MHz MIPS
+router the limits are what keeps the connection table read under a second.
 
 ## Install as a package
 
