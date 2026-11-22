@@ -1,7 +1,7 @@
 name: Release
 
-# Push a tag like v0.4.3 to build the OpenWrt packages and publish a release:
-#   git tag v0.4.3 && git push origin v0.4.3
+# Push a tag like v0.4.4 to build the OpenWrt packages and publish a release:
+#   git tag v0.4.4 && git push origin v0.4.4
 # Run it by hand (Actions tab, or `gh workflow run release.yml`) for a dry run:
 # the packages are built as workflow artifacts and nothing is published.
 

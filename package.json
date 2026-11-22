@@ -1,6 +1,6 @@
 {
   "name": "netui",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "private": true,
   "type": "module",
   "description": "A friendly web UI for OpenWrt routers, access points and mesh WiFi",
